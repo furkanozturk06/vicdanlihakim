@@ -359,6 +359,7 @@ async function presentNextCase() {
     audio.playDoor();
     await ui.openDoor();
     await ui.showNPC(createNPCElement(state.currentCase));
+    audio.playDoorClose();
     await ui.closeDoor();
 
     ui.showEvidence(state.currentCase, state.questionsLeft);

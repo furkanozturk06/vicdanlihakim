@@ -97,25 +97,59 @@ class AudioManager {
         setTimeout(() => this.playTone(233.08, 0.2, 'sine'), 150);  // Bb3
     }
 
-    // Door creak
+    // Short burst of filtered noise; used for the latch click and the body of the thud
+    playNoise(startAt, duration, filterType, frequency, gain) {
+        const ctx = this.audioContext;
+        const length = Math.floor(ctx.sampleRate * duration);
+        const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < length; i++) {
+            data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, 3);
+        }
+
+        const source = ctx.createBufferSource();
+        source.buffer = buffer;
+        const filter = ctx.createBiquadFilter();
+        filter.type = filterType;
+        filter.frequency.value = frequency;
+        const g = ctx.createGain();
+        g.gain.value = gain;
+
+        source.connect(filter);
+        filter.connect(g);
+        g.connect(ctx.destination);
+        source.start(startAt);
+    }
+
+    // Door opening: a metal latch click
     playDoor() {
         if (!this.enabled || !this.audioContext) return;
 
-        const oscillator = this.audioContext.createOscillator();
-        const gainNode = this.audioContext.createGain();
+        const now = this.audioContext.currentTime;
+        this.playNoise(now, 0.03, 'highpass', 2500, this.volume * 0.35);
+        this.playNoise(now + 0.05, 0.025, 'highpass', 3200, this.volume * 0.2);
+    }
 
-        oscillator.connect(gainNode);
-        gainNode.connect(this.audioContext.destination);
+    // Door closing: the soft wooden thud, a low tone dropping in pitch plus muffled noise
+    playDoorClose() {
+        if (!this.enabled || !this.audioContext) return;
 
-        oscillator.type = 'sawtooth';
-        oscillator.frequency.setValueAtTime(100, this.audioContext.currentTime);
-        oscillator.frequency.linearRampToValueAtTime(80, this.audioContext.currentTime + 0.3);
+        const ctx = this.audioContext;
+        const thudAt = ctx.currentTime + 0.25;
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(110, thudAt);
+        osc.frequency.exponentialRampToValueAtTime(55, thudAt + 0.18);
+        g.gain.setValueAtTime(0.0001, thudAt);
+        g.gain.exponentialRampToValueAtTime(this.volume * 0.5, thudAt + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.0001, thudAt + 0.25);
+        osc.connect(g);
+        g.connect(ctx.destination);
+        osc.start(thudAt);
+        osc.stop(thudAt + 0.3);
 
-        gainNode.gain.setValueAtTime(this.volume * 0.1, this.audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.3);
-
-        oscillator.start();
-        oscillator.stop(this.audioContext.currentTime + 0.3);
+        this.playNoise(thudAt, 0.12, 'lowpass', 400, this.volume * 0.5);
     }
 
     // Button click
