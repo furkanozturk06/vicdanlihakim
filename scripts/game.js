@@ -245,7 +245,7 @@ async function presentNextCase() {
     await ui.closeDoor();
 
     // Show speech bubble with crime type
-    await ui.showSpeechBubble(state.currentCase.statement, state.currentCase.emotion, state.currentCase.crime);
+    await ui.showSpeechBubble(state.currentCase.statement, state.currentCase.crime);
 
     // Show case file
     ui.showEvidence(state.currentCase.summary, state.currentCase.evidence);

@@ -172,18 +172,13 @@ export function hideNPC() {
 }
 
 // Show speech bubble with typewriter effect
-export function showSpeechBubble(text, emotion, crimeType) {
-    elements.speechBubble.classList.remove('hidden', 'trembling');
+export function showSpeechBubble(text, crimeType) {
+    elements.speechBubble.classList.remove('hidden');
     elements.bubbleText.textContent = '';
 
     // Set crime type if available
     if (elements.crimeType && crimeType) {
         elements.crimeType.textContent = crimeType;
-    }
-
-    // Add emotion-specific animation
-    if (emotion === 'panicked') {
-        elements.speechBubble.classList.add('trembling');
     }
 
     // Typewriter effect

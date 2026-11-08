@@ -487,26 +487,6 @@ body {
     position: relative;
 }
 
-#speech-bubble.trembling .bubble-content {
-    animation: bubble-tremble 0.1s ease-in-out infinite;
-}
-
-@keyframes bubble-tremble {
-
-    0%,
-    100% {
-        transform: translateX(0);
-    }
-
-    25% {
-        transform: translateX(-2px);
-    }
-
-    75% {
-        transform: translateX(2px);
-    }
-}
-
 .bubble-tail {
     position: absolute;
     bottom: -15px;
