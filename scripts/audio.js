@@ -121,39 +121,52 @@ class AudioManager {
         source.start(startAt);
     }
 
-    // Page turn: two soft paper swishes, a band of noise sweeping upwards
+    // Page turn: the crinkle of paper lifting, a short swoosh through the air,
+    // and the soft flap of the page landing
     playPageTurn() {
         if (!this.enabled || !this.audioContext) return;
 
         const ctx = this.audioContext;
-        const swish = (startAt, duration, from, to, level) => {
+        const now = ctx.currentTime;
+
+        // Plays a noise buffer shaped by `sample(t)` (t: 0..1) through a chain of filters
+        const layer = (startAt, duration, sample, filters, level) => {
             const length = Math.floor(ctx.sampleRate * duration);
             const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
             const data = buffer.getChannelData(0);
-            for (let i = 0; i < length; i++) {
-                // quick rise, slower fall: the paper lifts, then settles
-                const t = i / length;
-                const envelope = Math.min(1, t * 6) * Math.pow(1 - t, 2);
-                data[i] = (Math.random() * 2 - 1) * envelope;
-            }
+            for (let i = 0; i < length; i++) data[i] = sample(i / length);
+
             const source = ctx.createBufferSource();
             source.buffer = buffer;
-            const filter = ctx.createBiquadFilter();
-            filter.type = 'bandpass';
-            filter.Q.value = 0.8;
-            filter.frequency.setValueAtTime(from, startAt);
-            filter.frequency.exponentialRampToValueAtTime(to, startAt + duration);
+            let node = source;
+            for (const [type, frequency, q = 0.7] of filters) {
+                const f = ctx.createBiquadFilter();
+                f.type = type;
+                f.frequency.value = frequency;
+                f.Q.value = q;
+                node.connect(f);
+                node = f;
+            }
             const g = ctx.createGain();
             g.gain.value = level;
-            source.connect(filter);
-            filter.connect(g);
+            node.connect(g);
             g.connect(ctx.destination);
             source.start(startAt);
         };
+        const noise = () => Math.random() * 2 - 1;
 
-        const now = ctx.currentTime;
-        swish(now, 0.22, 900, 3500, this.volume * 0.5);
-        swish(now + 0.16, 0.18, 1400, 4500, this.volume * 0.3);
+        // 1. Crinkle: grainy bursts, strongest as the page lifts
+        layer(now, 0.26, (t) => {
+            const envelope = Math.min(1, t * 8) * Math.pow(1 - t, 1.5);
+            const grain = Math.random() < 0.12 ? 1 : 0.18;
+            return noise() * grain * envelope;
+        }, [['highpass', 2200], ['lowpass', 9000]], this.volume * 0.55);
+
+        // 2. Swoosh: smooth air as the page turns over
+        layer(now + 0.05, 0.22, (t) => noise() * Math.sin(Math.PI * t), [['bandpass', 3000, 0.6]], this.volume * 0.25);
+
+        // 3. Flap: the page settles on the others
+        layer(now + 0.27, 0.06, (t) => noise() * Math.pow(1 - t, 3), [['lowpass', 900]], this.volume * 0.5);
     }
 
     // Door opening: a metal latch click
