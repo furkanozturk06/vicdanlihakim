@@ -1,7 +1,7 @@
 {
   "name": "justice-and-conscience",
   "version": "1.0.0",
-  "description": "A Papers, Please inspired courtroom decision-making game",
+  "description": "A courtroom decision-making game: judge defendants by the law and your conscience",
   "type": "module",
   "scripts": {
     "dev": "vite",

@@ -2428,3 +2428,188 @@ body {
         font-size: 0.8rem;
     }
 }
+
+/* ========================================
+   Judge's desk: keep the rulebook row apart from the verdict buttons
+======================================== */
+#judges-desk .desk-surface {
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(201, 162, 39, 0.35);
+}
+
+@media (max-height: 600px) {
+    #judges-desk .desk-surface {
+        margin-bottom: 8px;
+        padding-bottom: 6px;
+    }
+}
+
+/* ========================================
+   Multi-stage cases
+======================================== */
+.case-pending {
+    margin-top: var(--spacing-xs);
+    padding: 6px 8px;
+    border: 1px dashed var(--red-stamp);
+    border-radius: 3px;
+    color: var(--red-stamp);
+}
+
+.postpone-btn {
+    display: block;
+    width: 100%;
+    margin-top: 4px;
+    padding: 6px 8px;
+    background: var(--red-stamp);
+    border: none;
+    border-radius: 3px;
+    color: var(--paper-aged);
+    font-family: var(--font-typewriter);
+    font-size: inherit;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+}
+
+.case-evidence li.new-evidence {
+    margin-top: 2px;
+    padding: 2px 4px;
+    background: rgba(139, 32, 32, 0.12);
+    font-weight: 700;
+    animation: fade-in 0.5s ease;
+}
+
+/* ========================================
+   Story moments
+======================================== */
+.story-content {
+    margin: 0 var(--spacing-md);
+    max-height: calc(100% - 2 * var(--spacing-xl));
+    overflow-y: auto;
+}
+
+#story-text {
+    line-height: 1.55;
+    margin-bottom: var(--spacing-md);
+}
+
+.story-choices {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.story-choices .typewriter-btn {
+    margin-top: 0;
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 0.9rem;
+    line-height: 1.35;
+}
+
+.story-choices .typewriter-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+    transform: none;
+}
+
+/* ========================================
+   Evening at home
+======================================== */
+.evening {
+    width: calc(100% - 2 * var(--spacing-md));
+    max-width: 440px;
+    max-height: calc(100% - 2 * var(--spacing-lg));
+    overflow-y: auto;
+    padding: var(--spacing-lg) var(--spacing-md);
+    background:
+        radial-gradient(ellipse at 50% 0%, rgba(255, 196, 120, 0.18), transparent 60%),
+        linear-gradient(180deg, #2a1f18, #16110d);
+    border: 1px solid var(--gold-dim);
+    border-radius: 10px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+    color: var(--paper-aged);
+    animation: fade-in 0.6s ease;
+}
+
+.evening-kicker {
+    font-family: var(--font-typewriter);
+    font-size: 0.75rem;
+    color: var(--gold-dim);
+    text-align: center;
+}
+
+.evening h2 {
+    font-family: var(--font-elegant);
+    font-size: 1.8rem;
+    color: var(--gold-accent);
+    text-align: center;
+    margin-bottom: var(--spacing-sm);
+}
+
+.evening-family {
+    list-style: none;
+    margin-bottom: var(--spacing-sm);
+    font-size: 0.9rem;
+}
+
+.evening-family li {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    padding: 3px 0;
+    border-bottom: 1px solid rgba(201, 162, 39, 0.15);
+}
+
+.evening-family .member {
+    font-weight: 700;
+}
+
+.evening-family .role {
+    color: var(--paper-dark);
+    font-size: 0.8rem;
+}
+
+.evening-family .state {
+    margin-left: auto;
+    font-style: italic;
+    color: var(--gold-accent);
+}
+
+.evening-harmony {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: var(--font-typewriter);
+    font-size: 0.75rem;
+    margin-bottom: var(--spacing-sm);
+}
+
+.evening-harmony .bar-container {
+    width: 55%;
+}
+
+.evening-bills {
+    font-family: var(--font-typewriter);
+    font-size: 0.78rem;
+    color: var(--paper-dark);
+    margin-bottom: var(--spacing-md);
+}
+
+.evening-text {
+    font-family: var(--font-elegant);
+    font-size: 1.05rem;
+    line-height: 1.55;
+    margin-bottom: var(--spacing-md);
+}
+
+/* ========================================
+   Ending epilogue
+======================================== */
+.ending-epilogue {
+    font-family: var(--font-elegant);
+    font-style: italic;
+    color: var(--paper-aged);
+    margin-bottom: var(--spacing-sm);
+}

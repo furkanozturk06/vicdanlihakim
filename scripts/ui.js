@@ -240,6 +240,20 @@ export function showEvidence(caseData, questionsLeft) {
         list.appendChild(el('li', 'revealed', caseData.evidence[1]));
     }
 
+    // Multi-stage case: the pending report, or the new evidence once it arrived
+    let pending = null;
+    if (caseData.delayed && caseData.revealed) {
+        list.appendChild(el('li', 'new-evidence', `Yeni delil: ${caseData.delayed.evidence}`));
+    } else if (caseData.delayed) {
+        pending = el('div', 'case-pending');
+        pending.appendChild(el('p', '', `⏳ ${caseData.delayed.note}.`));
+        if (caseData.canPostpone) {
+            const btn = el('button', 'postpone-btn', 'Davayı ertele · rapor gelince yarın görülür');
+            btn.type = 'button';
+            pending.appendChild(btn);
+        }
+    }
+
     const interrogation = el('div', 'case-interrogation');
     if (caseData.asked) {
         interrogation.appendChild(el('p', 'interrogation-answer', `Sorgu: "${caseData.answer}"`));
@@ -252,7 +266,7 @@ export function showEvidence(caseData, questionsLeft) {
         interrogation.appendChild(btn);
     }
 
-    elements.evidenceContent.replaceChildren(header, summary, list, interrogation);
+    elements.evidenceContent.replaceChildren(...[header, summary, list, pending, interrogation].filter(Boolean));
     elements.evidenceDesk.classList.remove('hidden');
 }
 
@@ -368,6 +382,79 @@ export function setSoundIcon(on) {
     const btn = document.getElementById('sound-btn');
     btn.textContent = on ? '🔊' : '🔇';
     btn.setAttribute('aria-label', on ? 'Sesi kapat' : 'Sesi aç');
+}
+
+// Story moment with one or more choices. Resolves to the chosen value.
+export function showStory({ icon, title, text, choices }) {
+    const modal = document.getElementById('story-modal');
+    document.getElementById('story-icon').textContent = icon || '';
+    document.getElementById('story-title').textContent = title;
+    document.getElementById('story-text').textContent = text;
+    const box = document.getElementById('story-choices');
+
+    return new Promise(resolve => {
+        box.replaceChildren(...choices.map(c => {
+            const b = el('button', 'typewriter-btn', c.label);
+            b.type = 'button';
+            b.disabled = Boolean(c.disabled);
+            b.onclick = () => {
+                modal.classList.add('hidden');
+                resolve(c.value);
+            };
+            return b;
+        }));
+        modal.classList.remove('hidden');
+    });
+}
+
+// Evening at home: family status, bills and a scene. Resolves to the chosen index.
+export function showEvening({ day, family, harmony, bills, text, choices }) {
+    const modal = document.getElementById('evening-modal');
+    document.getElementById('evening-day').textContent = `${day}. Gün · Akşam`;
+    document.getElementById('evening-family').replaceChildren(...family.map(m => {
+        const li = el('li');
+        li.appendChild(el('span', 'member', `${m.name} `));
+        li.appendChild(el('span', 'role', `(${m.role})`));
+        li.appendChild(el('span', 'state', m.status));
+        return li;
+    }));
+    setHarmony(harmony);
+    document.getElementById('evening-bills').textContent = bills;
+    document.getElementById('evening-text').textContent = text;
+    const box = document.getElementById('evening-choices');
+
+    return new Promise(resolve => {
+        box.replaceChildren(...choices.map((c, i) => {
+            const b = el('button', 'typewriter-btn', c.label);
+            b.type = 'button';
+            b.disabled = Boolean(c.disabled);
+            b.onclick = () => resolve(i);
+            return b;
+        }));
+        modal.classList.remove('hidden');
+    });
+}
+
+function setHarmony(value) {
+    const bar = document.getElementById('evening-harmony-bar');
+    bar.style.width = `${value}%`;
+    bar.style.background = value < 30 ? '#8b2020' : value < 60 ? '#c9a227' : '#4a9c6d';
+}
+
+// After the evening choice: show what happened, then wait for the next morning
+export function showEveningResult(text, harmony) {
+    setHarmony(harmony);
+    document.getElementById('evening-text').textContent = text;
+    const box = document.getElementById('evening-choices');
+    return new Promise(resolve => {
+        const b = el('button', 'typewriter-btn', 'Sabah oldu');
+        b.type = 'button';
+        b.onclick = () => {
+            document.getElementById('evening-modal').classList.add('hidden');
+            resolve();
+        };
+        box.replaceChildren(b);
+    });
 }
 
 // Intro letter. Resolves when the player starts.

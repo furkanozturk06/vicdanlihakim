@@ -54,6 +54,7 @@ const CAREER_FIELDS = [
     'day', 'totalCases', 'money', 'reputation', 'conscience',
     'correctTotal', 'deathSentences', 'bribesTaken', 'bribesExposed', 'threatsObeyed',
     'pendingRevenge', 'offenders', 'finale',
+    'appeals', 'postponed', 'family', 'flags', 'selin',
 ];
 
 export function saveGame(state) {

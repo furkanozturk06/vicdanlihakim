@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Adalet ve Vicdan: Hakim Koltuğu</title>
     <meta name="description"
-        content="Papers, Please'den ilham alan bir mahkeme karar oyunu. Hakim olarak sanıkların kaderini belirleyin.">
+        content="Bir mahkeme karar oyunu. Hakim olarak kanunla vicdan arasında sanıkların kaderini belirleyin.">
     <link rel="stylesheet" href="/styles/main.css">
 </head>
 
@@ -175,6 +175,32 @@
                     </div>
                 </div>
                 <button id="next-day-btn" class="typewriter-btn">Sonraki Güne Geç</button>
+            </div>
+        </div>
+
+        <!-- Story moment with choices (notes, calls, appeals) -->
+        <div id="story-modal" class="modal hidden">
+            <div class="modal-content story-content">
+                <div id="story-icon" class="offer-icon"></div>
+                <h2 id="story-title"></h2>
+                <p id="story-text"></p>
+                <div id="story-choices" class="story-choices"></div>
+            </div>
+        </div>
+
+        <!-- Evening at home -->
+        <div id="evening-modal" class="modal hidden">
+            <div class="evening">
+                <p class="evening-kicker" id="evening-day"></p>
+                <h2>Ev</h2>
+                <ul class="evening-family" id="evening-family"></ul>
+                <div class="evening-harmony">
+                    <span>Aile huzuru</span>
+                    <div class="bar-container"><div class="bar-fill" id="evening-harmony-bar"></div></div>
+                </div>
+                <p class="evening-bills" id="evening-bills"></p>
+                <p class="evening-text" id="evening-text"></p>
+                <div class="story-choices" id="evening-choices"></div>
             </div>
         </div>
 

@@ -47,6 +47,9 @@ export function activeAmendments(day) {
 
 // Correct verdict for a statement on a given day (law + amendments)
 export function getCorrectVerdict(crimeType, statement, day) {
+    // Proven innocence overrides everything
+    if (statement.law === 'innocent') return 'release';
+
     const base = CRIMES[crimeType].laws[statement.law].verdict;
     if (base === 'death') return base;
 
@@ -133,6 +136,9 @@ export function buildCase(crimeType, statement, day, overrides = {}) {
         appearance: generateNPCAppearance(overrides.age ?? age),
         returning: false,
         asked: false,
+        // Multi-stage cases: a report is pending; postponing brings the case back with it
+        delayed: statement.delayed || null,
+        revealed: false,
         ...overrides,
     };
 }
@@ -204,22 +210,67 @@ export function getRandomDirective() {
     return pick(DIRECTIVES);
 }
 
-// Get emotion-based feedback messages (TURKISH)
-export function getEmotionFeedback(emotion, isCorrect) {
-    if (isCorrect) {
-        const reactions = {
-            'remorseful': 'Sanık kaderini kabullenip başını eğdi.',
-            'panicked': 'Sanığın yüzünde rahatlama belirdi.',
-            'defiant': 'Sanık homurdandı ama kararı kabul etti.',
-            'proud': 'Sanığın gururu bir anlığına sarsıldı.',
-        };
-        return reactions[emotion] || 'Sanık kararı kabul etti.';
+// What the verdict means for the defendant: freedom, a light penalty, prison or death
+function verdictWeight(verdict) {
+    if (verdict === 'release') return 'release';
+    if (verdict === 'death') return 'death';
+    if (verdict.startsWith('jail')) return 'heavy';
+    return 'light';
+}
+
+// The defendant reacts to what happened to them, not to whether the judge was right
+const DEFENDANT_REACTIONS = {
+    release: {
+        remorseful: 'Sanık gözyaşları içinde size teşekkür etti.',
+        panicked: 'Sanık rahatlamayla dizlerinin üstüne çöktü.',
+        defiant: 'Sanık sırıtarak salondan çıktı.',
+        proud: 'Sanık "Biliyordum" der gibi başını salladı ve kibirle çıktı.',
+    },
+    light: {
+        remorseful: 'Sanık başını eğip kararı kabul etti.',
+        panicked: 'Sanık derin bir nefes aldı; beklediğinden hafif çıkmıştı.',
+        defiant: 'Sanık homurdandı ama sesini çıkarmadı.',
+        proud: 'Sanık omuz silkti; bu cezayı umursamıyor gibiydi.',
+    },
+    heavy: {
+        remorseful: 'Sanık sessizce ağladı; görevliler kolundan tuttu.',
+        panicked: 'Sanık "Hayır, hayır!" diye haykırdı.',
+        defiant: 'Sanık öfkeyle masaya vurdu; görevliler zor tuttu.',
+        proud: 'Sanığın kibri bir anda söndü.',
+    },
+    death: {
+        remorseful: 'Sanık bembeyaz kesildi, tek kelime edemedi.',
+        panicked: 'Sanık bayıldı; görevliler kucaklayarak çıkardı.',
+        defiant: 'Sanık size lanetler yağdırarak götürüldü.',
+        proud: 'Sanık son kez size baktı, yüzünde hiçbir ifade yoktu.',
+    },
+};
+
+/**
+ * Feedback after a verdict: a title about the judge's decision, the defendant's reaction
+ * to their own fate, and the courtroom's reaction when the verdict strays from the law.
+ */
+export function verdictFeedback(caseData, result, verdict) {
+    let title = 'Adalet Yerini Buldu!';
+    if (result.partial) title = 'Kanuna Yakın';
+    else if (result.tooLenient) title = 'Fazla Hafif Karar';
+    else if (result.tooHarsh) title = 'Fazla Ağır Karar';
+
+    const parts = [DEFENDANT_REACTIONS[verdictWeight(verdict)][caseData.emotion]];
+
+    if (result.tooLenient) {
+        parts.push(caseData.sympathy
+            ? 'Salonda şaşkın mırıltılar yükseldi.'
+            : 'Mağdur yakınları öfkeyle salonu terk etti.');
+    } else if (result.tooHarsh) {
+        parts.push(caseData.sympathy
+            ? 'Sanığın ailesi feryat etti; avukat temyize gideceğini açıkladı.'
+            : 'Sanığın avukatı temyize gideceğini açıkladı.');
     }
-    const reactions = {
-        'remorseful': 'Sanığın gözlerinden yaşlar süzüldü...',
-        'panicked': 'Sanık umutsuzluk içinde yığıldı.',
-        'defiant': 'Sanık öfkeyle bağırdı!',
-        'proud': 'Sanığın gözleri öfkeyle parladı.',
-    };
-    return reactions[emotion] || 'Sanık karara tepki verdi.';
+
+    if (!result.correct || result.partial) {
+        parts.push(`Kanuna göre doğru karar: ${verdictLabel(caseData.correctVerdict)}.`);
+    }
+
+    return { title, message: parts.join(' ') };
 }

@@ -3,9 +3,13 @@
  * Core game loop, state management, and decision processing
  */
 
-import { generateCase, buildCase, createNPCElement, evaluateVerdict, getRandomDirective, getEmotionFeedback, verdictLabel, activeAmendments } from './npc.js';
+import { generateCase, buildCase, createNPCElement, evaluateVerdict, getRandomDirective, verdictFeedback, verdictLabel, activeAmendments } from './npc.js';
 import { CRIMES, GENERAL_NOTES, AMENDMENTS, VERDICT_LABELS, LADDER } from './cases.js';
-import { OFFERS, buildNewspaper, FINALE, FINAL_DIRECTIVE, INTRO, TUTORIAL, inspectorReport, journalistVisit } from './story.js';
+import {
+    OFFERS, buildNewspaper, FINALE, FINAL_DIRECTIVE, INTRO, TUTORIAL, inspectorReport,
+    SELIN_NOTE, SELIN_DIRECTIVE, SELIN_CASE, selinAftermath, kayaVisit, finaleRumor, appealText,
+} from './story.js';
+import { createFamily, familyStatus, eveningScene, familyEpilogue, HOUSEHOLD_COST } from './family.js';
 import { saveGame, loadGame, savedDay, clearSave, loadSettings, saveSettings } from './save.js';
 import * as ui from './ui.js';
 import { audio } from './audio.js';
@@ -24,6 +28,7 @@ const CONFIG = {
     exposeChance: 0.35,
     threatRevengeChance: 0.4,
     offenderReturnChance: 0.35,
+    appealChance: 0.5,
 };
 
 let state = createInitialState();
@@ -57,6 +62,12 @@ function createInitialState() {
         usedStatements: new Set(),
         finale: null,      // 'released' | 'correct' | 'wrong'
         endedEarly: false,
+        appeals: [],       // wrong verdicts that come back from the high court
+        appealsToday: [],
+        postponed: [],     // multi-stage cases waiting for their report
+        family: createFamily(),
+        flags: {},
+        selin: null,       // 'death' | 'release' | 'correct' | 'harsh'
 
         currentCase: null,
         currentDirective: null,
@@ -120,7 +131,7 @@ const ENDINGS = [
         description: 'Bakanın oğlu serbest kaldı, siz terfi ettiniz. Yeni odanız daha büyük ama öğretmenin ailesinin bakışları her gece rüyanıza giriyor.',
     },
     {
-        condition: (s) => s.finale === 'correct' && accuracy(s) >= 0.7 && s.reputation >= 60,
+        condition: (s) => s.finale === 'correct' && accuracy(s) >= 0.7 && s.reputation >= 60 && s.conscience >= 40,
         title: 'Dokunulmaz Hakim',
         description: 'Bakanın oğluna bile kanunu uyguladınız. Bakanlık sizi sürmek istedi ama halk adliyenin önünü doldurdu. Adınız artık bağımsız yargının simgesi.',
     },
@@ -219,14 +230,16 @@ function setupEventListeners() {
         restartGame();
     });
 
-    elements.nextDayBtn.addEventListener('click', () => {
+    elements.nextDayBtn.addEventListener('click', async () => {
         audio.playClick();
         ui.hideDailySummary();
         if (state.day > CONFIG.maxDays) {
             endGame();
-        } else {
-            startNewDay();
+            return;
         }
+        await runEvening(state.day - 1);
+        saveGame(state);
+        startNewDay();
     });
 
     elements.rulebookBtn.addEventListener('click', () => {
@@ -246,6 +259,7 @@ function setupEventListeners() {
     // Interrogation button lives inside the case file, which is re-rendered per case
     elements.evidenceContent.addEventListener('click', (e) => {
         if (e.target.closest('.interrogate-btn')) interrogate();
+        if (e.target.closest('.postpone-btn')) postponeCase();
     });
 
     document.querySelectorAll('.verdict-btn').forEach(btn => {
@@ -310,7 +324,10 @@ async function startNewDay() {
     state.eventShownToday = false;
     state.dayLog = [];
 
-    state.currentDirective = state.day === CONFIG.maxDays ? FINAL_DIRECTIVE : getRandomDirective();
+    state.appealsToday = [];
+    state.currentDirective = state.day === CONFIG.maxDays ? FINAL_DIRECTIVE
+        : state.day === 5 ? SELIN_DIRECTIVE
+            : getRandomDirective();
     ui.showDirective(state.currentDirective);
     refreshRulebook();
     ui.updateStats(state);
@@ -338,14 +355,8 @@ async function startNewDay() {
         await ui.showEvent('inspector', report.title, report.text);
         ui.updateStats(state);
     }
-    if (state.day === 6) {
-        const visit = journalistVisit(state.reputation);
-        if (visit) {
-            state.reputation = Math.max(0, Math.min(100, state.reputation + visit.reputation));
-            await ui.showEvent('media', visit.title, visit.text);
-            ui.updateStats(state);
-        }
-    }
+    await morningStory();
+    await deliverAppeals();
 
     await presentNextCase();
 }
@@ -371,10 +382,8 @@ async function presentNextCase() {
     }
 
     state.totalCases++;
-    const isFinale = state.day === CONFIG.maxDays && state.dayCases === CONFIG.casesPerDay - 1;
-    state.currentCase = isFinale
-        ? buildCase(FINALE.crimeType, FINALE.statement, state.day, { name: FINALE.name, age: FINALE.age, finale: true })
-        : generateCase(state.day, state.currentDirective, takeReturningOffender(), state.usedStatements);
+    state.currentCase = nextCase();
+    state.currentCase.canPostpone = Boolean(state.currentCase.delayed) && !state.currentCase.revealed && state.day < CONFIG.maxDays;
     ui.updateCaseNumber(state.totalCases);
 
     audio.playDoor();
@@ -411,8 +420,39 @@ async function presentNextCase() {
     ui.setSentencingEnabled(true);
 }
 
+// Which case walks in next: Selin's trial, a postponed case whose report arrived,
+// the finale, or a random one
+function nextCase() {
+    if (state.day === 5 && state.dayCases === 0 && !state.selin) {
+        return buildCase(SELIN_CASE.crimeType, SELIN_CASE.statement, state.day, { name: SELIN_CASE.name, age: SELIN_CASE.age, selinCase: true });
+    }
+    const dueIndex = state.postponed.findIndex(p => p.day < state.day);
+    if (dueIndex >= 0) {
+        const p = state.postponed.splice(dueIndex, 1)[0];
+        const statement = CRIMES[p.crimeType].statements[p.index];
+        return buildCase(p.crimeType, statement, state.day, { name: p.name, age: p.age, appearance: p.appearance, revealed: true });
+    }
+    if (state.day === CONFIG.maxDays && state.dayCases === CONFIG.casesPerDay - 1) {
+        return buildCase(FINALE.crimeType, FINALE.statement, state.day, { name: FINALE.name, age: FINALE.age, finale: true });
+    }
+    return generateCase(state.day, state.currentDirective, takeReturningOffender(), state.usedStatements);
+}
+
 // Decide whether this case comes with a bribe or a threat
 function pickOffer(c) {
+    if (c.selinCase) {
+        const o = SELIN_CASE.offer;
+        return {
+            type: 'selin',
+            forcedVerdict: 'death',
+            view: o,
+            onAccept: () => {
+                state.money += o.amount;
+                state.conscience = Math.max(0, state.conscience - 30);
+            },
+            onDecline: () => {},
+        };
+    }
     if (c.finale) {
         const o = FINALE.offer;
         return {
@@ -461,6 +501,7 @@ function pickOffer(c) {
         },
         onDecline: () => {
             state.pendingRevenge = true;
+            state.flags.threatIgnored = true;
         },
     };
 }
@@ -475,6 +516,30 @@ async function interrogate() {
     state.questionsLeft--;
     ui.showEvidence(c, state.questionsLeft);
     await ui.typeIntoBubble(c.answer);
+}
+
+// Send a multi-stage case back until its report arrives; it returns tomorrow
+async function postponeCase() {
+    const c = state.currentCase;
+    if (!c || !c.canPostpone || state.isProcessing) return;
+
+    state.isProcessing = true;
+    ui.setSentencingEnabled(false);
+    audio.playClick();
+
+    state.postponed.push({
+        day: state.day,
+        crimeType: c.crimeType,
+        index: CRIMES[c.crimeType].statements.indexOf(c.statementRef),
+        name: c.name,
+        age: c.age,
+        appearance: c.appearance,
+    });
+    state.dayCases++;
+    state.totalCases--; // it is counted again when it returns with the report
+
+    await ui.showFeedback(true, 'Dava Ertelendi', `${c.name} tutukevine geri gönderildi. Rapor gelince dosya yarın yeniden önünüze gelecek.`, '', 'Ertelendi');
+    await finishCase();
 }
 
 async function processVerdict(sentenceKey, viaOffer = null) {
@@ -536,6 +601,22 @@ async function processVerdict(sentenceKey, viaOffer = null) {
     if (c.finale) {
         state.finale = viaOffer === 'finale' ? 'released' : (result.correct ? 'correct' : 'wrong');
     }
+    if (c.selinCase) {
+        state.selin = sentenceKey === 'death' ? 'death'
+            : result.correct ? 'correct'
+                : result.diff < 0 ? 'release' : 'harsh';
+    }
+
+    // Some wrong verdicts are appealed and come back from the high court two days later
+    if (!result.correct && !viaOffer && !c.finale && !c.selinCase && Math.random() < CONFIG.appealChance) {
+        state.appeals.push({
+            day: state.day + 2,
+            detail: c.detail,
+            verdictLabel: verdictLabel(sentenceKey),
+            correctLabel: verdictLabel(c.correctVerdict),
+            tooHarsh: Boolean(result.tooHarsh),
+        });
+    }
 
     // Unsympathetic defendants let off lighter than the law demands may come back
     if (!c.sympathy && c.age >= 18 && result.diff < 0 && !c.returning && !c.finale) {
@@ -553,12 +634,12 @@ async function processVerdict(sentenceKey, viaOffer = null) {
         returning: c.returning,
     });
 
-    const title = result.correct ? (result.partial ? 'Kanuna Yakın' : 'Adalet Yerini Buldu!') : 'Vicdan Ağır...';
-    let message = getEmotionFeedback(c.emotion, result.correct);
-    if (viaOffer === 'bribe') message = 'Zarf cebinizde. Sanık gülümseyerek salondan çıktı.';
-    if (viaOffer === 'threat') message = 'Sesiniz titredi. Sanık arkasına bakmadan çıktı.';
-    if (viaOffer === 'finale') message = 'Bakanın oğlu sırıtarak salondan çıktı. Telefonunuz çalıyor: "Tebrikler, Hakim Bey."';
-    if (!result.correct || result.partial) message += ` Kanuna göre doğru karar: ${verdictLabel(c.correctVerdict)}.`;
+    let { title, message } = verdictFeedback(c, result, sentenceKey);
+    const lawNote = !result.correct || result.partial ? ` Kanuna göre doğru karar: ${verdictLabel(c.correctVerdict)}.` : '';
+    if (viaOffer === 'bribe') message = 'Zarf cebinizde. Sanık gülümseyerek salondan çıktı.' + lawNote;
+    if (viaOffer === 'threat') message = 'Sesiniz titredi. Sanık arkasına bakmadan çıktı.' + lawNote;
+    if (viaOffer === 'finale') message = 'Bakanın oğlu sırıtarak salondan çıktı. Telefonunuz çalıyor: "Tebrikler, Hakim Bey."' + lawNote;
+    if (viaOffer === 'selin') message = 'Selin Aydın size son kez baktı: "Demek siz de onlardansınız." Görevliler onu götürdü.' + lawNote;
 
     const statsHtml = `
         <div style="margin-top: 1rem;">
@@ -579,6 +660,11 @@ async function processVerdict(sentenceKey, viaOffer = null) {
         return;
     }
 
+    await finishCase();
+}
+
+// Clear the courtroom and call the next defendant
+async function finishCase() {
     ui.hideNPC();
     ui.hideSpeechBubble();
     ui.hideEvidence();
@@ -586,6 +672,77 @@ async function processVerdict(sentenceKey, viaOffer = null) {
 
     await new Promise(resolve => setTimeout(resolve, 500));
     await presentNextCase();
+}
+
+// Morning story beats with Selin Aydın and Müfettiş Kaya
+async function morningStory() {
+    const apply = (r) => {
+        state.reputation = Math.max(0, Math.min(100, state.reputation + (r.reputation || 0)));
+        state.conscience = Math.max(0, Math.min(100, state.conscience + (r.conscience || 0)));
+        ui.updateStats(state);
+    };
+    const ok = (beat) => ui.showStory({ icon: beat.icon, title: beat.title, text: beat.text, choices: [{ label: 'Devam', value: true }] });
+
+    if (state.day === 3) {
+        state.flags.selinNote = await ui.showStory(SELIN_NOTE);
+    }
+    if (state.day === 6 && state.selin) {
+        const beat = selinAftermath(state.selin);
+        await ok(beat);
+        apply(beat);
+    }
+    if (state.day === 7) {
+        const beat = kayaVisit(accuracy(state));
+        state.flags.kayaAlly = beat.ally;
+        await ok(beat);
+    }
+    if (state.day === 9) {
+        const beat = finaleRumor(state.selin);
+        await ok(beat);
+        apply(beat);
+    }
+}
+
+// High court decisions on earlier verdicts
+async function deliverAppeals() {
+    const due = state.appeals.filter(a => a.day <= state.day);
+    state.appeals = state.appeals.filter(a => a.day > state.day);
+    for (const a of due) {
+        state.reputation = Math.max(0, state.reputation - 4);
+        if (a.tooHarsh) state.conscience = Math.max(0, state.conscience - 3);
+        state.appealsToday.push(a);
+        await ui.showStory({ icon: '⚖️', title: 'Yargıtay Kararı', text: appealText(a) + ' İtibar -4.', choices: [{ label: 'Anlaşıldı', value: true }] });
+        ui.updateStats(state);
+    }
+}
+
+// Evening at home after `day`: pay the bills, then one family scene
+async function runEvening(day) {
+    let bills;
+    if (state.money >= HOUSEHOLD_COST) {
+        state.money -= HOUSEHOLD_COST;
+        bills = `Kira, faturalar ve mutfak: -₺${HOUSEHOLD_COST}`;
+    } else {
+        state.family.harmony = Math.max(0, state.family.harmony - 10);
+        bills = 'Bu akşam kira ve faturalar ödenemedi. Aile huzuru -10.';
+    }
+    ui.updateStats(state);
+
+    const scene = eveningScene(state, day);
+    const pick = await ui.showEvening({
+        day,
+        family: familyStatus(state.family),
+        harmony: state.family.harmony,
+        bills,
+        text: scene.text,
+        choices: scene.choices.map(c => ({
+            label: c.label,
+            disabled: c.cost > state.money,
+        })),
+    });
+    const result = scene.choices[pick].apply(state);
+    ui.updateStats(state);
+    await ui.showEveningResult(result, state.family.harmony);
 }
 
 // At most one random event per day so they stay meaningful
@@ -620,10 +777,10 @@ function endDay() {
         casesJudged: state.dayCases,
         correctVerdicts: state.dayCorrect,
         earnings: state.dayEarnings,
-    }, buildNewspaper(state.dayLog));
+    }, buildNewspaper(state.dayLog, state.appealsToday));
 
+    // Saved after the evening scene, when the next day is about to start
     state.day++;
-    if (state.day <= CONFIG.maxDays) saveGame(state);
 }
 
 function endGame() {
@@ -643,7 +800,15 @@ function endGame() {
         <p>Son Vicdan: %${state.conscience}</p>
     `;
 
-    ui.showGameOver({ title: ending.title, description: ending.description, stats: statsHtml });
+    const selinLine = {
+        death: "Selin Aydın'ın adı yıllar sonra bir sokağa verildi. Sizin adınız ise hiçbir yere.",
+        correct: 'Selin Aydın cezasını tamamlayıp çıktığında ilk röportajını size ayırdı.',
+        release: 'Selin Aydın hâlâ yazıyor; köşesinde ara sıra sizden söz ediyor.',
+        harsh: "Selin Aydın'ın davası Yargıtay'da bozuldu. Kararınız hukuk fakültelerinde \"baskı altında yargı\" örneği olarak okutuluyor.",
+    }[state.selin];
+    const epilogue = [familyEpilogue(state), selinLine].filter(Boolean).map(t => `<p class="ending-epilogue">${t}</p>`).join('');
+
+    ui.showGameOver({ title: ending.title, description: ending.description, stats: epilogue + statsHtml });
 }
 
 export function getState() {

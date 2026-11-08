@@ -48,6 +48,8 @@ export const VERDICT_LABELS = {
 export const GENERAL_NOTES = [
     'Önce özel hallere bakın; hiçbiri uymuyorsa olağan ceza uygulanır.',
     'Meşru müdafaa ispatlanmışsa diğer bütün hallerden önce gelir.',
+    'Sanığın suçu işlemediği kanıtlanırsa, suç ne olursa olsun beraat verilir.',
+    'Dosyada bekleyen bir rapor varsa davayı erteleyebilirsiniz; dosya yarın yeni delille gelir.',
 ];
 
 // Amendments come into force on the given day. They shift the verdict one step
@@ -138,7 +140,7 @@ export const CRIMES = {
         laws: {
             base: { verdict: 'house-arrest', text: 'hafif yaralanma, sabıka yok' },
             serious: { verdict: 'jail-short', text: 'Dikiş veya kırık gerektiren yaralanma ya da önceki darp kaydı' },
-            defense: { verdict: 'release', text: 'Bir yakınını korurken, tanıklarla doğrulanmışsa (meşru müdafaa)' },
+            defense: { verdict: 'release', text: 'Kendini veya bir yakınını korurken, tanıklarla doğrulanmışsa (meşru müdafaa)' },
         },
         notes: ['Alkollü olmak cezayı hafifletmez.'],
         statements: [
@@ -238,6 +240,17 @@ export const CRIMES = {
                 summary: 'Serbest muhasebeci olarak bazı müşterilerine aynı hizmet için iki kez fatura kesti.',
                 evidence: ['Fazladan alınan para: ₺42.000.', 'Sabıkası yok; müşterilerine geri ödeme planı sundu.'],
                 question: 'Müşterilerin ne diyor?', answer: 'Çoğu ödeme planını kabul etti. Hepsine tek tek özür diledim.',
+            },
+            {
+                text: 'Birkaç üyenin parasını batırdım, hepsini öderim.', emotion: 'remorseful', sympathy: false, law: 'massive',
+                detail: 'Kooperatif',
+                summary: 'Konut kooperatifi başkanıyken 8 üyenin aidatını kendi hesabına aktardı. Sabıkası yok, geri ödeme teklif ediyor.',
+                evidence: ['8 üyenin zararı: ₺400.000; bir yıllık geri ödeme planı sundu.', 'Kooperatifin defterleri son iki yıldır tutulmamış.'],
+                question: 'Başka mağdur var mı?', answer: 'Hayır, sadece o sekiz kişi. Yemin ederim.',
+                delayed: {
+                    note: 'Mali müfettiş raporu bekleniyor',
+                    evidence: 'Rapor: kooperatifin 300 üyesinin ₺12.000.000 birikimi yurt dışına aktarılmış; ödeme planı zaman kazanmak için sunulmuş.',
+                },
             },
         ],
     },
@@ -358,7 +371,7 @@ export const CRIMES = {
             hired: { verdict: 'death', text: 'Para karşılığı öldürme veya birden fazla cinayet' },
             negligent: { verdict: 'jail-medium', text: 'Dikkatsizlik veya kaza sonucu öldürme (taksir)' },
             insanity: { verdict: 'house-arrest', text: 'Akıl hastalığı adli tıp raporuyla doğrulanmışsa (tedavi altında)' },
-            defense: { verdict: 'release', text: 'Bir yakınını korurken, kanıtlarla doğrulanmışsa (meşru müdafaa)' },
+            defense: { verdict: 'release', text: 'Kendini veya bir yakınını korurken, kanıtlarla doğrulanmışsa (meşru müdafaa)' },
         },
         statements: [
             {
@@ -409,6 +422,17 @@ export const CRIMES = {
                 summary: 'İki yıl boyunca arabasına aldığı üç otostopçuyu öldürüp ormana gömdü.',
                 evidence: ['Üç cesedin yerini kendisi gösterdi.', 'Arabasında üç kurbanın da eşyaları bulundu.'],
                 question: 'Başka kurban var mı?', answer: 'Bulduklarınızla yetinin, Hakim Bey.',
+            },
+            {
+                text: 'Ne olduğunu hatırlamıyorum... Bir an her şey karardı.', emotion: 'panicked', sympathy: true, law: 'defense',
+                detail: 'Gece yarısı',
+                summary: 'Evinde bir adamı mutfak bıçağıyla öldürdü. Polis geldiğinde maktulün yanında oturuyordu.',
+                evidence: ['Maktul sanığın eski iş ortağı; aralarında borç kavgası vardı.', 'Komşular gece yüksek sesle bağrışma duymuş.'],
+                question: 'Adam evine neden geldi?', answer: 'Borcunu istemeye... Sonra elinde bir şey gördüm.',
+                delayed: {
+                    note: 'Balistik ve olay yeri raporu bekleniyor',
+                    evidence: 'Rapor: maktulün elindeki tabancadan iki el ateş edilmiş; sanık kendini korurken bıçağı kullanmış.',
+                },
             },
         ],
     },
@@ -464,6 +488,17 @@ export const CRIMES = {
                 summary: 'Hastane başhekimiyken tıbbi cihazları ihalesiz, akrabasının firmasından aldı.',
                 evidence: ['İhale kanununa aykırı alım: ₺1.200.000.', 'Cihazlar piyasadan ucuz ve sorunsuz çalışıyor; bekleme süreleri yarıya indi.'],
                 question: 'Cihazlar düzgün çalışıyor mu?', answer: 'Hepsi! Ameliyat sırası 6 aydan 3 aya indi.',
+            },
+            {
+                text: 'Beni tehdit ettiler! Aileme zarar vereceklerdi!', emotion: 'panicked', sympathy: false, law: 'bribery',
+                detail: 'Liman gümrüğü',
+                summary: 'Liman gümrüğünde memurken bir şirketin konteynerlerini kontrol etmeden geçirdi. Tehdit edildiğini söylüyor.',
+                evidence: ['Telefonunda tehdit içerikli iki mesaj var.', 'Geçirdiği konteynerlerden kaçak mal çıktı.'],
+                question: 'Tehditleri neden bildirmedin?', answer: 'Korktum... Kimseye güvenemezdim.',
+                delayed: {
+                    note: 'Banka hesapları incelemesi bekleniyor',
+                    evidence: 'İnceleme: annesi adına açılmış hesaba şirketten ₺2.500.000 yatırılmış; "tehdit" mesajları kendi ikinci telefonundan gönderilmiş.',
+                },
             },
         ],
     },
@@ -625,6 +660,17 @@ export const CRIMES = {
                 evidence: ['Bir yolcu öldü, 12 yolcu yaralandı.', 'Şirket şoförleri günde 18 saat çalıştırıyor; kayıtlar bunu doğruluyor.'],
                 question: 'Şirket seni dinlendiriyor muydu?', answer: 'Hayır. "Ya sür ya git" diyorlardı. Ailem bu maaşa muhtaç.',
             },
+            {
+                text: 'Kaza oldu, durdum, ambulansı ben aradım!', emotion: 'panicked', sympathy: false, law: 'flee',
+                detail: 'Gece kazası',
+                summary: 'Gece bir yayaya çarptı; yaya hastanede hayatını kaybetti. Sanık ambulansı kendisinin aradığını söylüyor.',
+                evidence: ['Yaya hastanede hayatını kaybetti.', 'Alkol testi temiz çıktı.'],
+                question: 'Ambulansı ne zaman aradın?', answer: 'Hemen! Başında bekledim.',
+                delayed: {
+                    note: 'Telefon ve kamera kayıtları bekleniyor',
+                    evidence: 'Kayıtlar: ambulansı yoldan geçen biri aramış; sanık olay yerinden kaçmış ve 3 saat sonra karakola gelmiş.',
+                },
+            },
         ],
     },
 
@@ -672,6 +718,17 @@ export const CRIMES = {
                 summary: 'Gece arkadaşlarıyla okulun çöp konteynerini yaktı. Ateş spor salonuna sıçradı ve salon kullanılamaz hale geldi.',
                 evidence: ['Spor salonunda ₺800.000 hasar var.', 'Yangını bilerek başlattıklarını telefon videosu gösteriyor; okulda kimse yoktu.'],
                 question: 'Neden ateş yaktınız?', answer: 'Sıkılmıştık... Videosunu çekip paylaşacaktık. Çok aptalca.',
+            },
+            {
+                text: 'Mangal devrildi, ben ne yapabilirdim?', emotion: 'panicked', sympathy: false, law: 'occupied',
+                detail: 'Apartman yangını',
+                summary: 'Balkonundaki mangaldan çıktığı söylenen yangın alt kattaki daireye sıçradı. Alttaki yaşlı komşusu dumandan zehirlendi.',
+                evidence: ['İtfaiye ilk raporunda yangının mangal çevresinde başladığını yazdı.', 'Alt kattaki komşusuyla aylardır otopark kavgası yaşıyordu.'],
+                question: 'Komşunla aran nasıldı?', answer: 'Kötüydü... Ama bunun yangınla ne ilgisi var?',
+                delayed: {
+                    note: 'Kimyasal analiz sonucu bekleniyor',
+                    evidence: 'Analiz: alt kattaki kapının önüne tiner dökülmüş; yangın bilerek başlatılmış ve içeride insan vardı.',
+                },
             },
         ],
     },
@@ -869,6 +926,17 @@ export const CRIMES = {
                 evidence: ['Çocuk iki gün sonra sağlıklı bulundu.', 'Mahkeme kararına rağmen eski eşi altı aydır görüşmeye izin vermiyormuş.'],
                 question: 'Çocuk ne diyor?', answer: 'Babasını özlediğini söylüyor. Ben de onu...',
             },
+            {
+                text: 'Ona kötü bir şey yapmadım, sadece götürdüm!', emotion: 'defiant', sympathy: true, law: 'parental',
+                detail: 'Kayıp çocuk',
+                summary: '6 yaşındaki bir çocuğu okul çıkışında arabasına bindirip götürdü. Çocuk iki gün sonra başka bir şehirde bulundu.',
+                evidence: ['Çocuğun annesi kaçırıldığını ihbar etti; çocuk sağlıklı bulundu.', 'Sanık fidye istememiş.'],
+                question: 'Çocukla ne ilişkin var?', answer: 'Söylesem kimse inanmaz zaten...',
+                delayed: {
+                    note: 'DNA ve nüfus kaydı incelemesi bekleniyor',
+                    evidence: 'İnceleme: sanık çocuğun biyolojik babası; velayet annede ve babaya görüş izni verilmiyormuş.',
+                },
+            },
         ],
     },
 
@@ -941,6 +1009,17 @@ export const CRIMES = {
                 summary: 'Gece sokakta bir yayayı bıçakla tehdit edip telefonunu ve cüzdanını aldı.',
                 evidence: ['Yakalandığında kandaki alkol: 1,6 promil.', 'Mağdur yaralanmadı; eşyalar geri alındı.'],
                 question: 'O gece ne kadar içmiştin?', answer: 'Bir şişe rakı. Ayılınca ne yaptığımı anladım.',
+            },
+            {
+                text: 'Ben yapmadım! O saatte işteydim!', emotion: 'panicked', sympathy: true, law: 'innocent',
+                detail: 'Kuyumcu soygunu',
+                summary: 'Silahlı bir kuyumcu soygununun faili olarak dükkan çalışanı tarafından teşhis edildi.',
+                evidence: ['Kuyumcu çalışanı sanığı fotoğraftan teşhis etti.', 'Sanığın sabıkası yok; evinde silah veya altın bulunmadı.'],
+                question: 'Soygun saatinde neredeydin?', answer: 'Fırında gece vardiyasındaydım! Patronuma sorun!',
+                delayed: {
+                    note: 'Kamera kayıtlarının incelenmesi bekleniyor',
+                    evidence: 'Kamera kaydı: sanık soygun saatinde fırında çalışıyor; fail ona benzeyen başka biri.',
+                },
             },
         ],
     },
@@ -1049,12 +1128,12 @@ export const CRIMES = {
         severity: 2,
         laws: {
             base: { verdict: 'house-arrest', text: 'mahkemede bilerek yalan söyleme' },
-            innocent: { verdict: 'jail-medium', text: 'Masum birinin mahkum olmasına yol açmışsa' },
+            framedInnocent: { verdict: 'jail-medium', text: 'Masum birinin mahkum olmasına yol açmışsa' },
             corrected: { verdict: 'fine-moderate', text: 'Bir yakınını korumak için yapıp sonradan kendisi düzeltmişse' },
         },
         statements: [
             {
-                text: 'Para verdiler, ben de söylediklerini söyledim.', emotion: 'defiant', sympathy: false, law: 'innocent',
+                text: 'Para verdiler, ben de söylediklerini söyledim.', emotion: 'defiant', sympathy: false, law: 'framedInnocent',
                 detail: 'Para karşılığı tanıklık',
                 summary: 'Para karşılığı verdiği yalan ifadeyle masum bir adam 3 yıl hapis yattı.',
                 evidence: ['Gerçek fail sonradan itiraf etti.', 'Sanığın hesabına duruşmadan önce ₺50.000 yatırılmış.'],
@@ -1205,6 +1284,17 @@ export const CRIMES = {
                 summary: '36 saatlik nöbetin sonunda bir hastaya yanlış dozda ilaç yazdı. Hemşire fark edip düzeltti.',
                 evidence: ['Hasta kısa süreli yoğun bakıma alındı, tamamen iyileşti.', 'Hastane kayıtları doktorların 36 saat nöbet tuttuğunu gösteriyor.'],
                 question: 'Kaç saattir uyumamıştın?', answer: 'İki gün. Kadro yok, nöbetçi yok. Ama hata benim.',
+            },
+            {
+                text: 'Elimden geleni yaptım. Hasta zaten çok ağırdı.', emotion: 'remorseful', sympathy: true, law: 'innocent',
+                detail: 'Acil servis',
+                summary: 'Acil serviste baktığı hasta ameliyattan sonra hayatını kaybetti. Aile ihmal suçlaması yaptı.',
+                evidence: ['Hasta ameliyattan iki saat sonra öldü.', 'Aile, doktorun geç müdahale ettiğini söylüyor.'],
+                question: 'Neden geç müdahale ettin?', answer: 'Etmedim. Hasta geldiği an ameliyathaneye aldım.',
+                delayed: {
+                    note: 'Adli tıp otopsi raporu bekleniyor',
+                    evidence: 'Otopsi: ölüm ameliyattan bağımsız, önceden var olan bir damar balonundan; müdahale zamanında ve doğru.',
+                },
             },
         ],
     },

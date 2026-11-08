@@ -134,14 +134,87 @@ export function inspectorReport(accuracy) {
     return { title: "Müfettiş Kaya'nın Raporu", text: `Kararlarınızın yalnızca %${pct}'i kanuna uygun. "Bu gidişle koltuğunuz tehlikede." İtibar -10.`, money: 0, reputation: -10 };
 }
 
-export function journalistVisit(reputation) {
-    if (reputation >= 75) {
-        return { title: 'Selin Aydın ile Röportaj', text: 'Gazeteci Selin Aydın sizi manşete taşıdı: "Şehrin en adil hakimi." İtibar +5.', reputation: 5 };
+// ---------- Selin Aydın (journalist) and Müfettiş Kaya (inspector) ----------
+
+// Day 3 morning: Selin leaves a note
+export const SELIN_NOTE = {
+    icon: '✉️',
+    title: "Gazeteci Selin Aydın'dan Not",
+    text: 'Masanıza bırakılmış bir zarf: "Bakanlığın silah ihalesindeki rüşveti araştırıyorum. Belgeleri yayımlarsam beni susturmaya çalışacaklar. Bir gün dosyam önünüze gelebilir. Kanuna sadık kalacağınıza inanıyorum. — S.A."',
+    choices: [
+        { label: 'Notu sakla', value: 'keep' },
+        { label: 'Notu yak', value: 'burn' },
+    ],
+};
+
+// Day 5: Selin on trial; the ministry wants her dead
+export const SELIN_DIRECTIVE = {
+    text: 'Bakanlık: Bugünkü "vatana ihanet" davasında en ağır ceza bekleniyor.',
+    crimeFilter: null,
+    bonus: null,
+    bonusAmount: 1,
+};
+
+export const SELIN_CASE = {
+    crimeType: 'treason',
+    name: 'Selin Aydın',
+    age: 34,
+    statement: {
+        text: 'Halk, vergilerinin rüşvete gittiğini bilmeliydi. Pişman değilim.', emotion: 'defiant', sympathy: true, law: 'whistleblower',
+        detail: 'Gazeteci Selin Aydın',
+        summary: 'Bakanlığın silah ihalesindeki rüşvet yazışmalarını gazetesinde yayımladı. Savcılık "vatana ihanet" diyor.',
+        evidence: [
+            'Belgeler yalnızca gazetede yayımlanmış; yabancı bir devlete verildiğine dair hiçbir kanıt yok.',
+            'Yayından sonra iki bakan yardımcısı rüşvetten tutuklandı.',
+        ],
+        question: 'Belgeleri kime verdin?', answer: 'Sadece okurlarıma. Bir de size Hakim Bey: gerçeği.',
+    },
+    offer: {
+        icon: '📞',
+        title: 'Bakanlıktan bir telefon',
+        text: 'Müsteşar arıyor: "Bu kadın devletin sırlarını sattı. İdam kararı verin. ₺1500 ikramiye ve terfi sizi bekliyor."',
+        accept: 'İdam ver',
+        decline: 'Kanunu uygula',
+        amount: 1500,
+    },
+};
+
+// Day 6 morning: what became of Selin
+export function selinAftermath(selin) {
+    if (selin === 'death') {
+        return { icon: '🕯️', title: 'Sessiz Bir Sabah', text: "Gazete Selin Aydın'ın idamını küçük bir köşede verdi. Ertesi gün iki muhabir daha istifa etti. Şehirde kimse yüksek sesle konuşmuyor.", reputation: -10, conscience: -10 };
     }
-    if (reputation <= 40) {
-        return { title: "Selin Aydın'ın Dosyası", text: 'Gazeteci Selin Aydın mahkemenizi araştırıyor: "Ağır Ceza\'da neler oluyor?" İtibar -5.', reputation: -5 };
+    if (selin === 'release') {
+        return { icon: '📰', title: 'Selin Aydın Serbest', text: 'Manşet: "Basın özgürlüğü kazandı." Bakanlık ise kararınızı "skandal" olarak nitelendirdi.', reputation: 5, conscience: 0 };
     }
-    return null;
+    if (selin === 'correct') {
+        return { icon: '📰', title: 'Cezaevinden Bir Mektup', text: 'Selin Aydın cezaevinden yazdı: "Hakim bana kanunun öngördüğü cezayı verdi; bakanlığa boyun eğmedi. Bu ülkede hâlâ hakimler var."', reputation: 8, conscience: 3 };
+    }
+    return { icon: '⚖️', title: 'Temyiz Başvurusu', text: "Selin Aydın'ın avukatları \"ağır ceza\" kararına karşı temyize gitti. Basın sizi bakanlığın sözcüsü olarak anıyor.", reputation: -8, conscience: -5 };
+}
+
+// Day 7 morning: Kaya, depending on how lawful you have been
+export function kayaVisit(accuracy) {
+    if (accuracy >= 0.7) {
+        return { ally: true, icon: '🕵️', title: "Müfettiş Kaya'nın Uyarısı", text: 'Kaya odanızın kapısını kapattı: "Son gün size bakanın oğlunun dosyası gelecek. Sarhoş araba kullanıp bir öğretmeni öldürdü. Bakanlık sizi deneyecek. Bilin ki ben kanunun yanındayım."' };
+    }
+    return { ally: false, icon: '🕵️', title: "Müfettiş Kaya'nın Tavsiyesi", text: 'Kaya gülümsedi ama gözleri soğuktu: "Bakanlıkla iyi geçinin Hakim Bey. Son gün önemli bir dosya gelecek. Herkes için en iyisini yaparsınız, değil mi?"' };
+}
+
+// Day 9 morning: the press before the finale
+export function finaleRumor(selin) {
+    if (selin === 'correct' || selin === 'release') {
+        return { icon: '📰', title: "Selin Aydın'ın Yeni Haberi", text: 'Selin Aydın, bakanın oğlunun karıştığı ölümlü kazanın örtbas edilmeye çalışıldığını yazdı. Bütün şehir yarınki davayı bekliyor.', reputation: 5 };
+    }
+    return { icon: '🤐', title: 'Gazeteler Susuyor', text: 'Bakanın oğlunun karıştığı kazadan hiçbir gazete söz etmiyor. Yarınki dava sessiz sedasız görülecek.', reputation: 0 };
+}
+
+// ---------- Appeals ----------
+export function appealText(a) {
+    const fix = a.tooHarsh
+        ? 'Sanık tahliye edildi; haksız yere yattığı günler için devlet tazminat ödeyecek.'
+        : 'Dava yeniden görülecek; sanık şimdilik serbest.';
+    return `"${a.detail}" davasında verdiğiniz "${a.verdictLabel}" kararı bozuldu. Kanuna göre doğrusu: ${a.correctLabel}. ${fix}`;
 }
 
 const FIRST_NAMES = [
@@ -193,8 +266,12 @@ const FILLER_NEWS = [
  * Build the end-of-day newspaper from the day's verdict log.
  * Each log entry: { crime, detail, name, verdict, correct, diff, sympathy, offer, exposed, returning }
  */
-export function buildNewspaper(dayLog) {
+export function buildNewspaper(dayLog, appeals = []) {
     const items = [];
+
+    for (const a of appeals) {
+        items.push({ p: 75, text: `Yargıtay bozdu: "${a.detail}" davasındaki karar kanuna aykırı bulundu` });
+    }
 
     for (const e of dayLog) {
         if (e.exposed) {
