@@ -2613,3 +2613,28 @@ body {
     color: var(--paper-aged);
     margin-bottom: var(--spacing-sm);
 }
+
+/* Info overlays close on tap */
+#event-overlay {
+    cursor: pointer;
+}
+
+.tap-hint {
+    margin-top: var(--spacing-lg);
+    font-family: var(--font-typewriter);
+    font-size: 0.75rem;
+    color: var(--gold-dim);
+    animation: tap-blink 1.6s ease-in-out infinite;
+}
+
+@keyframes tap-blink {
+
+    0%,
+    100% {
+        opacity: 0.4;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}

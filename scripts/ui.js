@@ -559,13 +559,20 @@ export function showEvent(type, title, description) {
     elements.eventDescription.textContent = description;
     elements.eventOverlay.classList.remove('hidden');
 
-    // Longer texts (e.g. law amendments) stay up longer
+    // Longer texts (e.g. law amendments) stay up longer; a tap anywhere closes it right away
     const duration = Math.max(3000, (title.length + description.length) * 55);
     return new Promise(resolve => {
-        setTimeout(() => {
+        let done = false;
+        const close = () => {
+            if (done) return;
+            done = true;
+            clearTimeout(timer);
+            elements.eventOverlay.onclick = null;
             elements.eventOverlay.classList.add('hidden');
             resolve();
-        }, duration);
+        };
+        const timer = setTimeout(close, duration);
+        elements.eventOverlay.onclick = close;
     });
 }
 
