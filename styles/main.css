@@ -1732,7 +1732,6 @@ body {
     color: var(--ink-black);
     border-radius: 2px;
     box-shadow: var(--shadow-soft);
-    transform: rotate(-1deg);
     animation: paper-in 0.5s ease;
 }
 
@@ -1744,7 +1743,7 @@ body {
 
     to {
         opacity: 1;
-        transform: rotate(-1deg) scale(1);
+        transform: none;
     }
 }
 
@@ -1908,7 +1907,8 @@ body {
     max-width: 560px;
     margin: 0 auto;
     padding: var(--spacing-sm) var(--spacing-md);
-    transform: rotate(-0.4deg);
+    /* No tilt: rotated text gets blurry on phone screens */
+    transform: none;
     overflow-y: auto;
     overscroll-behavior: contain;
 }
