@@ -27,7 +27,7 @@ class AudioManager {
     }
 
     // Generate a simple tone
-    playTone(frequency, duration, type = 'sine') {
+    playTone(frequency, duration, type = 'sine', level = 0.3) {
         if (!this.enabled || !this.audioContext) return;
 
         const oscillator = this.audioContext.createOscillator();
@@ -39,7 +39,7 @@ class AudioManager {
         oscillator.frequency.value = frequency;
         oscillator.type = type;
 
-        gainNode.gain.setValueAtTime(this.volume * 0.3, this.audioContext.currentTime);
+        gainNode.gain.setValueAtTime(this.volume * level, this.audioContext.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + duration);
 
         oscillator.start(this.audioContext.currentTime);
@@ -154,7 +154,7 @@ class AudioManager {
 
     // Button click
     playClick() {
-        this.playTone(800, 0.05, 'square');
+        this.playTone(800, 0.05, 'square', 0.12);
     }
 
     // Ambient courtroom (low drone)
