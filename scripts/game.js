@@ -5,7 +5,8 @@
 
 import { generateCase, buildCase, createNPCElement, evaluateVerdict, getRandomDirective, getEmotionFeedback, verdictLabel, activeAmendments } from './npc.js';
 import { CRIMES, GENERAL_NOTES, AMENDMENTS, VERDICT_LABELS, LADDER } from './cases.js';
-import { OFFERS, buildNewspaper, FINALE, FINAL_DIRECTIVE, INTRO, inspectorReport, journalistVisit } from './story.js';
+import { OFFERS, buildNewspaper, FINALE, FINAL_DIRECTIVE, INTRO, TUTORIAL, inspectorReport, journalistVisit } from './story.js';
+import { saveGame, loadGame, savedDay, clearSave, loadSettings, saveSettings } from './save.js';
 import * as ui from './ui.js';
 import { audio } from './audio.js';
 
@@ -26,6 +27,7 @@ const CONFIG = {
 };
 
 let state = createInitialState();
+let settings = loadSettings();
 
 function createInitialState() {
     return {
@@ -159,8 +161,11 @@ export function initGame() {
     state = createInitialState();
     ui.initUI();
     audio.init();
+    audio.setEnabled(settings.sound);
+    ui.setSoundIcon(settings.sound);
     setupEventListeners();
     ui.showStartScreen();
+    ui.setContinueOption(savedDay());
 }
 
 function setupEventListeners() {
@@ -170,6 +175,22 @@ function setupEventListeners() {
         audio.resume();
         audio.playClick();
         startGame();
+    });
+
+    document.getElementById('continue-btn').addEventListener('click', () => {
+        audio.resume();
+        audio.playClick();
+        continueGame();
+    });
+
+    document.getElementById('sound-btn').addEventListener('click', () => {
+        settings.sound = !settings.sound;
+        saveSettings(settings);
+        audio.resume();
+        audio.setEnabled(settings.sound);
+        ui.setSoundIcon(settings.sound);
+        // Ambient drone only while a game is actually running
+        if (settings.sound && state.currentDirective && !state.gameOver) audio.startAmbient();
     });
 
     elements.restartBtn.addEventListener('click', () => {
@@ -217,13 +238,30 @@ function setupEventListeners() {
 }
 
 async function startGame() {
+    clearSave();
+    state = createInitialState();
     ui.hideStartScreen();
     audio.startAmbient();
     await ui.showIntro(INTRO);
     startNewDay();
 }
 
+// Pick up at the start of the day after the last completed one
+function continueGame() {
+    const loaded = loadGame(createInitialState());
+    if (!loaded) {
+        startGame();
+        return;
+    }
+    state = loaded;
+    ui.hideStartScreen();
+    audio.startAmbient();
+    ui.updateStats(state);
+    startNewDay();
+}
+
 async function restartGame() {
+    clearSave();
     state = createInitialState();
     document.getElementById('game-over-screen').classList.add('hidden');
     audio.startAmbient();
@@ -325,6 +363,12 @@ async function presentNextCase() {
 
     ui.showEvidence(state.currentCase, state.questionsLeft);
     await ui.showSpeechBubble(state.currentCase.statement, state.currentCase.crime);
+
+    if (!settings.tutorialDone) {
+        await ui.runTutorial(TUTORIAL);
+        settings.tutorialDone = true;
+        saveSettings(settings);
+    }
 
     const offer = pickOffer(state.currentCase);
     if (offer) {
@@ -557,10 +601,12 @@ function endDay() {
     }, buildNewspaper(state.dayLog));
 
     state.day++;
+    if (state.day <= CONFIG.maxDays) saveGame(state);
 }
 
 function endGame() {
     state.gameOver = true;
+    clearSave();
     audio.stopAmbient();
 
     const ending = ENDINGS.find(e => e.condition(state));

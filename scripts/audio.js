@@ -125,7 +125,7 @@ class AudioManager {
 
     // Ambient courtroom (low drone)
     startAmbient() {
-        if (!this.enabled || !this.audioContext) return;
+        if (!this.enabled || !this.audioContext || this.ambientOscillator) return;
 
         // Very subtle ambient drone
         const oscillator = this.audioContext.createOscillator();
@@ -156,6 +156,12 @@ class AudioManager {
         if (this.ambientGain) {
             this.ambientGain.gain.value = this.volume * 0.02;
         }
+    }
+
+    // Turn all sound on or off (the setting the player chose)
+    setEnabled(on) {
+        this.enabled = Boolean(on) && Boolean(this.audioContext);
+        if (!this.enabled) this.stopAmbient();
     }
 
     toggle() {

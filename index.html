@@ -34,6 +34,7 @@
                     <div class="bar-fill conscience" id="conscience-bar"></div>
                 </div>
             </div>
+            <button id="sound-btn" type="button" aria-label="Sesi kapat">🔊</button>
         </header>
 
         <!-- Main Courtroom Scene -->
@@ -224,7 +225,23 @@
                 <h1 class="game-title">Adalet ve Vicdan</h1>
                 <h2 class="game-subtitle">Hakim Koltuğu</h2>
                 <p class="game-tagline">Her karar bir yük taşır. Her ruh senin hükmünü bekler.</p>
-                <button id="start-btn" class="typewriter-btn">Koltuğa Otur</button>
+                <div class="start-buttons">
+                    <button id="continue-btn" class="typewriter-btn hidden"></button>
+                    <button id="start-btn" class="typewriter-btn">Koltuğa Otur</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tutorial card (first game only) -->
+        <div id="tutorial" class="hidden">
+            <div class="tutorial-card">
+                <p class="tutorial-step" id="tutorial-step"></p>
+                <h3 id="tutorial-title"></h3>
+                <p id="tutorial-text"></p>
+                <div class="tutorial-buttons">
+                    <button id="tutorial-skip" type="button">Atla</button>
+                    <button id="tutorial-next" type="button" class="typewriter-btn"></button>
+                </div>
             </div>
         </div>
 

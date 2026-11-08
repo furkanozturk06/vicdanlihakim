@@ -302,6 +302,74 @@ export function renderRulebook({ crimes, generalNotes, amendments, day, labels }
     elements.rulebookBody.replaceChildren(...nodes);
 }
 
+// Step-by-step tutorial. Each step highlights `target` and waits for "İleri".
+// Resolves when finished or skipped.
+export function runTutorial(steps) {
+    const box = document.getElementById('tutorial');
+    const next = document.getElementById('tutorial-next');
+    const skip = document.getElementById('tutorial-skip');
+    let i = 0;
+    let focused = null;
+
+    return new Promise(resolve => {
+        const finish = () => {
+            if (focused) focused.classList.remove('tutorial-focus');
+            box.classList.add('hidden');
+            next.onclick = null;
+            skip.onclick = null;
+            resolve();
+        };
+
+        const show = () => {
+            const step = steps[i];
+            if (focused) focused.classList.remove('tutorial-focus');
+            focused = document.querySelector(step.target);
+            if (focused) {
+                focused.classList.add('tutorial-focus');
+                focused.scrollIntoView?.({ block: 'nearest' });
+            }
+
+            // Keep the card away from what it points at
+            const rect = focused ? focused.getBoundingClientRect() : null;
+            const targetInLowerHalf = rect && rect.top + rect.height / 2 > window.innerHeight / 2;
+            box.classList.toggle('at-top', Boolean(targetInLowerHalf));
+
+            document.getElementById('tutorial-step').textContent = `${i + 1} / ${steps.length}`;
+            document.getElementById('tutorial-title').textContent = step.title;
+            document.getElementById('tutorial-text').textContent = step.text;
+            next.textContent = i === steps.length - 1 ? 'Başla' : 'İleri';
+            box.classList.remove('hidden');
+        };
+
+        next.onclick = () => {
+            i++;
+            if (i >= steps.length) finish();
+            else show();
+        };
+        skip.onclick = finish;
+        show();
+    });
+}
+
+// Start screen: offer "continue" when a save exists
+export function setContinueOption(day) {
+    const btn = document.getElementById('continue-btn');
+    if (day) {
+        btn.textContent = `Devam Et (${day}. Gün)`;
+        btn.classList.remove('hidden');
+        elements.startBtn.textContent = 'Yeni Oyun';
+    } else {
+        btn.classList.add('hidden');
+        elements.startBtn.textContent = 'Koltuğa Otur';
+    }
+}
+
+export function setSoundIcon(on) {
+    const btn = document.getElementById('sound-btn');
+    btn.textContent = on ? '🔊' : '🔇';
+    btn.setAttribute('aria-label', on ? 'Sesi kapat' : 'Sesi aç');
+}
+
 // Intro letter. Resolves when the player starts.
 export function showIntro({ title, text, button }) {
     const modal = document.getElementById('intro-modal');

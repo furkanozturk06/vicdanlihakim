@@ -68,6 +68,35 @@ export const INTRO = {
     button: 'Göreve Başla',
 };
 
+// First-game tutorial, shown on the very first case
+export const TUTORIAL = [
+    {
+        target: '.case-file',
+        title: 'Dava Dosyası',
+        text: 'Sanığın kim olduğu, ne yaptığı ve deliller burada. Uzun dosyaları parmağınla kaydırabilirsin.',
+    },
+    {
+        target: '.case-interrogation',
+        title: 'Sorgu',
+        text: 'Günde 3 sorgu hakkın var. Sorgu, dosyadaki gizli delili açar. Bazı davalarda doğru karar için bu delil şart.',
+    },
+    {
+        target: '#rulebook-btn',
+        title: 'Kanun Kitabı',
+        text: 'Her suçun olağan cezası ve özel halleri burada yazar. Zamanla kanuna yeni ek maddeler gelecek; takipte kal.',
+    },
+    {
+        target: '#sentencing-panel',
+        title: 'Karar',
+        text: 'Kanuna uygun karar hazineye ve itibarına yarar. Fazla sert kararlar vicdanını, fazla hafif kararlar itibarını yer.',
+    },
+    {
+        target: '#stats-bar',
+        title: 'Görevin',
+        text: 'Hazine ya da itibar sıfırlanırsa görevden alınırsın. On gün dayan. Rüşvet ve tehditlere dikkat et.',
+    },
+];
+
 // Minister's son: the fixed last case of the last day
 export const FINALE = {
     crimeType: 'traffic',

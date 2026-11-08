@@ -2202,3 +2202,125 @@ body {
     background: var(--emblem) center / contain no-repeat;
     filter: drop-shadow(0 0 18px rgba(201, 162, 39, 0.45));
 }
+
+/* ========================================
+   Sound toggle, start buttons
+======================================== */
+#sound-btn {
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    background: none;
+    border: 1px solid var(--gold-dim);
+    border-radius: 50%;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.start-buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.start-buttons .typewriter-btn {
+    min-width: 220px;
+}
+
+.start-buttons .typewriter-btn + .typewriter-btn {
+    margin-top: 0;
+}
+
+/* ========================================
+   Tutorial
+======================================== */
+#tutorial {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: calc(var(--spacing-md) + env(safe-area-inset-bottom));
+    display: flex;
+    justify-content: center;
+    padding: 0 var(--spacing-md);
+    z-index: 400;
+    pointer-events: none;
+}
+
+#tutorial.at-top {
+    bottom: auto;
+    top: calc(var(--spacing-md) + env(safe-area-inset-top));
+}
+
+.tutorial-card {
+    width: 100%;
+    max-width: 420px;
+    padding: var(--spacing-md);
+    background: var(--bg-medium);
+    border: 2px solid var(--gold-accent);
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), var(--glow-gold);
+    color: var(--paper-aged);
+    pointer-events: auto;
+    animation: fade-in 0.3s ease;
+}
+
+.tutorial-step {
+    font-family: var(--font-typewriter);
+    font-size: 0.65rem;
+    color: var(--gold-dim);
+}
+
+.tutorial-card h3 {
+    font-family: var(--font-typewriter);
+    color: var(--gold-accent);
+    font-size: 1rem;
+    margin-bottom: var(--spacing-xs);
+}
+
+#tutorial-text {
+    font-size: 0.9rem;
+    line-height: 1.45;
+}
+
+.tutorial-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: var(--spacing-sm);
+}
+
+.tutorial-buttons .typewriter-btn {
+    margin-top: 0;
+    padding: var(--spacing-xs) var(--spacing-lg);
+}
+
+#tutorial-skip {
+    background: none;
+    border: none;
+    color: var(--paper-dark);
+    font-family: var(--font-typewriter);
+    font-size: 0.8rem;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.tutorial-focus {
+    outline: 3px solid var(--gold-accent);
+    outline-offset: 3px;
+    border-radius: 6px;
+    animation: tutorial-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes tutorial-pulse {
+
+    0%,
+    100% {
+        outline-color: var(--gold-accent);
+    }
+
+    50% {
+        outline-color: rgba(201, 162, 39, 0.3);
+    }
+}
