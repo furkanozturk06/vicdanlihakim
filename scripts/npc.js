@@ -3,128 +3,254 @@
  * Handles case generation, NPC creation, and verdict validation
  */
 
-// Case database with crimes, statements, correct verdicts, and evidence (TURKISH)
+// Case database (TURKISH)
+// Each statement carries its own detail (crime subtitle), case summary and evidence,
+// so the case file always matches what the defendant says.
 const CASE_DATABASE = {
     pettyTheft: {
         crime: "Hırsızlık",
         severity: 1,
         statements: [
-            { text: "Sadece bir ekmek aldım... çocuklarım açlıktan ölüyordu.", emotion: "remorseful", correctVerdict: "release", sympathy: true },
-            { text: "Ne olmuş biraz takı aldıysam? Zenginlerin çok parası var.", emotion: "defiant", correctVerdict: "fine-minor", sympathy: false },
-            { text: "Ben... istemeden yaptım. Bir anlık dürtüydü. Çok özür dilerim.", emotion: "panicked", correctVerdict: "fine-minor", sympathy: true },
-            { text: "Cüzdanlarını masada bıraktılar. Kendi hataları.", emotion: "defiant", correctVerdict: "fine-moderate", sympathy: false },
-        ],
-        evidence: [
-            "Çalınan eşyalar bulundu. Değeri: ₺500",
-            "İlk suç kaydı.",
-            "Daha önce birçok uyarı almış.",
+            {
+                text: "Sadece bir ekmek aldım... çocuklarım açlıktan ölüyordu.", emotion: "remorseful", correctVerdict: "release", sympathy: true,
+                detail: "Gıda",
+                summary: "Mahalle fırınından iki ekmek alıp parasını ödemeden kaçarken yakalandı. Fırıncı şikayetini geri çekmek istiyor.",
+                evidence: ["Çalınan mal: 2 ekmek (₺30).", "Sabıka kaydı yok; üç çocuğuyla tek başına yaşıyor."]
+            },
+            {
+                text: "Ne olmuş biraz takı aldıysam? Zenginlerin çok parası var.", emotion: "defiant", correctVerdict: "fine-minor", sympathy: false,
+                detail: "Mücevher",
+                summary: "Bir kuyumcu vitrininden altın kolye alıp ceketine saklarken güvenlik görevlisine yakalandı. Kolye sahibine iade edildi.",
+                evidence: ["Kolyenin değeri: ₺4.000; zarar oluşmadı.", "Güvenlik kamerası olayı açıkça gösteriyor."]
+            },
+            {
+                text: "Ben... istemeden yaptım. Bir anlık dürtüydü. Çok özür dilerim.", emotion: "panicked", correctVerdict: "fine-minor", sympathy: true,
+                detail: "Market",
+                summary: "Süpermarketten çikolata ve parfüm alıp kasadan geçmeden çıkmaya çalıştı. Kapıdaki alarm çaldı.",
+                evidence: ["Ürünlerin değeri: ₺650.", "İlk suçu; olay yerinde ağlayarak suçunu kabul etti."]
+            },
+            {
+                text: "Cüzdanlarını masada bıraktılar. Kendi hataları.", emotion: "defiant", correctVerdict: "fine-moderate", sympathy: false,
+                detail: "Cüzdan",
+                summary: "Bir kafede masada unutulan iki cüzdanı alıp içindeki parayı harcadı. Kartlarla alışveriş yapmaya çalışırken yakalandı.",
+                evidence: ["Harcanan para: ₺3.500; geri ödenmedi.", "Daha önce benzer bir olaydan uyarı almış."]
+            },
         ]
     },
     assault: {
         crime: "Darp",
         severity: 3,
         statements: [
-            { text: "Önce o kız kardeşime saldırdı. Onu koruyordum!", emotion: "defiant", correctVerdict: "release", sympathy: true },
-            { text: "Sinirlerime hakim olamadım. Yanlış yaptığımı biliyorum, Sayın Hakim.", emotion: "remorseful", correctVerdict: "house-arrest", sympathy: true },
-            { text: "O adam ailemin onuruna hakaret etti. Hak etti.", emotion: "proud", correctVerdict: "jail-short", sympathy: false },
-            { text: "Hiçbir şey hatırlamıyorum... sarhoştum.", emotion: "panicked", correctVerdict: "house-arrest", sympathy: false },
-        ],
-        evidence: [
-            "Mağdur hafif yaralanmış.",
-            "Tanıklar provokasyonu doğruluyor.",
-            "Sanığın daha önce darp suçu var.",
+            {
+                text: "Önce o kız kardeşime saldırdı. Onu koruyordum!", emotion: "defiant", correctVerdict: "release", sympathy: true,
+                detail: "Meşru müdafaa iddiası",
+                summary: "Bir barın önünde kız kardeşini taciz eden adama yumruk attı. Adamın burnu kırıldı.",
+                evidence: ["Tanıklar, mağdurun önce kız kardeşe saldırdığını doğruluyor.", "Kız kardeşin kolunda yeni morluklar var."]
+            },
+            {
+                text: "Sinirlerime hakim olamadım. Yanlış yaptığımı biliyorum, Sayın Hakim.", emotion: "remorseful", correctVerdict: "house-arrest", sympathy: true,
+                detail: "Trafik kavgası",
+                summary: "Trafikte yol verme tartışmasında arabasından inip diğer sürücüyü tekmeledi. Mağdur iki gün hastanede kaldı.",
+                evidence: ["Doktor raporu: hafif yaralanma, kırık yok.", "Sabıkası yok; olaydan sonra mağduru hastanede ziyaret etmiş."]
+            },
+            {
+                text: "O adam ailemin onuruna hakaret etti. Hak etti.", emotion: "proud", correctVerdict: "jail-short", sympathy: false,
+                detail: "Kahvehane kavgası",
+                summary: "Kahvehanede tartıştığı adamı sandalyeyle dövdü. Mağdurun kaşı patladı, masalar devrildi.",
+                evidence: ["Mağdura 6 dikiş atıldı.", "Sanığın 2 yıl önce de darp kaydı var."]
+            },
+            {
+                text: "Hiçbir şey hatırlamıyorum... sarhoştum.", emotion: "panicked", correctVerdict: "house-arrest", sympathy: false,
+                detail: "Alkollü kavga",
+                summary: "Bir düğünde alkollüyken bir misafiri itip yere düşürdü. Misafirin bileği burkuldu.",
+                evidence: ["Olay anında kandaki alkol: 1,8 promil.", "Mağdur şikayetçi; sanığın sabıkası yok."]
+            },
         ]
     },
     fraud: {
         crime: "Dolandırıcılık",
         severity: 4,
         statements: [
-            { text: "Yatırımcılar riskleri biliyordu! Benim suçum değil.", emotion: "defiant", correctVerdict: "jail-medium", sympathy: false },
-            { text: "Çaresizdim... işlerim batıyordu. Özür dilerim.", emotion: "remorseful", correctVerdict: "fine-major", sympathy: true },
-            { text: "Sistem zaten hileli. Ben sadece kurallarına göre oynadım.", emotion: "proud", correctVerdict: "jail-short", sympathy: false },
-            { text: "Kimse fark etmeden geri ödeyebileceğimi düşündüm...", emotion: "panicked", correctVerdict: "house-arrest", sympathy: true },
-        ],
-        evidence: [
-            "Zimmete geçirilen para: ₺500,000",
-            "12 mağdur var.",
-            "Sahte belgeler bulundu.",
+            {
+                text: "Yatırımcılar riskleri biliyordu! Benim suçum değil.", emotion: "defiant", correctVerdict: "jail-medium", sympathy: false,
+                detail: "Sahte yatırım",
+                summary: "Yüksek kâr vaadiyle 40 kişiden para topladı, sonra şirketini kapatıp parayla ortadan kayboldu.",
+                evidence: ["Toplanan para: ₺2.000.000; geri ödeme yok.", "Yatırımcılara gösterilen kâr raporları sahte."]
+            },
+            {
+                text: "Çaresizdim... işlerim batıyordu. Özür dilerim.", emotion: "remorseful", correctVerdict: "fine-major", sympathy: true,
+                detail: "Sigorta hilesi",
+                summary: "Batmak üzere olan dükkanını kurtarmak için sigorta şirketine sahte hasar faturaları sundu.",
+                evidence: ["Haksız alınan ödeme: ₺80.000.", "Parayı geri ödemeyi teklif etti; sabıkası yok."]
+            },
+            {
+                text: "Sistem zaten hileli. Ben sadece kurallarına göre oynadım.", emotion: "proud", correctVerdict: "jail-short", sympathy: false,
+                detail: "Vergi hilesi",
+                summary: "Paravan şirketler kurarak üç yıl boyunca vergi ödemekten kaçındı.",
+                evidence: ["Ödenmeyen vergi: ₺450.000.", "Muhasebe kayıtlarında bilerek yapılmış tahrifat var."]
+            },
+            {
+                text: "Kimse fark etmeden geri ödeyebileceğimi düşündüm...", emotion: "panicked", correctVerdict: "house-arrest", sympathy: true,
+                detail: "Zimmet",
+                summary: "Annesinin ameliyat masrafı için çalıştığı şirketin kasasından aylarca küçük miktarlar aldı.",
+                evidence: ["Eksik para: ₺60.000; ₺25.000'i geri ödendi.", "İşvereni hapis yerine geri ödeme istiyor."]
+            },
         ]
     },
     burglary: {
-        crime: "Ev Soygunu",
+        crime: "Soygun",
         severity: 3,
         statements: [
-            { text: "Hasta annem için ilaca ihtiyacım vardı. Başka şansım yoktu.", emotion: "remorseful", correctVerdict: "house-arrest", sympathy: true },
-            { text: "Boş evler serbest avdır. Kimseye zarar geldi mi?", emotion: "defiant", correctVerdict: "jail-short", sympathy: false },
-            { text: "Evsizim... sadece sıcak bir yer istiyordum.", emotion: "panicked", correctVerdict: "release", sympathy: true },
-            { text: "Zenginler neyin eksik olduğunu fark bile etmezler.", emotion: "proud", correctVerdict: "jail-medium", sympathy: false },
-        ],
-        evidence: [
-            "Cam kırılarak girilmiş.",
-            "₺20,000 değerinde eşya çalınmış.",
-            "Sanık olay yerinde yakalandı.",
+            {
+                text: "Hasta annem için ilaca ihtiyacım vardı. Başka şansım yoktu.", emotion: "remorseful", correctVerdict: "house-arrest", sympathy: true,
+                detail: "Eczane",
+                summary: "Gece kapalı bir eczanenin camını kırıp içeri girdi, yalnızca kalp ilacı aldı.",
+                evidence: ["Alınan: 3 kutu kalp ilacı; kasaya dokunulmamış.", "Üzerinde annesinin reçetesi bulundu."]
+            },
+            {
+                text: "Boş evler serbest avdır. Kimseye zarar geldi mi?", emotion: "defiant", correctVerdict: "jail-short", sympathy: false,
+                detail: "Yazlık ev",
+                summary: "Sahipleri tatildeyken bir evin kilidini kırıp televizyon ve dizüstü bilgisayar çaldı.",
+                evidence: ["Çalınan eşyaların değeri: ₺35.000.", "Eşyaların bir kısmı ikinci el pazarında satılmış."]
+            },
+            {
+                text: "Evsizim... sadece sıcak bir yer istiyordum.", emotion: "panicked", correctVerdict: "release", sympathy: true,
+                detail: "Boş bina",
+                summary: "Bir kış gecesi terk edilmiş bir binanın kapısını zorladı, içeride uyurken bulundu. Hiçbir şey alınmamış.",
+                evidence: ["O gece hava sıcaklığı -8°C.", "Bina 5 yıldır boş; sahibi şikayetçi değil."]
+            },
+            {
+                text: "Zenginler neyin eksik olduğunu fark bile etmezler.", emotion: "proud", correctVerdict: "jail-medium", sympathy: false,
+                detail: "Villa",
+                summary: "Bir villanın alarmını devre dışı bırakıp kasasını açtı, mücevher ve nakit çaldı.",
+                evidence: ["Çalınan değer: ₺400.000.", "Alarmı kesmek için özel alet kullanılmış; önceden keşif yapılmış."]
+            },
         ]
     },
     vandalism: {
         crime: "Mala Zarar Verme",
         severity: 2,
         statements: [
-            { text: "Bu sanat! Duvar zaten sıkıcıydı.", emotion: "proud", correctVerdict: "fine-moderate", sympathy: false },
-            { text: "Sinirlendim... düşünmedim. Zararı ödeyeceğim.", emotion: "remorseful", correctVerdict: "fine-minor", sympathy: true },
-            { text: "O bina babamı işten atan şirketin!", emotion: "defiant", correctVerdict: "fine-minor", sympathy: true },
-            { text: "Arkadaşlarım meydan okudu... ne kadar aptalım.", emotion: "panicked", correctVerdict: "fine-minor", sympathy: true },
-        ],
-        evidence: [
-            "Tahmini hasar: ₺5,000",
-            "Güvenlik kamerası kaydı alındı.",
-            "Sanık suçunu kabul ediyor.",
+            {
+                text: "Bu sanat! Duvar zaten sıkıcıydı.", emotion: "proud", correctVerdict: "fine-moderate", sympathy: false,
+                detail: "Grafiti",
+                summary: "Belediye binasının yeni restore edilmiş taş cephesine sprey boyayla büyük bir grafiti çizdi.",
+                evidence: ["Temizlik maliyeti: ₺15.000.", "Aynı imzayla şehirde 6 grafiti daha var."]
+            },
+            {
+                text: "Sinirlendim... düşünmedim. Zararı ödeyeceğim.", emotion: "remorseful", correctVerdict: "fine-minor", sympathy: true,
+                detail: "Araç hasarı",
+                summary: "Komşusuyla park yeri kavgasından sonra komşusunun arabasının aynasını kırdı.",
+                evidence: ["Hasar: ₺2.500.", "Ertesi gün kendisi karakola gidip teslim oldu."]
+            },
+            {
+                text: "O bina babamı işten atan şirketin!", emotion: "defiant", correctVerdict: "fine-minor", sympathy: true,
+                detail: "Fabrika camları",
+                summary: "Babasını işten çıkaran fabrikanın giriş kapısındaki camlara taş attı.",
+                evidence: ["3 cam kırıldı; hasar ₺4.000.", "Fabrika 200 işçiyi tazminat ödemeden çıkarmış."]
+            },
+            {
+                text: "Arkadaşlarım meydan okudu... ne kadar aptalım.", emotion: "panicked", correctVerdict: "fine-minor", sympathy: true,
+                detail: "Park",
+                summary: "Arkadaşlarıyla gece parktaki bankları ve çöp kutularını devirdi, bir lambayı kırdı.",
+                evidence: ["Hasar: ₺3.000.", "Sanık 18 yaşında; arkadaşları olay yerinden kaçmış."]
+            },
         ]
     },
     murder: {
         crime: "Cinayet",
         severity: 5,
         statements: [
-            { text: "Kızımı öldürecekti. Başka seçeneğim yoktu!", emotion: "panicked", correctVerdict: "release", sympathy: true },
-            { text: "Pişman değilim. O canavar ölmeyi hak ediyordu.", emotion: "defiant", correctVerdict: "jail-long", sympathy: false },
-            { text: "Kaza oldu... silah patladı. Yemin ederim!", emotion: "panicked", correctVerdict: "jail-medium", sympathy: true },
-            { text: "Bunu yapmam için para aldım. Sadece bir araçtım.", emotion: "remorseful", correctVerdict: "death", sympathy: false },
-            { text: "Sesler... bana yapmamı söylediler.", emotion: "panicked", correctVerdict: "house-arrest", sympathy: true },
-        ],
-        evidence: [
-            "Silah olay yerinde bulundu.",
-            "Maktul: bilinen suçlu.",
-            "Tasarlama kanıtları var.",
-            "Meşru müdafaa iddiası inceleniyor.",
+            {
+                text: "Kızımı öldürecekti. Başka seçeneğim yoktu!", emotion: "panicked", correctVerdict: "release", sympathy: true,
+                detail: "Meşru müdafaa iddiası",
+                summary: "Evine silahla giren ve kızını rehin alan bir adamı mutfak bıçağıyla öldürdü.",
+                evidence: ["Maktulün elinde dolu bir silah bulundu.", "Kızı, adamın kendisini tehdit ettiğini doğruluyor."]
+            },
+            {
+                text: "Pişman değilim. O canavar ölmeyi hak ediyordu.", emotion: "defiant", correctVerdict: "jail-long", sympathy: false,
+                detail: "İntikam",
+                summary: "Yıllar önce kardeşini öldüren ve cezasını çekip çıkan adamı evinin önünde bekleyip vurdu.",
+                evidence: ["Silahı olaydan bir hafta önce satın almış.", "Kamera kayıtlarında maktulü günlerce takip ettiği görülüyor."]
+            },
+            {
+                text: "Kaza oldu... silah patladı. Yemin ederim!", emotion: "panicked", correctVerdict: "jail-medium", sympathy: true,
+                detail: "Kaza iddiası",
+                summary: "Ruhsatsız tabancasını arkadaşına gösterirken silah ateş aldı, arkadaşı hayatını kaybetti.",
+                evidence: ["Silah ruhsatsız ve emniyeti açık bırakılmış.", "Tanıklar ikisi arasında husumet olmadığını söylüyor."]
+            },
+            {
+                text: "Bunu yapmam için para aldım. Sadece bir araçtım.", emotion: "remorseful", correctVerdict: "death", sympathy: false,
+                detail: "Kiralık katil",
+                summary: "Para karşılığında tanımadığı bir iş insanını otoparkta pusu kurarak öldürdü.",
+                evidence: ["Hesabına olaydan bir gün önce ₺500.000 yatırılmış.", "Daha önce iki benzer cinayetle bağlantılı."]
+            },
+            {
+                text: "Sesler... bana yapmamı söylediler.", emotion: "panicked", correctVerdict: "house-arrest", sympathy: true,
+                detail: "Akıl sağlığı",
+                summary: "Ağır bir psikoz atağı sırasında komşusunu öldürdü. Olaydan sonra polisi kendisi aradı.",
+                evidence: ["Adli tıp raporu: olay anında ağır şizofreni atağı.", "3 yıldır tedavi görüyor; ilaçları kesilmişti."]
+            },
         ]
     },
     corruption: {
         crime: "Yolsuzluk",
         severity: 4,
         statements: [
-            { text: "Herkes rüşvet alıyor. Ben sadece yakalanan oldum.", emotion: "defiant", correctVerdict: "jail-medium", sympathy: false },
-            { text: "Bunu bölgem için yaptım... okullar ve yollar inşa etmek için.", emotion: "proud", correctVerdict: "fine-major", sympathy: true },
-            { text: "Tehdit edildim... aileme zarar vereceklerdi.", emotion: "panicked", correctVerdict: "house-arrest", sympathy: true },
-            { text: "Güç yozlaştırır, Sayın Hakim. Nefret ettiğim şey oldum.", emotion: "remorseful", correctVerdict: "jail-short", sympathy: true },
-        ],
-        evidence: [
-            "Banka kayıtları şüpheli transferler gösteriyor.",
-            "Birden fazla tanık ifadesi var.",
-            "Ses kayıtları elde edildi.",
+            {
+                text: "Herkes rüşvet alıyor. Ben sadece yakalanan oldum.", emotion: "defiant", correctVerdict: "jail-medium", sympathy: false,
+                detail: "Rüşvet",
+                summary: "Belediye imar müdürüyken kaçak binalara izin vermek için müteahhitlerden düzenli rüşvet aldı.",
+                evidence: ["Hesabında açıklanamayan ₺3.000.000 var.", "İzin verdiği 14 binanın denetim raporu sahte."]
+            },
+            {
+                text: "Bunu bölgem için yaptım... okullar ve yollar inşa etmek için.", emotion: "proud", correctVerdict: "fine-major", sympathy: true,
+                detail: "Usulsüz ihale",
+                summary: "Belediye başkanıyken ihaleleri akrabalarının firmalarına verdi. İşler bitti ama fiyatlar şişirildi.",
+                evidence: ["Kamu zararı: ₺900.000.", "Yapılan okullar ve yollar tamamlanmış ve kullanılıyor."]
+            },
+            {
+                text: "Tehdit edildim... aileme zarar vereceklerdi.", emotion: "panicked", correctVerdict: "house-arrest", sympathy: true,
+                detail: "Baskı altında",
+                summary: "Gümrük memuruyken bir çetenin kamyonlarını kontrol etmeden geçirdi.",
+                evidence: ["Telefonunda ailesine yönelik tehdit mesajları var.", "Banka kayıtlarında para aldığına dair iz yok."]
+            },
+            {
+                text: "Güç yozlaştırır, Sayın Hakim. Nefret ettiğim şey oldum.", emotion: "remorseful", correctVerdict: "jail-short", sympathy: true,
+                detail: "Görevi kötüye kullanma",
+                summary: "Bakanlıkta yöneticiyken kamu araçlarını ve bütçesini özel tatilleri için kullandı.",
+                evidence: ["Kamu zararı: ₺250.000.", "Soruşturma başlayınca istifa etti, parayı iade etmeye başladı."]
+            },
         ]
     },
     smuggling: {
         crime: "Kaçakçılık",
         severity: 3,
         statements: [
-            { text: "Ben sadece şoförüydüm! Kamyonda ne olduğunu bilmiyordum.", emotion: "panicked", correctVerdict: "fine-moderate", sympathy: true },
-            { text: "İnsanların bu mallara ihtiyacı var. Sınırlar adaletsiz.", emotion: "defiant", correctVerdict: "jail-short", sympathy: false },
-            { text: "Ailem bu para olmadan açlıktan ölürdü.", emotion: "remorseful", correctVerdict: "house-arrest", sympathy: true },
-            { text: "Fakirler için ilaç bu. Bu nasıl suç olabilir?", emotion: "proud", correctVerdict: "fine-minor", sympathy: true },
-        ],
-        evidence: [
-            "Kaçak mal değeri: ₺100,000",
-            "Araçta rota haritaları bulundu.",
-            "İlk suç.",
+            {
+                text: "Ben sadece şoförüydüm! Kamyonda ne olduğunu bilmiyordum.", emotion: "panicked", correctVerdict: "fine-moderate", sympathy: true,
+                detail: "Sigara",
+                summary: "Kullandığı kamyonun dorsesindeki gizli bölmede 5.000 karton kaçak sigara bulundu.",
+                evidence: ["Gizli bölme, sanık işe başlamadan önce yapılmış.", "Kamyonun sahibi yurt dışına kaçtı."]
+            },
+            {
+                text: "İnsanların bu mallara ihtiyacı var. Sınırlar adaletsiz.", emotion: "defiant", correctVerdict: "jail-short", sympathy: false,
+                detail: "Elektronik",
+                summary: "Gümrükte beyan etmeden 300 cep telefonu sokmaya çalışırken yakalandı.",
+                evidence: ["Kaçak mal değeri: ₺1.500.000.", "Son bir yılda 11 kez sınırdan geçmiş."]
+            },
+            {
+                text: "Ailem bu para olmadan açlıktan ölürdü.", emotion: "remorseful", correctVerdict: "house-arrest", sympathy: true,
+                detail: "Akaryakıt",
+                summary: "Sınır köyünde kaçak akaryakıt taşıyıp satarken yakalandı.",
+                evidence: ["Araçta 2.000 litre kaçak akaryakıt bulundu.", "Köyde başka geçim kaynağı yok; 5 çocuğu var."]
+            },
+            {
+                text: "Fakirler için ilaç bu. Bu nasıl suç olabilir?", emotion: "proud", correctVerdict: "fine-minor", sympathy: true,
+                detail: "İlaç",
+                summary: "Ülkede bulunmayan kanser ilaçlarını beyan etmeden getirip hastalara maliyetine sattı.",
+                evidence: ["Satış kayıtları kâr etmediğini doğruluyor.", "İlaçların tamamı orijinal ve ruhsatlı."]
+            },
         ]
     }
 };
@@ -173,19 +299,18 @@ export function generateCase(day = 1, directive = null) {
     const crimeType = availableCrimes[Math.floor(Math.random() * availableCrimes.length)];
     const crimeData = CASE_DATABASE[crimeType];
     const statement = crimeData.statements[Math.floor(Math.random() * crimeData.statements.length)];
-    const evidence = crimeData.evidence[Math.floor(Math.random() * crimeData.evidence.length)];
 
     return {
         id: Date.now(),
         crimeType,
-        crime: crimeData.crime,
+        crime: `${crimeData.crime} – ${statement.detail}`,
         severity: crimeData.severity,
         statement: statement.text,
         emotion: statement.emotion,
         correctVerdict: statement.correctVerdict,
         sympathy: statement.sympathy,
-        evidence,
-        showEvidence: day >= 2 && Math.random() > 0.5, // Evidence appears after day 1
+        summary: statement.summary,
+        evidence: statement.evidence,
         appearance: generateNPCAppearance(),
     };
 }

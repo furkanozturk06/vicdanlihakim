@@ -237,10 +237,8 @@ async function presentNextCase() {
     // Show speech bubble with crime type
     await ui.showSpeechBubble(state.currentCase.statement, state.currentCase.emotion, state.currentCase.crime);
 
-    // Show evidence if applicable
-    if (state.currentCase.showEvidence) {
-        ui.showEvidence(state.currentCase.evidence);
-    }
+    // Show case file
+    ui.showEvidence(state.currentCase.summary, state.currentCase.evidence);
 
     // Enable sentencing
     state.isProcessing = false;

@@ -205,8 +205,20 @@ export function hideSpeechBubble() {
 }
 
 // Show evidence
-export function showEvidence(evidenceText) {
-    elements.evidenceContent.textContent = evidenceText;
+export function showEvidence(summary, evidenceList) {
+    const summaryEl = document.createElement('p');
+    summaryEl.className = 'case-summary';
+    summaryEl.textContent = summary;
+
+    const listEl = document.createElement('ul');
+    listEl.className = 'case-evidence';
+    evidenceList.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = item;
+        listEl.appendChild(li);
+    });
+
+    elements.evidenceContent.replaceChildren(summaryEl, listEl);
     elements.evidenceDesk.classList.remove('hidden');
     elements.evidenceDesk.style.animation = 'fade-in 0.3s ease';
 }

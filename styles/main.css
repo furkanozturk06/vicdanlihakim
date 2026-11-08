@@ -540,7 +540,7 @@ body {
 }
 
 .case-file {
-    width: 200px;
+    width: 240px;
     background: var(--paper-aged);
     padding: var(--spacing-md);
     border-radius: 4px;
@@ -563,6 +563,21 @@ body {
     font-size: 0.75rem;
     color: var(--ink-black);
     line-height: 1.6;
+}
+
+.case-summary {
+    margin-bottom: var(--spacing-sm);
+}
+
+.case-evidence {
+    list-style: none;
+    padding-top: var(--spacing-xs);
+    border-top: 1px dashed var(--ink-black);
+}
+
+.case-evidence li::before {
+    content: "▪ ";
+    color: var(--red-stamp);
 }
 
 /* ========================================
@@ -1219,7 +1234,11 @@ body {
 
     #speech-bubble {
         max-width: 260px;
-        bottom: 180px;
+        bottom: 170px;
+    }
+
+    .bubble-header {
+        font-size: 0.7rem;
     }
 
     .bubble-content {
@@ -1247,11 +1266,37 @@ body {
 
     #directive-banner {
         top: 55px;
+        width: calc(100% - 2 * var(--spacing-md));
         padding: var(--spacing-xs) var(--spacing-md);
     }
 
     #directive-text {
         font-size: 0.7rem;
+    }
+
+    /* Case file sits under the directive so it never covers the speech bubble */
+    #evidence-desk {
+        top: 115px;
+        left: var(--spacing-md);
+        right: var(--spacing-md);
+        transform: none;
+    }
+
+    .case-file {
+        width: auto;
+        padding: var(--spacing-sm) var(--spacing-md);
+        transform: rotate(-0.5deg);
+    }
+
+    .file-header {
+        font-size: 0.75rem;
+        padding-bottom: var(--spacing-xs);
+        margin-bottom: var(--spacing-xs);
+    }
+
+    #evidence-content {
+        font-size: 0.68rem;
+        line-height: 1.45;
     }
 }
 
