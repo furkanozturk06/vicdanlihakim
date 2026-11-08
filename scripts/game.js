@@ -3,9 +3,9 @@
  * Core game loop, state management, and decision processing
  */
 
-import { generateCase, createNPCElement, evaluateVerdict, getRandomDirective, getEmotionFeedback, verdictLabel, activeAmendments } from './npc.js';
+import { generateCase, buildCase, createNPCElement, evaluateVerdict, getRandomDirective, getEmotionFeedback, verdictLabel, activeAmendments } from './npc.js';
 import { CRIMES, GENERAL_NOTES, AMENDMENTS, VERDICT_LABELS, LADDER } from './cases.js';
-import { OFFERS, buildNewspaper } from './story.js';
+import { OFFERS, buildNewspaper, FINALE, FINAL_DIRECTIVE, INTRO, inspectorReport, journalistVisit } from './story.js';
 import * as ui from './ui.js';
 import { audio } from './audio.js';
 
@@ -41,6 +41,7 @@ function createInitialState() {
         dayEarnings: 0,
         questionsLeft: CONFIG.questionsPerDay,
         offerMadeToday: false,
+        eventShownToday: false,
         dayLog: [],
 
         // Career
@@ -52,6 +53,8 @@ function createInitialState() {
         pendingRevenge: false,
         offenders: [],
         usedStatements: new Set(),
+        finale: null,      // 'released' | 'correct' | 'wrong'
+        endedEarly: false,
 
         currentCase: null,
         currentDirective: null,
@@ -91,11 +94,33 @@ const EVENTS = {
 };
 
 // Endings based on final state (TURKISH)
+const accuracy = (s) => s.correctTotal / Math.max(1, s.totalCases);
+
 const ENDINGS = [
+    {
+        condition: (s) => s.endedEarly && s.money <= 0,
+        title: 'Hazine Boşaldı',
+        description: 'Mahkemenin kasası tamtakır. Bakanlık sizi on gün dolmadan görevden aldı; masanızdaki kanun kitabını bile geri istediler.',
+    },
+    {
+        condition: (s) => s.endedEarly,
+        title: 'Görevden Alındı',
+        description: 'Halkın ve bakanlığın güvenini yitirdiniz. Cübbenizi çıkarıp adliyeden arka kapıdan ayrıldınız.',
+    },
     {
         condition: (s) => s.bribesExposed >= 2,
         title: 'Rüşvet Skandalı',
         description: 'Zarflar birer birer gün yüzüne çıktı. Bir zamanlar hüküm verdiğiniz salonda bu kez sanık sandalyesinde oturuyorsunuz.',
+    },
+    {
+        condition: (s) => s.finale === 'released',
+        title: 'Bakanlığın Adamı',
+        description: 'Bakanın oğlu serbest kaldı, siz terfi ettiniz. Yeni odanız daha büyük ama öğretmenin ailesinin bakışları her gece rüyanıza giriyor.',
+    },
+    {
+        condition: (s) => s.finale === 'correct' && accuracy(s) >= 0.7 && s.reputation >= 60,
+        title: 'Dokunulmaz Hakim',
+        description: 'Bakanın oğluna bile kanunu uyguladınız. Bakanlık sizi sürmek istedi ama halk adliyenin önünü doldurdu. Adınız artık bağımsız yargının simgesi.',
     },
     {
         condition: (s) => s.conscience >= 80 && s.reputation >= 80,
@@ -171,6 +196,11 @@ function setupEventListeners() {
         if (e.target === elements.rulebookModal) ui.closeRulebook();
     });
 
+    // On short screens the directive is cut to one line; tap to read it all
+    elements.directiveBanner.addEventListener('click', () => {
+        elements.directiveBanner.classList.toggle('expanded');
+    });
+
     // Interrogation button lives inside the case file, which is re-rendered per case
     elements.evidenceContent.addEventListener('click', (e) => {
         if (e.target.closest('.interrogate-btn')) interrogate();
@@ -186,17 +216,19 @@ function setupEventListeners() {
     });
 }
 
-function startGame() {
+async function startGame() {
     ui.hideStartScreen();
     audio.startAmbient();
+    await ui.showIntro(INTRO);
     startNewDay();
 }
 
-function restartGame() {
+async function restartGame() {
     state = createInitialState();
     document.getElementById('game-over-screen').classList.add('hidden');
     audio.startAmbient();
     ui.updateStats(state);
+    await ui.showIntro(INTRO);
     startNewDay();
 }
 
@@ -216,9 +248,10 @@ async function startNewDay() {
     state.dayEarnings = 0;
     state.questionsLeft = CONFIG.questionsPerDay;
     state.offerMadeToday = false;
+    state.eventShownToday = false;
     state.dayLog = [];
 
-    state.currentDirective = getRandomDirective();
+    state.currentDirective = state.day === CONFIG.maxDays ? FINAL_DIRECTIVE : getRandomDirective();
     ui.showDirective(state.currentDirective);
     refreshRulebook();
     ui.updateStats(state);
@@ -236,6 +269,23 @@ async function startNewDay() {
     // New amendments
     for (const a of AMENDMENTS.filter(a => a.day === state.day)) {
         await ui.showEvent('law', `Kanunda Değişiklik: ${a.title}`, `${a.text} Ayrıntılar kanun kitabında.`);
+    }
+
+    // Recurring characters
+    if (state.day === 4 || state.day === 8) {
+        const report = inspectorReport(state.correctTotal / Math.max(1, state.totalCases));
+        state.money += report.money;
+        state.reputation = Math.max(0, Math.min(100, state.reputation + report.reputation));
+        await ui.showEvent('inspector', report.title, report.text);
+        ui.updateStats(state);
+    }
+    if (state.day === 6) {
+        const visit = journalistVisit(state.reputation);
+        if (visit) {
+            state.reputation = Math.max(0, Math.min(100, state.reputation + visit.reputation));
+            await ui.showEvent('media', visit.title, visit.text);
+            ui.updateStats(state);
+        }
     }
 
     await presentNextCase();
@@ -262,7 +312,10 @@ async function presentNextCase() {
     }
 
     state.totalCases++;
-    state.currentCase = generateCase(state.day, state.currentDirective, takeReturningOffender(), state.usedStatements);
+    const isFinale = state.day === CONFIG.maxDays && state.dayCases === CONFIG.casesPerDay - 1;
+    state.currentCase = isFinale
+        ? buildCase(FINALE.crimeType, FINALE.statement, state.day, { name: FINALE.name, age: FINALE.age, finale: true })
+        : generateCase(state.day, state.currentDirective, takeReturningOffender(), state.usedStatements);
     ui.updateCaseNumber(state.totalCases);
 
     audio.playDoor();
@@ -294,6 +347,19 @@ async function presentNextCase() {
 
 // Decide whether this case comes with a bribe or a threat
 function pickOffer(c) {
+    if (c.finale) {
+        const o = FINALE.offer;
+        return {
+            type: 'finale',
+            forcedVerdict: 'release',
+            view: o,
+            onAccept: () => {
+                state.money += o.amount;
+                state.conscience = Math.max(0, state.conscience - 30);
+            },
+            onDecline: () => {},
+        };
+    }
     if (state.day < 2 || state.offerMadeToday) return null;
     if (c.severity < 3 || LADDER.indexOf(c.correctVerdict) < LADDER.indexOf('house-arrest')) return null;
     if (Math.random() > CONFIG.offerChance) return null;
@@ -401,8 +467,12 @@ async function processVerdict(sentenceKey, viaOffer = null) {
     state.dayEarnings += moneyChange;
     state.dayCases++;
 
-    // Light sentences for unsympathetic defendants may come back to haunt the judge
-    if (!c.sympathy && LADDER.indexOf(sentenceKey) <= LADDER.indexOf('fine-minor') && !c.returning) {
+    if (c.finale) {
+        state.finale = viaOffer === 'finale' ? 'released' : (result.correct ? 'correct' : 'wrong');
+    }
+
+    // Unsympathetic defendants let off lighter than the law demands may come back
+    if (!c.sympathy && c.age >= 18 && result.diff < 0 && !c.returning && !c.finale) {
         state.offenders.push({ name: c.name, age: c.age, appearance: c.appearance, day: state.day, verdict: sentenceKey });
     }
 
@@ -421,6 +491,7 @@ async function processVerdict(sentenceKey, viaOffer = null) {
     let message = getEmotionFeedback(c.emotion, result.correct);
     if (viaOffer === 'bribe') message = 'Zarf cebinizde. Sanık gülümseyerek salondan çıktı.';
     if (viaOffer === 'threat') message = 'Sesiniz titredi. Sanık arkasına bakmadan çıktı.';
+    if (viaOffer === 'finale') message = 'Bakanın oğlu sırıtarak salondan çıktı. Telefonunuz çalıyor: "Tebrikler, Hakim Bey."';
     if (!result.correct || result.partial) message += ` Kanuna göre doğru karar: ${verdictLabel(c.correctVerdict)}.`;
 
     const statsHtml = `
@@ -437,6 +508,7 @@ async function processVerdict(sentenceKey, viaOffer = null) {
     await checkForEvents();
 
     if (state.money <= 0 || state.reputation <= 0) {
+        state.endedEarly = true;
         endGame();
         return;
     }
@@ -450,9 +522,12 @@ async function processVerdict(sentenceKey, viaOffer = null) {
     await presentNextCase();
 }
 
+// At most one random event per day so they stay meaningful
 async function checkForEvents() {
+    if (state.eventShownToday) return;
     for (const [type, event] of Object.entries(EVENTS)) {
         if (event.check(state) && Math.random() < event.chance) {
+            state.eventShownToday = true;
             if (event.apply) event.apply(state);
             await ui.showEvent(type, event.title, event.description);
             ui.updateStats(state);
@@ -494,7 +569,7 @@ function endGame() {
     const statsHtml = `
         <p>Görev Süresi: ${daysServed} gün</p>
         <p>Görülen Davalar: ${state.totalCases}</p>
-        <p>Kanuna Uygun Kararlar: ${state.correctTotal}</p>
+        <p>Kanuna Uygun Kararlar: ${state.correctTotal} (%${Math.round(accuracy(state) * 100)})</p>
         <p>Son Hazine: ₺${state.money}</p>
         <p>Son İtibar: %${state.reputation}</p>
         <p>Son Vicdan: %${state.conscience}</p>

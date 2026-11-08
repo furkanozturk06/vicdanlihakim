@@ -9,17 +9,30 @@ import { DIRECTIVES, randomName } from './story.js';
 // NPC appearance options
 const NPC_APPEARANCES = {
     skinTones: ['#f5d0c5', '#e8beac', '#d4a574', '#c68642', '#8d5524', '#5c3811'],
-    hairColors: ['#1a1a1a', '#4a3728', '#8b6914', '#d4a574', '#c9c9c9', '#2c1810'],
-    clothingColors: ['#2d3748', '#4a5568', '#553c2e', '#1a365d', '#2f4858', '#4a3728', '#5c4033'],
+    hairColors: ['#1a1a1a', '#4a3728', '#8b6914', '#d4a574', '#2c1810', '#6b2d12'],
+    grayHair: ['#b8b8b8', '#d9d9d9', '#8f8f8f'],
+    clothingColors: ['#2d3748', '#4a5568', '#553c2e', '#1a365d', '#2f4858', '#4a3728', '#5c4033', '#5a2a2a', '#2f4a32'],
+    hairStyles: ['short', 'long', 'curly', 'bun', 'side'],
+    outfits: ['suit', 'shirt', 'hoodie', 'sweater'],
 };
 
 const pick = (list) => list[Math.floor(Math.random() * list.length)];
+const chance = (p) => Math.random() < p;
 
-function generateNPCAppearance() {
+// Look of a defendant; older people go gray or bald more often
+function generateNPCAppearance(age) {
+    const old = age >= 55;
+    const middle = age >= 38;
+    const bald = middle && chance(old ? 0.35 : 0.15);
     return {
         skin: pick(NPC_APPEARANCES.skinTones),
-        hair: pick(NPC_APPEARANCES.hairColors),
+        hair: old && chance(0.75) ? pick(NPC_APPEARANCES.grayHair) : pick(NPC_APPEARANCES.hairColors),
+        hairStyle: bald ? 'bald' : pick(NPC_APPEARANCES.hairStyles),
+        facialHair: age >= 18 && chance(0.35) ? pick(['mustache', 'beard']) : 'none',
+        glasses: chance(middle ? 0.35 : 0.15),
+        wrinkles: old,
         clothing: pick(NPC_APPEARANCES.clothingColors),
+        outfit: pick(NPC_APPEARANCES.outfits),
     };
 }
 
@@ -72,44 +85,55 @@ export function generateCase(day, directive = null, offender = null, used = new 
     // Candidate statements, preferring ones the player has not seen yet
     let candidates = pool.flatMap(crimeType => CRIMES[crimeType].statements.map(statement => ({ crimeType, statement })));
     if (offender) {
-        const unsympathetic = candidates.filter(c => !c.statement.sympathy);
-        if (unsympathetic.length > 0) candidates = unsympathetic;
+        // Adults with an unsympathetic story; fixed-age and minor statements would contradict the offender's age
+        const fitting = candidates.filter(c => !c.statement.sympathy && !c.statement.age && !(c.statement.tags || []).includes('minor'));
+        if (fitting.length > 0) candidates = fitting;
     }
     const fresh = candidates.filter(c => !used.has(c.statement));
     if (fresh.length > 0) candidates = fresh;
 
     const { crimeType, statement } = pick(candidates);
-    const crime = CRIMES[crimeType];
     used.add(statement);
 
+    if (!offender) return buildCase(crimeType, statement, day);
+
+    const c = buildCase(crimeType, statement, day, {
+        name: offender.name,
+        age: offender.age,
+        appearance: offender.appearance,
+        returning: true,
+    });
+    c.evidence[0] = `Sanık ${offender.day}. gün mahkemenizden "${verdictLabel(offender.verdict)}" kararıyla ayrılmıştı. ${c.evidence[0]}`;
+    return c;
+}
+
+// Turn a statement into a playable case. `overrides` can fix name, age, appearance and flags.
+export function buildCase(crimeType, statement, day, overrides = {}) {
+    const crime = CRIMES[crimeType];
     const isMinor = statement.tags && statement.tags.includes('minor');
     const age = statement.age || (isMinor ? 15 + Math.floor(Math.random() * 3) : 21 + Math.floor(Math.random() * 45));
-
-    const evidence = [...statement.evidence];
-    if (offender) {
-        evidence[0] = `Sanık ${offender.day}. gün mahkemenizden "${verdictLabel(offender.verdict)}" kararıyla ayrılmıştı. ${evidence[0]}`;
-    }
 
     return {
         id: Date.now(),
         crimeType,
         statementRef: statement,
-        crime: `${crime.name} – ${statement.detail}`,
+        crime: crime.name,
         detail: statement.detail,
         severity: crime.severity,
-        name: offender ? offender.name : randomName(),
-        age: offender ? offender.age + 1 : age,
+        name: randomName(),
+        age,
         statement: statement.text,
         emotion: statement.emotion,
         sympathy: statement.sympathy,
         summary: statement.summary,
-        evidence,
+        evidence: [...statement.evidence],
         question: statement.question,
         answer: statement.answer,
         correctVerdict: getCorrectVerdict(crimeType, statement, day),
-        appearance: offender ? offender.appearance : generateNPCAppearance(),
-        returning: Boolean(offender),
+        appearance: generateNPCAppearance(overrides.age ?? age),
+        returning: false,
         asked: false,
+        ...overrides,
     };
 }
 
@@ -142,20 +166,35 @@ export function evaluateVerdict(correct, player) {
 export function createNPCElement(caseData) {
     const { appearance, emotion } = caseData;
 
+    const a = appearance;
+
     const npc = document.createElement('div');
-    npc.className = `npc ${emotion}`;
+    npc.className = [
+        'npc', emotion,
+        `hair-${a.hairStyle || 'short'}`,
+        `outfit-${a.outfit || 'shirt'}`,
+        a.wrinkles ? 'old' : '',
+    ].join(' ');
+    npc.style.setProperty('--skin', a.skin);
+    npc.style.setProperty('--hair', a.hair);
+    npc.style.setProperty('--cloth', a.clothing);
+
+    const facial = a.facialHair && a.facialHair !== 'none' ? `<div class="npc-${a.facialHair}"></div>` : '';
     npc.innerHTML = `
-        <div class="npc-head" style="background: ${appearance.skin}">
-            <div class="npc-hair" style="background: ${appearance.hair}"></div>
+        <div class="npc-body"><div class="npc-collar"></div></div>
+        <div class="npc-neck"></div>
+        <div class="npc-head">
+            <div class="npc-ear left"></div>
+            <div class="npc-ear right"></div>
+            <div class="npc-hair"></div>
             <div class="npc-face">
-                <div class="npc-eyes">
-                    <div class="npc-eye"></div>
-                    <div class="npc-eye"></div>
-                </div>
+                <div class="npc-brows"><span></span><span></span></div>
+                <div class="npc-eyes"><div class="npc-eye"></div><div class="npc-eye"></div></div>
+                ${a.glasses ? '<div class="npc-glasses"></div>' : ''}
+                ${facial}
                 <div class="npc-mouth"></div>
             </div>
         </div>
-        <div class="npc-body" style="background: ${appearance.clothing}"></div>
     `;
 
     return npc;

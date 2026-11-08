@@ -7,13 +7,13 @@
 export const DIRECTIVES = [
     {
         text: 'Bakanlık bugün artan para cezaları talep ediyor.',
-        crimeFilter: ['pettyTheft', 'vandalism', 'fraud'],
+        crimeFilter: ['pettyTheft', 'vandalism', 'fraud', 'blackmail'],
         bonus: 'fine',
         bonusAmount: 1.5,
     },
     {
         text: 'Kamu güvenliği endişesi: Hapis cezalarına öncelik verin.',
-        crimeFilter: ['assault', 'burglary', 'murder'],
+        crimeFilter: ['assault', 'burglary', 'murder', 'arson'],
         bonus: 'jail',
         bonusAmount: 1.3,
     },
@@ -25,7 +25,7 @@ export const DIRECTIVES = [
     },
     {
         text: 'Yolsuzlukla mücadele: Beyaz yakalı suçlara sert olun.',
-        crimeFilter: ['fraud', 'corruption', 'smuggling'],
+        crimeFilter: ['fraud', 'corruption', 'smuggling', 'blackmail'],
         bonus: 'jail',
         bonusAmount: 1.4,
     },
@@ -35,7 +35,85 @@ export const DIRECTIVES = [
         bonus: null,
         bonusAmount: 1,
     },
+    {
+        text: 'Trafik haftası: Yollarda düzeni sağlayın.',
+        crimeFilter: ['traffic'],
+        bonus: 'jail',
+        bonusAmount: 1.3,
+    },
+    {
+        text: 'Uyuşturucuyla mücadele: Satıcılara göz açtırmayın.',
+        crimeFilter: ['drugs'],
+        bonus: 'jail',
+        bonusAmount: 1.3,
+    },
+    {
+        text: 'Olağanüstü güvenlik toplantısı: Devlete ve halka karşı suçlarda taviz yok.',
+        crimeFilter: ['terrorism', 'treason', 'armsTrafficking', 'humanTrafficking'],
+        bonus: 'jail',
+        bonusAmount: 1.3,
+    },
 ];
+
+export const FINAL_DIRECTIVE = {
+    text: 'Bakanlık: Bugünkü son davada "hassasiyet" bekleniyor.',
+    crimeFilter: null,
+    bonus: null,
+    bonusAmount: 1,
+};
+
+export const INTRO = {
+    title: 'Adalet Bakanlığı',
+    text: 'Sayın Hakim,\n\nŞehrin Ağır Ceza Mahkemesine atandınız. Önümüzdeki on gün boyunca kararlarınız bakanlıkça değerlendirilecektir.\n\nHer sabah bakanlığın talimatını alacaksınız. Kanun kitabı masanızda. Sanıkları sorgulamak için günlük hakkınız sınırlıdır; dosyaları dikkatle okuyun.\n\nUnutmayın: Kanun ile vicdan her zaman aynı şeyi söylemez.',
+    button: 'Göreve Başla',
+};
+
+// Minister's son: the fixed last case of the last day
+export const FINALE = {
+    crimeType: 'traffic',
+    name: 'Kerem B.',
+    age: 24,
+    statement: {
+        text: 'Babamın kim olduğunu biliyor musunuz? Bu dava burada kapanır.', emotion: 'proud', sympathy: false, law: 'flee', tags: ['alcohol'],
+        detail: 'Bakanın oğlu',
+        summary: 'Gece alkollü araç kullanırken yaya geçidinde bir öğretmene çarpıp kaçtı. Öğretmen hayatını kaybetti.',
+        evidence: [
+            'Kandaki alkol: 1,9 promil; araç olay yerinden 3 km ötede terk edilmiş bulundu.',
+            'Araç Adalet Bakanı adına kayıtlı; sürücünün bakanın oğlu olduğu kamera kaydıyla doğrulandı.',
+        ],
+        question: 'Neden durmadın?', answer: 'Durmama gerek yoktu. Babam halleder, siz de bilirsiniz.',
+    },
+    offer: {
+        icon: '📞',
+        title: 'Bakanlıktan bir telefon',
+        text: 'Müsteşar arıyor: "Hakim Bey, bakanımızın oğlunun geleceği bir kaza yüzünden kararmamalı. Beraat verirseniz terfiniz ve ₺2000 ikramiye hazır."',
+        accept: 'Beraat ver',
+        decline: 'Kanunu uygula',
+        amount: 2000,
+    },
+};
+
+// Recurring characters
+export function inspectorReport(accuracy) {
+    const pct = Math.round(accuracy * 100);
+    if (accuracy >= 0.75) {
+        return { title: "Müfettiş Kaya'nın Raporu", text: `Kararlarınızın %${pct}'i kanuna uygun. Bakanlık memnun: ₺150 ikramiye.`, money: 150, reputation: 5 };
+    }
+    if (accuracy >= 0.5) {
+        return { title: "Müfettiş Kaya'nın Raporu", text: `Kararlarınızın %${pct}'i kanuna uygun. "Fena değil, ama kanun kitabını daha sık açın."`, money: 0, reputation: 0 };
+    }
+    return { title: "Müfettiş Kaya'nın Raporu", text: `Kararlarınızın yalnızca %${pct}'i kanuna uygun. "Bu gidişle koltuğunuz tehlikede." İtibar -10.`, money: 0, reputation: -10 };
+}
+
+export function journalistVisit(reputation) {
+    if (reputation >= 75) {
+        return { title: 'Selin Aydın ile Röportaj', text: 'Gazeteci Selin Aydın sizi manşete taşıdı: "Şehrin en adil hakimi." İtibar +5.', reputation: 5 };
+    }
+    if (reputation <= 40) {
+        return { title: "Selin Aydın'ın Dosyası", text: 'Gazeteci Selin Aydın mahkemenizi araştırıyor: "Ağır Ceza\'da neler oluyor?" İtibar -5.', reputation: -5 };
+    }
+    return null;
+}
 
 const FIRST_NAMES = [
     'Ahmet', 'Mehmet', 'Ayşe', 'Fatma', 'Mustafa', 'Zeynep', 'Emine', 'Hüseyin', 'Elif', 'Hasan',

@@ -302,6 +302,24 @@ export function renderRulebook({ crimes, generalNotes, amendments, day, labels }
     elements.rulebookBody.replaceChildren(...nodes);
 }
 
+// Intro letter. Resolves when the player starts.
+export function showIntro({ title, text, button }) {
+    const modal = document.getElementById('intro-modal');
+    const btn = document.getElementById('intro-btn');
+    document.getElementById('intro-title').textContent = title;
+    document.getElementById('intro-text').textContent = text;
+    btn.textContent = button;
+    modal.classList.remove('hidden');
+
+    return new Promise(resolve => {
+        btn.onclick = () => {
+            btn.onclick = null;
+            modal.classList.add('hidden');
+            resolve();
+        };
+    });
+}
+
 // Bribe / threat offer. Resolves to true when accepted.
 export function showOffer({ icon, title, text, accept, decline }) {
     elements.offerIcon.textContent = icon;
@@ -377,7 +395,8 @@ export function showEvent(type, title, description) {
         protest: '✊',
         praise: '🏆',
         warning: '⚠️',
-        law: '⚖️'
+        law: '⚖️',
+        inspector: '🕵️'
     };
 
     elements.eventIcon.textContent = icons[type] || '📢';
