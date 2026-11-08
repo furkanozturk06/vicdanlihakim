@@ -604,56 +604,101 @@ body {
     padding: 0 var(--spacing-md);
 }
 
-/* Gavel */
-#gavel {
-    position: relative;
-    width: 60px;
-    height: 40px;
-    cursor: pointer;
-    transition: transform 0.1s ease;
-}
-
-#gavel.striking {
-    animation: gavel-strike 0.3s ease-out;
-}
-
-@keyframes gavel-strike {
-    0% {
-        transform: rotate(0deg);
-    }
-
-    30% {
-        transform: rotate(-45deg);
-    }
-
-    60% {
-        transform: rotate(10deg);
-    }
-
-    100% {
-        transform: rotate(0deg);
-    }
-}
-
-.gavel-head {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 35px;
-    height: 20px;
+/* Rulebook button */
+#rulebook-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: 6px 12px;
     background: var(--wood-dark);
-    border: 2px solid var(--wood-light);
+    border: 1px solid var(--gold-dim);
     border-radius: 4px;
+    color: var(--gold-accent);
+    font-family: var(--font-typewriter);
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+    box-shadow: var(--shadow-soft);
 }
 
-.gavel-handle {
+#rulebook-btn:active {
+    transform: translateY(1px);
+}
+
+.rulebook-icon {
+    font-size: 1.1rem;
+}
+
+/* Rulebook modal */
+.rulebook-content {
+    position: relative;
+    width: calc(100% - 2 * var(--spacing-md));
+    max-width: 520px;
+    max-height: calc(100% - 2 * var(--spacing-xl));
+    overflow-y: auto;
+    background: var(--paper-aged);
+    color: var(--ink-black);
+    border-radius: 4px;
+    padding: var(--spacing-lg) var(--spacing-md);
+    box-shadow: var(--shadow-soft);
+    font-family: var(--font-typewriter);
+    font-size: 0.78rem;
+    line-height: 1.5;
+}
+
+.rulebook-content h2 {
+    text-align: center;
+    color: var(--red-stamp);
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+    border-bottom: 2px solid var(--ink-black);
+    padding-bottom: var(--spacing-xs);
+    margin-bottom: var(--spacing-sm);
+}
+
+.rulebook-scale {
+    font-size: 0.7rem;
+    text-align: center;
+    margin-bottom: var(--spacing-md);
+}
+
+#rulebook-close {
     position: absolute;
-    top: 15px;
-    left: 12px;
-    width: 10px;
-    height: 30px;
-    background: var(--wood-medium);
-    border-radius: 0 0 3px 3px;
+    top: var(--spacing-sm);
+    right: var(--spacing-sm);
+    width: 32px;
+    height: 32px;
+    background: none;
+    border: none;
+    color: var(--ink-black);
+    font-size: 1.1rem;
+    cursor: pointer;
+}
+
+.law {
+    padding: var(--spacing-sm) 0;
+    border-top: 1px dashed var(--ink-black);
+}
+
+.law h3 {
+    color: var(--red-stamp);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.law-base {
+    font-weight: bold;
+}
+
+.law ul {
+    list-style: none;
+    padding-left: var(--spacing-sm);
+}
+
+.law li::before {
+    content: "▪ ";
+    color: var(--red-stamp);
 }
 
 #case-number {

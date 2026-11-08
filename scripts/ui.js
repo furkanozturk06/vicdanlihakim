@@ -25,7 +25,9 @@ export function initUI() {
         evidenceContent: document.getElementById('evidence-content'),
 
         // Judge's desk
-        gavel: document.getElementById('gavel'),
+        rulebookBtn: document.getElementById('rulebook-btn'),
+        rulebookModal: document.getElementById('rulebook-modal'),
+        rulebookClose: document.getElementById('rulebook-close'),
         caseNumValue: document.getElementById('case-num-value'),
         sentencingPanel: document.getElementById('sentencing-panel'),
 
@@ -228,18 +230,13 @@ export function hideEvidence() {
     elements.evidenceDesk.classList.add('hidden');
 }
 
-// Animate gavel strike
-export function strikeGavel() {
-    return new Promise(resolve => {
-        elements.gavel.classList.add('striking');
+// Rulebook modal
+export function openRulebook() {
+    elements.rulebookModal.classList.remove('hidden');
+}
 
-        // Play sound effect would go here
-
-        setTimeout(() => {
-            elements.gavel.classList.remove('striking');
-            resolve();
-        }, 300);
-    });
+export function closeRulebook() {
+    elements.rulebookModal.classList.add('hidden');
 }
 
 // Show feedback overlay

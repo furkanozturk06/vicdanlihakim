@@ -155,6 +155,16 @@ function setupEventListeners() {
         startNewDay();
     });
 
+    // Rulebook
+    elements.rulebookBtn.addEventListener('click', () => {
+        audio.playClick();
+        ui.openRulebook();
+    });
+    elements.rulebookClose.addEventListener('click', () => ui.closeRulebook());
+    elements.rulebookModal.addEventListener('click', (e) => {
+        if (e.target === elements.rulebookModal) ui.closeRulebook();
+    });
+
     // All verdict buttons (new structure)
     document.querySelectorAll('.verdict-btn').forEach(btn => {
         btn.addEventListener('click', (e) => handleVerdictClick(e, btn));
@@ -253,9 +263,9 @@ async function processVerdict(sentence, subOption = null) {
     ui.setSentencingEnabled(false);
     ui.closeAllSubOptions();
 
-    // Animate gavel
+    // Gavel sound
     audio.playGavel();
-    await ui.strikeGavel();
+    await new Promise(resolve => setTimeout(resolve, 300));
 
     // Validate verdict
     const result = validateVerdict(state.currentCase, sentence, subOption);

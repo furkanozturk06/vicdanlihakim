@@ -82,10 +82,10 @@
             <!-- Judge's Desk -->
             <section id="judges-desk">
                 <div class="desk-surface">
-                    <div id="gavel" class="gavel-resting">
-                        <div class="gavel-head"></div>
-                        <div class="gavel-handle"></div>
-                    </div>
+                    <button id="rulebook-btn" type="button" aria-label="Ceza kanununu aç">
+                        <span class="rulebook-icon">📖</span>
+                        <span class="rulebook-label">KANUN</span>
+                    </button>
                     <div id="case-number">
                         <span>Dava #</span>
                         <span id="case-num-value">001</span>
@@ -167,6 +167,93 @@
                     </div>
                 </div>
                 <button id="next-day-btn" class="typewriter-btn">Sonraki Güne Geç</button>
+            </div>
+        </div>
+
+        <!-- Rulebook Modal -->
+        <div id="rulebook-modal" class="modal hidden">
+            <div class="rulebook-content">
+                <button id="rulebook-close" type="button" aria-label="Kapat">✕</button>
+                <h2>CEZA KANUNU</h2>
+                <p class="rulebook-scale">Hafiften ağıra: Beraat · Para (Hafif, Orta, Ağır) · Ev hapsi · Hapis (Kısa, Orta, Uzun) · İdam</p>
+
+                <section class="law">
+                    <h3>Hırsızlık</h3>
+                    <p class="law-base">Olağan ceza: Hafif para cezası</p>
+                    <ul>
+                        <li>Mal geri verilmediyse ve sanık daha önce uyarı aldıysa: Orta para cezası</li>
+                        <li>Açlık gibi hayati bir ihtiyaç için, çok küçük değerde ve mağdur şikayetçi değilse: Beraat</li>
+                    </ul>
+                </section>
+
+                <section class="law">
+                    <h3>Darp</h3>
+                    <p class="law-base">Olağan ceza (hafif yaralanma, sabıka yok): Ev hapsi</p>
+                    <ul>
+                        <li>Dikiş veya kırık gerektiren yaralanma ya da önceki darp kaydı: Kısa hapis</li>
+                        <li>Bir yakınını korurken, tanıklarla doğrulanmışsa (meşru müdafaa): Beraat</li>
+                        <li>Alkollü olmak cezayı hafifletmez.</li>
+                    </ul>
+                </section>
+
+                <section class="law">
+                    <h3>Dolandırıcılık</h3>
+                    <p class="law-base">Olağan ceza (bilerek sahtecilik, vergi hilesi): Kısa hapis</p>
+                    <ul>
+                        <li>Çok sayıda mağdur ve geri ödenmemiş büyük zarar: Orta hapis</li>
+                        <li>Sabıkası yok ve zararı ödemeyi teklif ediyorsa: Ağır para cezası</li>
+                        <li>Çalıştığı yerden zimmet, kısmen geri ödenmiş ve mağdur geri ödeme istiyorsa: Ev hapsi</li>
+                    </ul>
+                </section>
+
+                <section class="law">
+                    <h3>Soygun</h3>
+                    <p class="law-base">Olağan ceza: Kısa hapis</p>
+                    <ul>
+                        <li>Önceden keşif yapılmış, özel alet kullanılmış ve büyük değer çalınmışsa: Orta hapis</li>
+                        <li>İlaç gibi hayati bir ihtiyaç için, yalnızca gereken alınmışsa: Ev hapsi</li>
+                        <li>Yalnızca barınmak için girilmiş, hiçbir şey alınmamış ve şikayet yoksa: Beraat</li>
+                    </ul>
+                </section>
+
+                <section class="law">
+                    <h3>Mala Zarar Verme</h3>
+                    <p class="law-base">Olağan ceza: Hafif para cezası</p>
+                    <ul>
+                        <li>Kamu binasına zarar veya tekrarlanan eylem: Orta para cezası</li>
+                    </ul>
+                </section>
+
+                <section class="law">
+                    <h3>Cinayet</h3>
+                    <p class="law-base">Olağan ceza (tasarlayarak öldürme): Uzun hapis</p>
+                    <ul>
+                        <li>Para karşılığı öldürme veya birden fazla cinayet: İdam</li>
+                        <li>Dikkatsizlik veya kaza sonucu öldürme (taksir): Orta hapis</li>
+                        <li>Akıl hastalığı adli tıp raporuyla doğrulanmışsa: Ev hapsi (tedavi altında)</li>
+                        <li>Bir yakınını korurken, kanıtlarla doğrulanmışsa (meşru müdafaa): Beraat</li>
+                    </ul>
+                </section>
+
+                <section class="law">
+                    <h3>Yolsuzluk</h3>
+                    <p class="law-base">Olağan ceza (görevi kötüye kullanma): Kısa hapis</p>
+                    <ul>
+                        <li>Büyük miktarda rüşvet: Orta hapis</li>
+                        <li>Usulsüzlük var ama kamuya gerçek fayda sağlanmışsa: Ağır para cezası</li>
+                        <li>Tehdit altında yapılmış ve hiçbir çıkar sağlanmamışsa: Ev hapsi</li>
+                    </ul>
+                </section>
+
+                <section class="law">
+                    <h3>Kaçakçılık</h3>
+                    <p class="law-base">Olağan ceza: Kısa hapis</p>
+                    <ul>
+                        <li>Taşıdığı maldan habersiz şoför veya taşıyıcı: Orta para cezası</li>
+                        <li>Başka geçim kaynağı olmadığı için yapılmışsa: Ev hapsi</li>
+                        <li>Kâr amacı gütmeden ilaç getirilmişse: Hafif para cezası</li>
+                    </ul>
+                </section>
             </div>
         </div>
 
