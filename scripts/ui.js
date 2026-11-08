@@ -28,6 +28,20 @@ export function initUI() {
         rulebookBtn: document.getElementById('rulebook-btn'),
         rulebookModal: document.getElementById('rulebook-modal'),
         rulebookClose: document.getElementById('rulebook-close'),
+        rulebookBody: document.getElementById('rulebook-body'),
+
+        // Offer
+        offerModal: document.getElementById('offer-modal'),
+        offerIcon: document.getElementById('offer-icon'),
+        offerTitle: document.getElementById('offer-title'),
+        offerText: document.getElementById('offer-text'),
+        offerAccept: document.getElementById('offer-accept'),
+        offerDecline: document.getElementById('offer-decline'),
+
+        // Newspaper
+        paperDate: document.getElementById('paper-date'),
+        paperHeadline: document.getElementById('paper-headline'),
+        paperSide: document.getElementById('paper-side'),
         caseNumValue: document.getElementById('case-num-value'),
         sentencingPanel: document.getElementById('sentencing-panel'),
 
@@ -181,10 +195,17 @@ export function showSpeechBubble(text, crimeType) {
         elements.crimeType.textContent = crimeType;
     }
 
-    // Typewriter effect
+    return typeIntoBubble(text);
+}
+
+// Typewriter effect into the speech bubble; a new call cancels the previous one
+let typeInterval = null;
+export function typeIntoBubble(text) {
+    clearInterval(typeInterval);
+    elements.bubbleText.textContent = '';
     return new Promise(resolve => {
         let i = 0;
-        const typeInterval = setInterval(() => {
+        typeInterval = setInterval(() => {
             if (i < text.length) {
                 elements.bubbleText.textContent += text[i];
                 i++;
@@ -201,28 +222,105 @@ export function hideSpeechBubble() {
     elements.speechBubble.classList.add('hidden');
 }
 
-// Show evidence
-export function showEvidence(summary, evidenceList) {
-    const summaryEl = document.createElement('p');
-    summaryEl.className = 'case-summary';
-    summaryEl.textContent = summary;
+const el = (tag, className, text) => {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined) node.textContent = text;
+    return node;
+};
 
-    const listEl = document.createElement('ul');
-    listEl.className = 'case-evidence';
-    evidenceList.forEach(item => {
-        const li = document.createElement('li');
-        li.textContent = item;
-        listEl.appendChild(li);
-    });
+// Show the case file. The second evidence item stays hidden until the defendant is questioned.
+export function showEvidence(caseData, questionsLeft) {
+    const header = el('p', 'case-defendant', `Sanık: ${caseData.name}, ${caseData.age} yaşında`);
+    const summary = el('p', 'case-summary', caseData.summary);
 
-    elements.evidenceContent.replaceChildren(summaryEl, listEl);
+    const list = el('ul', 'case-evidence');
+    list.appendChild(el('li', '', caseData.evidence[0]));
+    if (caseData.asked) {
+        list.appendChild(el('li', 'revealed', caseData.evidence[1]));
+    }
+
+    const interrogation = el('div', 'case-interrogation');
+    if (caseData.asked) {
+        interrogation.appendChild(el('p', 'interrogation-answer', `Sorgu: "${caseData.answer}"`));
+    } else {
+        const btn = el('button', 'interrogate-btn');
+        btn.type = 'button';
+        btn.disabled = questionsLeft <= 0;
+        btn.appendChild(el('span', 'interrogate-q', `🔎 "${caseData.question}"`));
+        btn.appendChild(el('span', 'interrogate-left', questionsLeft > 0 ? `Sorgula · kalan hak: ${questionsLeft}` : 'Bugünkü sorgu hakkın bitti'));
+        interrogation.appendChild(btn);
+    }
+
+    elements.evidenceContent.replaceChildren(header, summary, list, interrogation);
     elements.evidenceDesk.classList.remove('hidden');
-    elements.evidenceDesk.style.animation = 'fade-in 0.3s ease';
 }
 
 // Hide evidence
 export function hideEvidence() {
     elements.evidenceDesk.classList.add('hidden');
+}
+
+// Render the rulebook from law data. Amendments introduced today are marked YENİ.
+export function renderRulebook({ crimes, generalNotes, amendments, day, labels }) {
+    const nodes = [];
+
+    const general = el('ul', 'law-general');
+    generalNotes.forEach(n => general.appendChild(el('li', '', n)));
+    nodes.push(general);
+
+    if (amendments.length > 0) {
+        const section = el('section', 'law law-amendments');
+        section.appendChild(el('h3', '', 'Ek Maddeler'));
+        const ul = el('ul');
+        amendments.forEach(a => {
+            const li = el('li', '', `${a.title}: ${a.text}`);
+            if (a.day === day) li.appendChild(el('span', 'law-new', 'YENİ'));
+            ul.appendChild(li);
+        });
+        section.appendChild(ul);
+        nodes.push(section);
+    }
+
+    for (const crime of Object.values(crimes)) {
+        const section = el('section', 'law');
+        section.appendChild(el('h3', '', crime.name));
+        const base = crime.laws.base;
+        const baseCond = base.text ? ` (${base.text})` : '';
+        section.appendChild(el('p', 'law-base', `Olağan ceza${baseCond}: ${labels[base.verdict]}`));
+
+        const ul = el('ul');
+        for (const [key, law] of Object.entries(crime.laws)) {
+            if (key === 'base') continue;
+            ul.appendChild(el('li', '', `${law.text}: ${labels[law.verdict]}`));
+        }
+        (crime.notes || []).forEach(n => ul.appendChild(el('li', '', n)));
+        section.appendChild(ul);
+        nodes.push(section);
+    }
+
+    elements.rulebookBody.replaceChildren(...nodes);
+}
+
+// Bribe / threat offer. Resolves to true when accepted.
+export function showOffer({ icon, title, text, accept, decline }) {
+    elements.offerIcon.textContent = icon;
+    elements.offerTitle.textContent = title;
+    elements.offerText.textContent = text;
+    elements.offerAccept.textContent = accept;
+    elements.offerDecline.textContent = decline;
+    elements.offerModal.classList.remove('hidden');
+
+    return new Promise(resolve => {
+        const done = (accepted) => {
+            elements.offerAccept.onclick = null;
+            elements.offerDecline.onclick = null;
+            elements.offerModal.classList.add('hidden');
+            resolve(accepted);
+        };
+        elements.offerAccept.onclick = () => done(true);
+        elements.offerDecline.onclick = () => done(false);
+    });
 }
 
 // Rulebook modal
@@ -235,25 +333,30 @@ export function closeRulebook() {
 }
 
 // Show feedback overlay
-export function showFeedback(isCorrect, title, message, stats) {
+export function showFeedback(isCorrect, title, message, stats, stampLabel = '') {
     elements.feedbackTitle.textContent = title;
     elements.feedbackTitle.className = isCorrect ? '' : 'negative';
     elements.feedbackMessage.textContent = message;
     elements.feedbackStats.innerHTML = stats;
 
     elements.stampEffect.className = isCorrect ? 'justice' : '';
+    elements.stampEffect.textContent = stampLabel;
     elements.feedbackOverlay.classList.remove('hidden');
 
     return new Promise(resolve => {
         setTimeout(() => {
             elements.feedbackOverlay.classList.add('hidden');
             resolve();
-        }, 2000);
+        }, 2600);
     });
 }
 
-// Show daily summary modal
-export function showDailySummary(dayStats) {
+// Show the end-of-day newspaper
+export function showDailySummary(dayStats, paper) {
+    elements.paperDate.textContent = `${dayStats.day}. Gün`;
+    elements.paperHeadline.textContent = paper.main;
+    elements.paperSide.replaceChildren(...paper.side.map(t => el('li', '', t)));
+
     elements.casesJudged.textContent = dayStats.casesJudged;
     elements.correctVerdicts.textContent = dayStats.correctVerdicts;
     elements.dayEarnings.textContent = `₺${dayStats.earnings >= 0 ? '+' : ''}${dayStats.earnings}`;
@@ -273,7 +376,8 @@ export function showEvent(type, title, description) {
         media: '📰',
         protest: '✊',
         praise: '🏆',
-        warning: '⚠️'
+        warning: '⚠️',
+        law: '⚖️'
     };
 
     elements.eventIcon.textContent = icons[type] || '📢';
@@ -281,11 +385,13 @@ export function showEvent(type, title, description) {
     elements.eventDescription.textContent = description;
     elements.eventOverlay.classList.remove('hidden');
 
+    // Longer texts (e.g. law amendments) stay up longer
+    const duration = Math.max(3000, (title.length + description.length) * 55);
     return new Promise(resolve => {
         setTimeout(() => {
             elements.eventOverlay.classList.add('hidden');
             resolve();
-        }, 3000);
+        }, duration);
     });
 }
 

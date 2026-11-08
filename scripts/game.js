@@ -3,127 +3,56 @@
  * Core game loop, state management, and decision processing
  */
 
-import { generateCase, createNPCElement, validateVerdict, getRandomDirective, getEmotionFeedback } from './npc.js';
+import { generateCase, createNPCElement, evaluateVerdict, getRandomDirective, getEmotionFeedback, verdictLabel, activeAmendments } from './npc.js';
+import { CRIMES, GENERAL_NOTES, AMENDMENTS, VERDICT_LABELS, LADDER } from './cases.js';
+import { OFFERS, buildNewspaper } from './story.js';
 import * as ui from './ui.js';
 import { audio } from './audio.js';
 
 // Game configuration
 const CONFIG = {
     casesPerDay: 5,
+    questionsPerDay: 3,
     baseReward: 50,
     basePenalty: 30,
     startingMoney: 500,
     startingReputation: 75,
     startingConscience: 100,
     maxDays: 10,
+    offerChance: 0.3,
+    exposeChance: 0.35,
+    threatRevengeChance: 0.4,
+    offenderReturnChance: 0.35,
 };
 
-// Game state
-let state = {
-    day: 1,
-    caseNumber: 0,
-    totalCases: 0,
-    money: CONFIG.startingMoney,
-    reputation: CONFIG.startingReputation,
-    conscience: CONFIG.startingConscience,
+let state = createInitialState();
 
-    // Daily stats
-    dayCases: 0,
-    dayCorrect: 0,
-    dayEarnings: 0,
-
-    // Current case
-    currentCase: null,
-    currentDirective: null,
-
-    // Flags
-    isProcessing: false,
-    gameOver: false,
-};
-
-// Event triggers (TURKISH)
-const EVENTS = {
-    media: {
-        threshold: { reputation: 90 },
-        chance: 0.2,
-        title: "Medya İlgisi!",
-        description: "Adil kararlarınız basının dikkatini çekti. Milletin gözleri sizin üzerinizde."
-    },
-    protest: {
-        threshold: { conscience: 30 },
-        chance: 0.3,
-        title: "Halk Protestosu!",
-        description: "Vatandaşlar dışarıda toplanıyor, sert cezalarınıza öfkeliler. İtibarınız zarar gördü."
-    },
-    praise: {
-        threshold: { reputation: 95, conscience: 80 },
-        chance: 0.15,
-        title: "Resmi Takdir",
-        description: "Adalet Bakanı dengeli yaklaşımınızı övdü. Bir prim kazandınız."
-    },
-    warning: {
-        threshold: { reputation: 25 },
-        chance: 0.4,
-        title: "Resmi Uyarı",
-        description: "Bakanlık performansınızdan endişe duyuyor. Gelişin, yoksa sonuçlarına katlanın."
-    }
-};
-
-// Endings based on final state (TURKISH)
-const ENDINGS = {
-    perfect: {
-        condition: (s) => s.conscience >= 80 && s.reputation >= 80,
-        title: "Adil Hakim",
-        description: "Adınız nesiller boyu hatırlanacak. Merhameti adaletle dengellediniz ve halk sizi bunun için seviyor. Tarih kitapları bilgeliğinizi anlatacak."
-    },
-    corrupt: {
-        condition: (s) => s.money >= 2000 && s.conscience < 40,
-        title: "Yozlaşmış Ruh",
-        description: "Zenginleştiniz, ama ne pahasına? Vicdanınız artık sadece bir fısıltı. Suçlular serbest geziyor, masumlar acı çekiyor. Değdi mi?"
-    },
-    harsh: {
-        condition: (s) => s.conscience < 20,
-        title: "Demir Yumruk",
-        description: "Size acımasız dediler. Cezaevleri mahkum ettiklerinizle dolup taşıyor. Masumlar bile bakışınızdan korkuyor. Siz merhametsiz adalet oldunuz."
-    },
-    beloved: {
-        condition: (s) => s.reputation >= 90 && s.conscience >= 60,
-        title: "Halkın Hakimi",
-        description: "Vatandaşlar sizi seviyor. Yüzünüz duvarlarda, adınız şarkılarda. İnançlarını kaybettikleri sisteme umut verdiniz."
-    },
-    fallen: {
-        condition: (s) => s.reputation < 20,
-        title: "Düşmüş",
-        description: "Azledildiniz. Görevden alındınız. Kariyeriniz utançla sona erdi. Yemin ettiğiniz halk size sırtını döndü."
-    },
-    survivor: {
-        condition: (s) => true, // Default ending
-        title: "Hayatta Kalan",
-        description: "Atlattınız, ne aziz ne de günahkar. Bazı günler diğerlerinden daha zordu. Her kararın ağırlığı hâlâ içinizde."
-    }
-};
-
-// Initialize game
-export function initGame() {
-    resetState();
-    ui.initUI();
-    audio.init();
-    setupEventListeners();
-    ui.showStartScreen();
-}
-
-// Reset state to initial values
-function resetState() {
-    state = {
+function createInitialState() {
+    return {
         day: 1,
-        caseNumber: 0,
         totalCases: 0,
         money: CONFIG.startingMoney,
         reputation: CONFIG.startingReputation,
         conscience: CONFIG.startingConscience,
+
+        // Daily
         dayCases: 0,
         dayCorrect: 0,
         dayEarnings: 0,
+        questionsLeft: CONFIG.questionsPerDay,
+        offerMadeToday: false,
+        dayLog: [],
+
+        // Career
+        correctTotal: 0,
+        deathSentences: 0,
+        bribesTaken: 0,
+        bribesExposed: 0,
+        threatsObeyed: 0,
+        pendingRevenge: false,
+        offenders: [],
+        usedStatements: new Set(),
+
         currentCase: null,
         currentDirective: null,
         isProcessing: false,
@@ -131,31 +60,108 @@ function resetState() {
     };
 }
 
-// Setup event listeners
+// Event triggers (TURKISH)
+const EVENTS = {
+    media: {
+        check: (s) => s.reputation >= 90,
+        chance: 0.2,
+        title: 'Medya İlgisi!',
+        description: 'Adil kararlarınız basının dikkatini çekti. Milletin gözleri sizin üzerinizde.',
+    },
+    protest: {
+        check: (s) => s.conscience <= 30,
+        chance: 0.3,
+        title: 'Halk Protestosu!',
+        description: 'Vatandaşlar dışarıda toplanıyor, sert cezalarınıza öfkeliler. İtibarınız zarar gördü.',
+        apply: (s) => { s.reputation = Math.max(0, s.reputation - 10); },
+    },
+    praise: {
+        check: (s) => s.reputation >= 95 && s.conscience >= 80,
+        chance: 0.15,
+        title: 'Resmi Takdir',
+        description: 'Adalet Bakanı dengeli yaklaşımınızı övdü. ₺100 prim kazandınız.',
+        apply: (s) => { s.money += 100; },
+    },
+    warning: {
+        check: (s) => s.reputation <= 25,
+        chance: 0.4,
+        title: 'Resmi Uyarı',
+        description: 'Bakanlık performansınızdan endişe duyuyor. Gelişin, yoksa sonuçlarına katlanın.',
+    },
+};
+
+// Endings based on final state (TURKISH)
+const ENDINGS = [
+    {
+        condition: (s) => s.bribesExposed >= 2,
+        title: 'Rüşvet Skandalı',
+        description: 'Zarflar birer birer gün yüzüne çıktı. Bir zamanlar hüküm verdiğiniz salonda bu kez sanık sandalyesinde oturuyorsunuz.',
+    },
+    {
+        condition: (s) => s.conscience >= 80 && s.reputation >= 80,
+        title: 'Adil Hakim',
+        description: 'Adınız nesiller boyu hatırlanacak. Merhameti adaletle dengelediniz ve halk sizi bunun için seviyor.',
+    },
+    {
+        condition: (s) => s.money >= 2000 && s.conscience < 40,
+        title: 'Yozlaşmış Ruh',
+        description: 'Zenginleştiniz, ama ne pahasına? Vicdanınız artık sadece bir fısıltı. Değdi mi?',
+    },
+    {
+        condition: (s) => s.conscience < 20,
+        title: 'Demir Yumruk',
+        description: 'Size acımasız dediler. Cezaevleri mahkum ettiklerinizle dolup taşıyor. Masumlar bile bakışınızdan korkuyor.',
+    },
+    {
+        condition: (s) => s.reputation >= 90 && s.conscience >= 60,
+        title: 'Halkın Hakimi',
+        description: 'Vatandaşlar sizi seviyor. İnançlarını kaybettikleri sisteme umut verdiniz.',
+    },
+    {
+        condition: (s) => s.reputation < 20,
+        title: 'Düşmüş',
+        description: 'Görevden alındınız. Kariyeriniz utançla sona erdi. Yemin ettiğiniz halk size sırtını döndü.',
+    },
+    {
+        condition: () => true,
+        title: 'Hayatta Kalan',
+        description: 'Atlattınız, ne aziz ne de günahkar. Her kararın ağırlığı hâlâ içinizde.',
+    },
+];
+
+// Initialize game
+export function initGame() {
+    state = createInitialState();
+    ui.initUI();
+    audio.init();
+    setupEventListeners();
+    ui.showStartScreen();
+}
+
 function setupEventListeners() {
     const elements = ui.getElements();
 
-    // Start button
     elements.startBtn.addEventListener('click', () => {
         audio.resume();
         audio.playClick();
         startGame();
     });
 
-    // Restart button
     elements.restartBtn.addEventListener('click', () => {
         audio.playClick();
         restartGame();
     });
 
-    // Next day button
     elements.nextDayBtn.addEventListener('click', () => {
         audio.playClick();
         ui.hideDailySummary();
-        startNewDay();
+        if (state.day > CONFIG.maxDays) {
+            endGame();
+        } else {
+            startNewDay();
+        }
     });
 
-    // Rulebook
     elements.rulebookBtn.addEventListener('click', () => {
         audio.playClick();
         ui.openRulebook();
@@ -165,149 +171,220 @@ function setupEventListeners() {
         if (e.target === elements.rulebookModal) ui.closeRulebook();
     });
 
-    // All verdict buttons (new structure)
+    // Interrogation button lives inside the case file, which is re-rendered per case
+    elements.evidenceContent.addEventListener('click', (e) => {
+        if (e.target.closest('.interrogate-btn')) interrogate();
+    });
+
     document.querySelectorAll('.verdict-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => handleVerdictClick(e, btn));
+        btn.addEventListener('click', () => {
+            if (state.isProcessing || !state.currentCase) return;
+            audio.playClick();
+            const key = btn.dataset.level ? `${btn.dataset.sentence}-${btn.dataset.level}` : btn.dataset.sentence;
+            processVerdict(key);
+        });
     });
 }
 
-// Handle verdict button click
-function handleVerdictClick(e, btn) {
-    if (state.isProcessing || !state.currentCase) return;
-
-    audio.playClick();
-
-    const sentence = btn.dataset.sentence;
-    const level = btn.dataset.level || null;
-
-    processVerdict(sentence, level);
-}
-
-// Start the game
 function startGame() {
     ui.hideStartScreen();
     audio.startAmbient();
     startNewDay();
 }
 
-// Restart the game
 function restartGame() {
-    resetState();
+    state = createInitialState();
     document.getElementById('game-over-screen').classList.add('hidden');
+    audio.startAmbient();
     ui.updateStats(state);
     startNewDay();
 }
 
-// Start a new day
+function refreshRulebook() {
+    ui.renderRulebook({
+        crimes: CRIMES,
+        generalNotes: GENERAL_NOTES,
+        amendments: activeAmendments(state.day),
+        day: state.day,
+        labels: VERDICT_LABELS,
+    });
+}
+
 async function startNewDay() {
-    // Reset daily stats
     state.dayCases = 0;
     state.dayCorrect = 0;
     state.dayEarnings = 0;
+    state.questionsLeft = CONFIG.questionsPerDay;
+    state.offerMadeToday = false;
+    state.dayLog = [];
 
-    // Get new directive
     state.currentDirective = getRandomDirective();
     ui.showDirective(state.currentDirective);
-
+    refreshRulebook();
     ui.updateStats(state);
 
-    // Start first case
+    // Revenge for an ignored threat
+    if (state.pendingRevenge) {
+        state.pendingRevenge = false;
+        if (Math.random() < CONFIG.threatRevengeChance) {
+            state.money = Math.max(0, state.money - 150);
+            await ui.showEvent('warning', 'Gece Yarısı Saldırı', 'Tehdidi ciddiye almadınız. Arabanız kundaklandı: ₺150 zarar.');
+            ui.updateStats(state);
+        }
+    }
+
+    // New amendments
+    for (const a of AMENDMENTS.filter(a => a.day === state.day)) {
+        await ui.showEvent('law', `Kanunda Değişiklik: ${a.title}`, `${a.text} Ayrıntılar kanun kitabında.`);
+    }
+
     await presentNextCase();
 }
 
-// Present the next case
+// Pick a released offender to bring back, if any is due
+function takeReturningOffender() {
+    const due = state.offenders.filter(o => o.day <= state.day - 2);
+    if (due.length === 0 || Math.random() > CONFIG.offenderReturnChance) return null;
+    const offender = due[Math.floor(Math.random() * due.length)];
+    state.offenders = state.offenders.filter(o => o !== offender);
+    return offender;
+}
+
 async function presentNextCase() {
     if (state.gameOver) return;
 
     state.isProcessing = true;
     ui.setSentencingEnabled(false);
 
-    // Check if day is complete
     if (state.dayCases >= CONFIG.casesPerDay) {
         endDay();
         return;
     }
 
-    // Generate new case
-    state.caseNumber++;
     state.totalCases++;
-    state.currentCase = generateCase(state.day, state.currentDirective);
-
+    state.currentCase = generateCase(state.day, state.currentDirective, takeReturningOffender(), state.usedStatements);
     ui.updateCaseNumber(state.totalCases);
 
-    // Animate NPC entrance
     audio.playDoor();
     await ui.openDoor();
-
-    const npcElement = createNPCElement(state.currentCase);
-    await ui.showNPC(npcElement);
-
+    await ui.showNPC(createNPCElement(state.currentCase));
     await ui.closeDoor();
 
-    // Show speech bubble with crime type
+    ui.showEvidence(state.currentCase, state.questionsLeft);
     await ui.showSpeechBubble(state.currentCase.statement, state.currentCase.crime);
 
-    // Show case file
-    ui.showEvidence(state.currentCase.summary, state.currentCase.evidence);
+    const offer = pickOffer(state.currentCase);
+    if (offer) {
+        state.offerMadeToday = true;
+        const accepted = await ui.showOffer(offer.view);
+        if (accepted) {
+            offer.onAccept();
+            ui.updateStats(state);
+            state.isProcessing = false;
+            await processVerdict(offer.forcedVerdict, offer.type);
+            return;
+        }
+        offer.onDecline();
+        ui.updateStats(state);
+    }
 
-    // Enable sentencing
     state.isProcessing = false;
     ui.setSentencingEnabled(true);
 }
 
-// Process the player's verdict
-async function processVerdict(sentence, subOption = null) {
+// Decide whether this case comes with a bribe or a threat
+function pickOffer(c) {
+    if (state.day < 2 || state.offerMadeToday) return null;
+    if (c.severity < 3 || LADDER.indexOf(c.correctVerdict) < LADDER.indexOf('house-arrest')) return null;
+    if (Math.random() > CONFIG.offerChance) return null;
+
+    const type = state.day >= 4 && Math.random() < 0.4 ? 'threat' : 'bribe';
+    const def = OFFERS[type];
+
+    if (type === 'bribe') {
+        const amount = 300 + c.severity * 100;
+        return {
+            type,
+            forcedVerdict: def.forcedVerdict,
+            view: { ...def, text: def.text(amount) },
+            onAccept: () => {
+                state.money += amount;
+                state.conscience = Math.max(0, state.conscience - 15);
+                state.bribesTaken++;
+                c.bribed = true;
+            },
+            onDecline: () => {
+                state.conscience = Math.min(100, state.conscience + 3);
+            },
+        };
+    }
+
+    return {
+        type,
+        forcedVerdict: def.forcedVerdict,
+        view: { ...def, text: def.text() },
+        onAccept: () => {
+            state.conscience = Math.max(0, state.conscience - 10);
+            state.threatsObeyed++;
+        },
+        onDecline: () => {
+            state.pendingRevenge = true;
+        },
+    };
+}
+
+// Ask the defendant the case question: reveals the hidden evidence
+async function interrogate() {
+    const c = state.currentCase;
+    if (!c || c.asked || state.isProcessing || state.questionsLeft <= 0) return;
+
+    audio.playClick();
+    c.asked = true;
+    state.questionsLeft--;
+    ui.showEvidence(c, state.questionsLeft);
+    await ui.typeIntoBubble(c.answer);
+}
+
+async function processVerdict(sentenceKey, viaOffer = null) {
     if (state.isProcessing || !state.currentCase) return;
 
+    const c = state.currentCase;
     state.isProcessing = true;
     ui.setSentencingEnabled(false);
-    ui.closeAllSubOptions();
 
-    // Gavel sound
     audio.playGavel();
     await new Promise(resolve => setTimeout(resolve, 300));
 
-    // Validate verdict
-    const result = validateVerdict(state.currentCase, sentence, subOption);
+    const result = evaluateVerdict(c.correctVerdict, sentenceKey);
+    const sentenceBase = sentenceKey.split('-')[0];
 
-    // Calculate rewards/penalties
     let moneyChange = 0;
     let conscienceChange = 0;
     let reputationChange = 0;
 
     if (result.correct) {
-        // Correct verdict
         state.dayCorrect++;
+        state.correctTotal++;
         moneyChange = CONFIG.baseReward;
-
-        // Apply directive bonus
-        if (state.currentDirective && state.currentDirective.bonus === sentence) {
+        if (state.currentDirective && state.currentDirective.bonus === sentenceBase) {
             moneyChange = Math.floor(moneyChange * state.currentDirective.bonusAmount);
         }
-
-        if (result.partial) {
-            moneyChange = Math.floor(moneyChange * 0.7);
-        }
-
+        if (result.partial) moneyChange = Math.floor(moneyChange * 0.7);
         reputationChange = 2;
-
         audio.playSuccess();
     } else {
-        // Incorrect verdict
         moneyChange = -CONFIG.basePenalty * result.severity;
-
         if (result.tooHarsh) {
             conscienceChange = -5 * result.severity;
             reputationChange = -3;
-        } else if (result.tooLenient) {
+        } else {
             reputationChange = -5;
         }
-
         audio.playFailure();
     }
 
-    // Apply death penalty conscience hit
-    if (sentence === 'death') {
+    if (sentenceKey === 'death') {
+        state.deathSentences++;
         conscienceChange -= 10;
         if (!result.correct) {
             conscienceChange -= 20;
@@ -315,16 +392,37 @@ async function processVerdict(sentence, subOption = null) {
         }
     }
 
-    // Update state
+    // Returning offender: the public remembers who let them go
+    if (c.returning) reputationChange -= 5;
+
     state.money = Math.max(0, state.money + moneyChange);
     state.conscience = Math.max(0, Math.min(100, state.conscience + conscienceChange));
     state.reputation = Math.max(0, Math.min(100, state.reputation + reputationChange));
     state.dayEarnings += moneyChange;
     state.dayCases++;
 
-    // Show feedback (TURKISH)
-    const feedbackTitle = result.correct ? "Adalet Yerini Buldu!" : "Vicdan Ağır...";
-    const feedbackMsg = getEmotionFeedback(state.currentCase.emotion, sentence, result.correct);
+    // Light sentences for unsympathetic defendants may come back to haunt the judge
+    if (!c.sympathy && LADDER.indexOf(sentenceKey) <= LADDER.indexOf('fine-minor') && !c.returning) {
+        state.offenders.push({ name: c.name, age: c.age, appearance: c.appearance, day: state.day, verdict: sentenceKey });
+    }
+
+    state.dayLog.push({
+        detail: c.detail,
+        name: c.name,
+        verdict: sentenceKey,
+        correct: result.correct,
+        diff: result.diff,
+        sympathy: c.sympathy,
+        bribed: Boolean(c.bribed),
+        returning: c.returning,
+    });
+
+    const title = result.correct ? (result.partial ? 'Kanuna Yakın' : 'Adalet Yerini Buldu!') : 'Vicdan Ağır...';
+    let message = getEmotionFeedback(c.emotion, result.correct);
+    if (viaOffer === 'bribe') message = 'Zarf cebinizde. Sanık gülümseyerek salondan çıktı.';
+    if (viaOffer === 'threat') message = 'Sesiniz titredi. Sanık arkasına bakmadan çıktı.';
+    if (!result.correct || result.partial) message += ` Kanuna göre doğru karar: ${verdictLabel(c.correctVerdict)}.`;
+
     const statsHtml = `
         <div style="margin-top: 1rem;">
             <span style="color: ${moneyChange >= 0 ? '#4a9c6d' : '#8b2020'}">
@@ -333,137 +431,78 @@ async function processVerdict(sentence, subOption = null) {
         </div>
     `;
 
-    await ui.showFeedback(result.correct, feedbackTitle, feedbackMsg, statsHtml);
-
-    // Update UI
+    await ui.showFeedback(result.correct, title, message, statsHtml, verdictLabel(sentenceKey));
     ui.updateStats(state);
 
-    // Check for events
     await checkForEvents();
 
-    // Check for game over
-    if (checkGameOver()) {
+    if (state.money <= 0 || state.reputation <= 0) {
         endGame();
         return;
     }
 
-    // Clear current case
     ui.hideNPC();
     ui.hideSpeechBubble();
     ui.hideEvidence();
     state.currentCase = null;
 
-    // Small delay before next case
     await new Promise(resolve => setTimeout(resolve, 500));
-
-    // Present next case
     await presentNextCase();
 }
 
-// Check for random events
 async function checkForEvents() {
     for (const [type, event] of Object.entries(EVENTS)) {
-        let triggered = true;
-
-        // Check thresholds
-        if (event.threshold.reputation !== undefined) {
-            if (type === 'media' || type === 'praise') {
-                triggered = triggered && state.reputation >= event.threshold.reputation;
-            } else {
-                triggered = triggered && state.reputation <= event.threshold.reputation;
-            }
-        }
-
-        if (event.threshold.conscience !== undefined) {
-            if (type === 'protest') {
-                triggered = triggered && state.conscience <= event.threshold.conscience;
-            } else {
-                triggered = triggered && state.conscience >= event.threshold.conscience;
-            }
-        }
-
-        // Random chance
-        if (triggered && Math.random() < event.chance) {
+        if (event.check(state) && Math.random() < event.chance) {
+            if (event.apply) event.apply(state);
             await ui.showEvent(type, event.title, event.description);
-
-            // Apply event effects
-            if (type === 'protest') {
-                state.reputation = Math.max(0, state.reputation - 10);
-            } else if (type === 'praise') {
-                state.money += 100;
-            } else if (type === 'warning') {
-                // Just a warning, no immediate effect
-            }
-
             ui.updateStats(state);
-            break; // Only one event per case
+            break;
         }
     }
 }
 
-// End the current day
 function endDay() {
     ui.hideDirective();
 
+    // Bribes taken today may leak to the press
+    for (const entry of state.dayLog) {
+        if (entry.bribed && Math.random() < CONFIG.exposeChance) {
+            entry.exposed = true;
+            state.bribesExposed++;
+            state.reputation = Math.max(0, state.reputation - 20);
+        }
+    }
+    ui.updateStats(state);
+
     ui.showDailySummary({
+        day: state.day,
         casesJudged: state.dayCases,
         correctVerdicts: state.dayCorrect,
-        earnings: state.dayEarnings
-    });
+        earnings: state.dayEarnings,
+    }, buildNewspaper(state.dayLog));
 
     state.day++;
-
-    // Check if game should end
-    if (state.day > CONFIG.maxDays) {
-        state.gameOver = true;
-    }
 }
 
-// Check if game over conditions are met
-function checkGameOver() {
-    // Out of money
-    if (state.money <= 0) return true;
-
-    // Reputation too low
-    if (state.reputation <= 0) return true;
-
-    // Days exceeded
-    if (state.day > CONFIG.maxDays) return true;
-
-    return false;
-}
-
-// End the game (TURKISH stats)
 function endGame() {
     state.gameOver = true;
     audio.stopAmbient();
 
-    // Determine ending
-    let ending = ENDINGS.survivor; // Default
-
-    for (const [key, endingData] of Object.entries(ENDINGS)) {
-        if (key !== 'survivor' && endingData.condition(state)) {
-            ending = endingData;
-            break;
-        }
-    }
+    const ending = ENDINGS.find(e => e.condition(state));
+    const daysServed = Math.min(state.day, CONFIG.maxDays + 1) - 1;
 
     const statsHtml = `
-        <p>Görev Süresi: ${state.day - 1} gün</p>
+        <p>Görev Süresi: ${daysServed} gün</p>
         <p>Görülen Davalar: ${state.totalCases}</p>
+        <p>Kanuna Uygun Kararlar: ${state.correctTotal}</p>
         <p>Son Hazine: ₺${state.money}</p>
         <p>Son İtibar: %${state.reputation}</p>
         <p>Son Vicdan: %${state.conscience}</p>
     `;
 
-    ui.showGameOver({
-        title: ending.title,
-        description: ending.description,
-        stats: statsHtml
-    });
+    ui.showGameOver({ title: ending.title, description: ending.description, stats: statsHtml });
 }
 
-// Export for debugging
 export function getState() {
     return { ...state };
 }
