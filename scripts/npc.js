@@ -69,7 +69,8 @@ export function getCorrectVerdict(crimeType, statement, day) {
  * with a heavier crime, keeping their name and appearance.
  */
 export function generateCase(day, directive = null, offender = null, used = new Set()) {
-    let pool = Object.keys(CRIMES);
+    const all = Object.keys(CRIMES);
+    let pool = all;
 
     if (offender) {
         pool = pool.filter(c => CRIMES[c].severity >= 3);
@@ -80,20 +81,34 @@ export function generateCase(day, directive = null, offender = null, used = new 
     }
 
     // The directive tilts the day towards its crimes without taking it over
+    let directed = null;
     if (!offender && directive && directive.crimeFilter && Math.random() < 0.6) {
         const filtered = pool.filter(c => directive.crimeFilter.includes(c));
-        if (filtered.length > 0) pool = filtered;
+        if (filtered.length > 0) directed = filtered;
     }
 
-    // Candidate statements, preferring ones the player has not seen yet
-    let candidates = pool.flatMap(crimeType => CRIMES[crimeType].statements.map(statement => ({ crimeType, statement })));
-    if (offender) {
-        // Adults with an unsympathetic story; fixed-age and minor statements would contradict the offender's age
-        const fitting = candidates.filter(c => !c.statement.sympathy && !c.statement.age && !(c.statement.tags || []).includes('minor'));
-        if (fitting.length > 0) candidates = fitting;
+    const statementsOf = (crimes) => {
+        let list = crimes.flatMap(crimeType => CRIMES[crimeType].statements.map(statement => ({ crimeType, statement })));
+        if (offender) {
+            // Adults with an unsympathetic story; fixed-age and minor statements would contradict the offender's age
+            const fitting = list.filter(c => !c.statement.sympathy && !c.statement.age && !(c.statement.tags || []).includes('minor'));
+            if (fitting.length > 0) list = fitting;
+        }
+        return list;
+    };
+
+    // Prefer cases the player has not seen: first from the directive's crimes, then the
+    // day's pool, then any crime. Repeat only when every case has been seen.
+    let candidates = null;
+    for (const crimes of [directed, pool, all]) {
+        if (!crimes) continue;
+        const fresh = statementsOf(crimes).filter(c => !used.has(c.statement));
+        if (fresh.length > 0) {
+            candidates = fresh;
+            break;
+        }
     }
-    const fresh = candidates.filter(c => !used.has(c.statement));
-    if (fresh.length > 0) candidates = fresh;
+    if (!candidates) candidates = statementsOf(directed || pool);
 
     const { crimeType, statement } = pick(candidates);
     used.add(statement);
