@@ -243,7 +243,8 @@ function setupEventListeners() {
     });
 
     elements.rulebookBtn.addEventListener('click', () => {
-        audio.playClick();
+        audio.resume();
+        audio.playPageTurn();
         ui.openRulebook();
     });
     elements.rulebookClose.addEventListener('click', () => ui.closeRulebook());

@@ -121,6 +121,41 @@ class AudioManager {
         source.start(startAt);
     }
 
+    // Page turn: two soft paper swishes, a band of noise sweeping upwards
+    playPageTurn() {
+        if (!this.enabled || !this.audioContext) return;
+
+        const ctx = this.audioContext;
+        const swish = (startAt, duration, from, to, level) => {
+            const length = Math.floor(ctx.sampleRate * duration);
+            const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < length; i++) {
+                // quick rise, slower fall: the paper lifts, then settles
+                const t = i / length;
+                const envelope = Math.min(1, t * 6) * Math.pow(1 - t, 2);
+                data[i] = (Math.random() * 2 - 1) * envelope;
+            }
+            const source = ctx.createBufferSource();
+            source.buffer = buffer;
+            const filter = ctx.createBiquadFilter();
+            filter.type = 'bandpass';
+            filter.Q.value = 0.8;
+            filter.frequency.setValueAtTime(from, startAt);
+            filter.frequency.exponentialRampToValueAtTime(to, startAt + duration);
+            const g = ctx.createGain();
+            g.gain.value = level;
+            source.connect(filter);
+            filter.connect(g);
+            g.connect(ctx.destination);
+            source.start(startAt);
+        };
+
+        const now = ctx.currentTime;
+        swish(now, 0.22, 900, 3500, this.volume * 1.0);
+        swish(now + 0.16, 0.18, 1400, 4500, this.volume * 0.6);
+    }
+
     // Door opening: a metal latch click
     playDoor() {
         if (!this.enabled || !this.audioContext) return;
