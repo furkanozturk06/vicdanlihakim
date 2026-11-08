@@ -2206,10 +2206,12 @@ body {
 /* ========================================
    Sound toggle, start buttons
 ======================================== */
-#sound-btn {
+#sound-btn,
+#menu-btn {
     flex-shrink: 0;
-    width: 34px;
-    height: 34px;
+    width: 32px;
+    height: 32px;
+    color: var(--gold-accent);
     background: none;
     border: 1px solid var(--gold-dim);
     border-radius: 50%;
@@ -2323,4 +2325,33 @@ body {
     50% {
         outline-color: rgba(201, 162, 39, 0.3);
     }
+}
+
+/* ========================================
+   Pause menu
+======================================== */
+#pause-modal {
+    z-index: 600;
+}
+
+.pause-content {
+    margin: 0 var(--spacing-md);
+}
+
+#pause-note {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: var(--spacing-md);
+}
+
+.pause-buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.pause-buttons .typewriter-btn {
+    margin-top: 0;
+    min-width: 200px;
 }

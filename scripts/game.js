@@ -183,6 +183,27 @@ function setupEventListeners() {
         continueGame();
     });
 
+    // Pause menu: back to the game or out to the start screen
+    const pauseModal = document.getElementById('pause-modal');
+    document.getElementById('menu-btn').addEventListener('click', () => {
+        audio.playClick();
+        const day = savedDay();
+        document.getElementById('pause-note').textContent = day
+            ? `Oyun her günün sonunda kaydedilir. Şimdi çıkarsan bugünkü davalar kaybolur; "Devam Et" ile ${day}. günün başından sürersin.`
+            : 'Henüz kayıt yok; oyun ilk günün sonunda kaydedilir. Şimdi çıkarsan bu oyun kaybolur.';
+        pauseModal.classList.remove('hidden');
+    });
+    document.getElementById('resume-btn').addEventListener('click', () => {
+        audio.playClick();
+        pauseModal.classList.add('hidden');
+    });
+    document.getElementById('main-menu-btn').addEventListener('click', () => {
+        // A fresh page load stops every running animation, timer and pending choice,
+        // and the start screen offers "Devam Et" from the last save
+        audio.stopAmbient();
+        location.reload();
+    });
+
     document.getElementById('sound-btn').addEventListener('click', () => {
         settings.sound = !settings.sound;
         saveSettings(settings);
