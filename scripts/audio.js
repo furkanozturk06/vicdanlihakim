@@ -152,8 +152,8 @@ class AudioManager {
         };
 
         const now = ctx.currentTime;
-        swish(now, 0.22, 900, 3500, this.volume * 1.0);
-        swish(now + 0.16, 0.18, 1400, 4500, this.volume * 0.6);
+        swish(now, 0.22, 900, 3500, this.volume * 0.5);
+        swish(now + 0.16, 0.18, 1400, 4500, this.volume * 0.3);
     }
 
     // Door opening: a metal latch click
