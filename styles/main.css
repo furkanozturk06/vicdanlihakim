@@ -29,7 +29,9 @@
     --reputation-fill: #c9a227;
 
     /* Typography */
-    --font-typewriter: 'Special Elite', 'Courier New', monospace;
+    /* Reading text: clean typewriter face. Special Elite (distressed) only for big titles */
+    --font-typewriter: 'Courier Prime', 'Courier New', monospace;
+    --font-display: 'Special Elite', 'Courier Prime', monospace;
     --font-elegant: 'Crimson Text', Georgia, serif;
 
     /* Spacing */
@@ -2354,4 +2356,75 @@ body {
 .pause-buttons .typewriter-btn {
     margin-top: 0;
     min-width: 200px;
+}
+
+/* ========================================
+   Readability: distressed font only for large titles,
+   no glow on small numbers, no text below ~11px
+======================================== */
+#feedback-title,
+#stamp-effect,
+.modal-content h2,
+.letter h2,
+.rulebook-content h2,
+.game-subtitle,
+#event-title {
+    font-family: var(--font-display);
+}
+
+.stat-value {
+    text-shadow: none;
+    font-weight: 700;
+}
+
+.stat-label {
+    font-size: 0.62rem;
+    letter-spacing: 0.5px;
+}
+
+#evidence-content {
+    font-size: 0.8rem;
+    line-height: 1.45;
+}
+
+#directive-text {
+    font-size: 0.78rem;
+}
+
+.bubble-content {
+    font-size: 0.9rem;
+}
+
+.group-buttons .verdict-btn,
+.group-label,
+.verdict-label {
+    font-size: 0.75rem;
+}
+
+.rulebook-content {
+    font-size: 0.85rem;
+}
+
+.law-general,
+.rulebook-scale,
+.paper-byline,
+.paper-date,
+.tutorial-step {
+    font-size: 0.72rem;
+}
+
+@media (max-height: 700px) {
+    .bubble-content {
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-height: 600px) {
+    #evidence-content {
+        font-size: 0.74rem;
+    }
+
+    .bubble-content {
+        font-size: 0.8rem;
+    }
 }
