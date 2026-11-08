@@ -1,0 +1,33 @@
+﻿workflows:
+  ios-release:
+    name: iOS TestFlight
+    instance_type: mac_mini_m2
+    integrations:
+      # Codemagic > Teams > Integrations'ta eklediğin App Store Connect API anahtarının adı
+      app_store_connect: CODEMAGIC_ASC_KEY
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.vicdanlihakim.oyun
+      node: 22
+      xcode: latest
+    scripts:
+      - name: Install dependencies
+        script: npm ci
+      - name: Build web app
+        script: npm run build
+      - name: Sync Capacitor
+        script: npx cap sync ios
+      - name: Set build number
+        script: agvtool new-version -all $BUILD_NUMBER
+        working_directory: ios/App
+      - name: Apply signing profiles
+        script: xcode-project use-profiles
+      - name: Build IPA
+        script: xcode-project build-ipa --project "ios/App/App.xcodeproj" --scheme "App"
+    artifacts:
+      - build/ios/ipa/*.ipa
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true

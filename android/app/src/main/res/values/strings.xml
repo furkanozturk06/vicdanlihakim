@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Adalet ve Vicdan</string>
+    <string name="title_activity_main">Adalet ve Vicdan</string>
+    <string name="package_name">com.vicdanlihakim.oyun</string>
+    <string name="custom_url_scheme">com.vicdanlihakim.oyun</string>
+</resources>

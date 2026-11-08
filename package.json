@@ -1,0 +1,27 @@
+{
+  "name": "justice-and-conscience",
+  "version": "1.0.0",
+  "description": "A Papers, Please inspired courtroom decision-making game",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [
+    "game",
+    "simulation",
+    "courtroom"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@capacitor/cli": "^8.6.0",
+    "vite": "^7.3.1"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.6.0",
+    "@capacitor/core": "^8.6.0",
+    "@capacitor/ios": "^8.6.0"
+  }
+}

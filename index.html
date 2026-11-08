@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Adalet ve Vicdan: Hakim Koltuğu</title>
+    <meta name="description"
+        content="Papers, Please'den ilham alan bir mahkeme karar oyunu. Hakim olarak sanıkların kaderini belirleyin.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Crimson+Text:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/styles/main.css">
+</head>
+
+<body>
+    <div id="game-container">
+        <!-- Header Stats Bar -->
+        <header id="stats-bar">
+            <div class="stat" id="day-display">
+                <span class="stat-label">Gün</span>
+                <span class="stat-value" id="day-value">1</span>
+            </div>
+            <div class="stat" id="money-display">
+                <span class="stat-label">Hazine</span>
+                <span class="stat-value" id="money-value">₺500</span>
+            </div>
+            <div class="stat" id="reputation-display">
+                <span class="stat-label">İtibar</span>
+                <div class="bar-container">
+                    <div class="bar-fill" id="reputation-bar"></div>
+                </div>
+            </div>
+            <div class="stat" id="conscience-display">
+                <span class="stat-label">Vicdan</span>
+                <div class="bar-container">
+                    <div class="bar-fill conscience" id="conscience-bar"></div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Courtroom Scene -->
+        <main id="courtroom">
+            <!-- Atmospheric background elements -->
+            <div class="courtroom-bg">
+                <div class="window-light"></div>
+                <div class="dust-particles"></div>
+            </div>
+
+            <!-- Daily Directive Banner -->
+            <div id="directive-banner" class="hidden">
+                <span class="directive-icon">📜</span>
+                <span id="directive-text"></span>
+            </div>
+
+            <!-- NPC Stage Area -->
+            <section id="npc-stage">
+                <div id="courtroom-door" class="closed"></div>
+                <div id="defendant-stand">
+                    <div id="npc-container">
+                        <!-- NPC will be injected here -->
+                    </div>
+                    <!-- Speech bubble with crime type -->
+                    <div id="speech-bubble" class="hidden">
+                        <div class="bubble-header">
+                            <span class="crime-label">Suç:</span>
+                            <span id="crime-type"></span>
+                        </div>
+                        <div class="bubble-content">
+                            <p id="bubble-text"></p>
+                        </div>
+                        <div class="bubble-tail"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Evidence Desk -->
+            <section id="evidence-desk" class="hidden">
+                <div class="case-file">
+                    <h3 class="file-header">DAVA DOSYASI</h3>
+                    <div id="evidence-content"></div>
+                </div>
+            </section>
+
+            <!-- Judge's Desk -->
+            <section id="judges-desk">
+                <div class="desk-surface">
+                    <div id="gavel" class="gavel-resting">
+                        <div class="gavel-head"></div>
+                        <div class="gavel-handle"></div>
+                    </div>
+                    <div id="case-number">
+                        <span>Dava #</span>
+                        <span id="case-num-value">001</span>
+                    </div>
+                </div>
+
+                <!-- Sentencing Buttons - Simplified Direct Layout -->
+                <div id="sentencing-panel">
+                    <!-- Row 1: Main verdicts -->
+                    <div class="verdict-row">
+                        <button class="verdict-btn release" data-sentence="release">
+                            <span class="verdict-icon">✓</span>
+                            <span class="verdict-label">BERAAT</span>
+                        </button>
+                        <button class="verdict-btn house-arrest" data-sentence="house-arrest">
+                            <span class="verdict-icon">🏠</span>
+                            <span class="verdict-label">EV HAPSİ</span>
+                        </button>
+                        <button class="verdict-btn death" data-sentence="death">
+                            <span class="verdict-icon">💀</span>
+                            <span class="verdict-label">İDAM</span>
+                        </button>
+                    </div>
+
+                    <!-- Row 2: Fine options -->
+                    <div class="verdict-row">
+                        <div class="verdict-group">
+                            <span class="group-label">💰 PARA CEZASI</span>
+                            <div class="group-buttons">
+                                <button class="verdict-btn fine" data-sentence="fine" data-level="minor">Hafif</button>
+                                <button class="verdict-btn fine" data-sentence="fine"
+                                    data-level="moderate">Orta</button>
+                                <button class="verdict-btn fine" data-sentence="fine" data-level="major">Ağır</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 3: Jail options -->
+                    <div class="verdict-row">
+                        <div class="verdict-group">
+                            <span class="group-label">🔒 HAPİS</span>
+                            <div class="group-buttons">
+                                <button class="verdict-btn jail" data-sentence="jail" data-level="short">Kısa</button>
+                                <button class="verdict-btn jail" data-sentence="jail" data-level="medium">Orta</button>
+                                <button class="verdict-btn jail" data-sentence="jail" data-level="long">Uzun</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Feedback Overlay -->
+        <div id="feedback-overlay" class="hidden">
+            <div id="feedback-content">
+                <div id="stamp-effect"></div>
+                <h2 id="feedback-title"></h2>
+                <p id="feedback-message"></p>
+                <div id="feedback-stats"></div>
+            </div>
+        </div>
+
+        <!-- Daily Summary Modal -->
+        <div id="daily-summary-modal" class="modal hidden">
+            <div class="modal-content">
+                <h2>Gün Tamamlandı</h2>
+                <div id="summary-stats">
+                    <div class="summary-row">
+                        <span>Görülen Davalar:</span>
+                        <span id="cases-judged">0</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Doğru Kararlar:</span>
+                        <span id="correct-verdicts">0</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Kazanç:</span>
+                        <span id="day-earnings">₺0</span>
+                    </div>
+                </div>
+                <button id="next-day-btn" class="typewriter-btn">Sonraki Güne Geç</button>
+            </div>
+        </div>
+
+        <!-- Event Overlay (Media/Protests) -->
+        <div id="event-overlay" class="hidden">
+            <div id="event-content">
+                <div id="event-icon"></div>
+                <h3 id="event-title"></h3>
+                <p id="event-description"></p>
+            </div>
+        </div>
+
+        <!-- Start Screen -->
+        <div id="start-screen">
+            <div class="start-content">
+                <h1 class="game-title">Adalet ve Vicdan</h1>
+                <h2 class="game-subtitle">Hakim Koltuğu</h2>
+                <p class="game-tagline">Her karar bir yük taşır. Her ruh senin hükmünü bekler.</p>
+                <button id="start-btn" class="typewriter-btn">Koltuğa Otur</button>
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="game-over-screen" class="hidden">
+            <div class="game-over-content">
+                <h1 id="ending-title"></h1>
+                <p id="ending-description"></p>
+                <div id="final-stats"></div>
+                <button id="restart-btn" class="typewriter-btn">Yeniden Başla</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="/scripts/main.js"></script>
+</body>
+
+</html>

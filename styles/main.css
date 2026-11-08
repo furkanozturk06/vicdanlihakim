@@ -1,0 +1,1293 @@
+/* ========================================
+   Justice & Conscience: The Judge's Chair
+   Atmospheric Courtroom Styles
+======================================== */
+
+/* CSS Variables - Dark, Moody Palette */
+:root {
+    /* Colors */
+    --bg-darkest: #0a0908;
+    --bg-dark: #1a1613;
+    --bg-medium: #2d2520;
+    --bg-light: #4a3f35;
+    --wood-dark: #3d2914;
+    --wood-medium: #5c3d1e;
+    --wood-light: #7a5230;
+    --paper-aged: #d4c5a9;
+    --paper-dark: #b8a888;
+    --ink-black: #1a1a1a;
+    --gold-accent: #c9a227;
+    --gold-dim: #8b7019;
+    --red-stamp: #8b2020;
+    --green-release: #2d5a3d;
+    --blue-cold: #2a3a4a;
+
+    /* Status Colors */
+    --conscience-high: #4a9c6d;
+    --conscience-mid: #c9a227;
+    --conscience-low: #8b2020;
+    --reputation-fill: #c9a227;
+
+    /* Typography */
+    --font-typewriter: 'Special Elite', 'Courier New', monospace;
+    --font-elegant: 'Crimson Text', Georgia, serif;
+
+    /* Spacing */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+
+    /* Shadows */
+    --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.5);
+    --shadow-hard: 0 2px 4px rgba(0, 0, 0, 0.8);
+    --glow-gold: 0 0 20px rgba(201, 162, 39, 0.3);
+}
+
+/* Reset & Base */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body {
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    font-family: var(--font-elegant);
+    background: var(--bg-darkest);
+    color: var(--paper-aged);
+    line-height: 1.6;
+    /* Keep the game clear of notches / home indicator on phones */
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+/* Game Container */
+#game-container {
+    width: 100%;
+    height: 100%;
+    max-width: 100vw;
+    max-height: 100vh;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(180deg,
+            var(--bg-dark) 0%,
+            var(--bg-darkest) 100%);
+}
+
+/* ========================================
+   Stats Bar
+======================================== */
+#stats-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: linear-gradient(180deg,
+            rgba(0, 0, 0, 0.9) 0%,
+            rgba(0, 0, 0, 0.7) 80%,
+            transparent 100%);
+    z-index: 100;
+    border-bottom: 1px solid var(--gold-dim);
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.stat-label {
+    font-family: var(--font-typewriter);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--gold-dim);
+}
+
+.stat-value {
+    font-family: var(--font-typewriter);
+    font-size: 1.1rem;
+    color: var(--gold-accent);
+    text-shadow: var(--glow-gold);
+}
+
+.bar-container {
+    width: 60px;
+    height: 8px;
+    background: var(--bg-dark);
+    border: 1px solid var(--gold-dim);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.bar-fill {
+    height: 100%;
+    width: 75%;
+    background: var(--reputation-fill);
+    transition: width 0.5s ease, background-color 0.5s ease;
+}
+
+.bar-fill.conscience {
+    background: var(--conscience-high);
+}
+
+/* ========================================
+   Courtroom Scene
+======================================== */
+#courtroom {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding-top: 60px;
+}
+
+.courtroom-bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.window-light {
+    position: absolute;
+    top: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: 300px;
+    background: radial-gradient(ellipse at center,
+            rgba(255, 248, 220, 0.08) 0%,
+            rgba(255, 248, 220, 0.02) 50%,
+            transparent 70%);
+    animation: flicker 8s ease-in-out infinite;
+}
+
+@keyframes flicker {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+
+    75% {
+        opacity: 0.9;
+    }
+}
+
+.dust-particles {
+    position: absolute;
+    inset: 0;
+    background-image:
+        radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        radial-gradient(circle at 40% 70%, rgba(255, 255, 255, 0.01) 1px, transparent 1px);
+    background-size: 100px 100px;
+    animation: dust-float 20s linear infinite;
+}
+
+@keyframes dust-float {
+    0% {
+        transform: translateY(0);
+    }
+
+    100% {
+        transform: translateY(-100px);
+    }
+}
+
+/* ========================================
+   Directive Banner
+======================================== */
+#directive-banner {
+    position: absolute;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(90deg,
+            transparent 0%,
+            var(--bg-medium) 10%,
+            var(--bg-medium) 90%,
+            transparent 100%);
+    padding: var(--spacing-sm) var(--spacing-xl);
+    border-top: 1px solid var(--gold-dim);
+    border-bottom: 1px solid var(--gold-dim);
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+#directive-banner .directive-icon {
+    font-size: 1.2rem;
+}
+
+#directive-text {
+    font-family: var(--font-typewriter);
+    font-size: 0.85rem;
+    color: var(--gold-accent);
+    font-style: italic;
+}
+
+/* ========================================
+   NPC Stage
+======================================== */
+#npc-stage {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 10;
+    padding: var(--spacing-lg);
+}
+
+#courtroom-door {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 120px;
+    background: var(--wood-dark);
+    border: 3px solid var(--wood-medium);
+    border-radius: 4px 4px 0 0;
+    transition: transform 0.5s ease;
+}
+
+#courtroom-door.open {
+    transform: translateX(-50%) perspective(500px) rotateY(-70deg);
+    transform-origin: left center;
+}
+
+#defendant-stand {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--spacing-lg);
+}
+
+#npc-container {
+    width: 120px;
+    height: 180px;
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+/* NPC Styles */
+.npc {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    animation: npc-idle 3s ease-in-out infinite;
+}
+
+@keyframes npc-idle {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-3px);
+    }
+}
+
+.npc-body {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 100px;
+    border-radius: 10px 10px 5px 5px;
+}
+
+.npc-head {
+    position: absolute;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50px;
+    height: 55px;
+    border-radius: 50% 50% 45% 45%;
+}
+
+.npc-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.npc-eyes {
+    position: absolute;
+    top: 35%;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 12px;
+}
+
+.npc-eye {
+    width: 8px;
+    height: 8px;
+    background: var(--ink-black);
+    border-radius: 50%;
+}
+
+.npc-mouth {
+    position: absolute;
+    top: 60%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 15px;
+    height: 6px;
+    border-radius: 0 0 10px 10px;
+    border: 2px solid var(--ink-black);
+    border-top: none;
+}
+
+/* NPC Emotion Modifiers */
+.npc.panicked .npc-eye {
+    animation: panic-eyes 0.3s ease-in-out infinite;
+}
+
+@keyframes panic-eyes {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.3);
+    }
+}
+
+.npc.remorseful {
+    animation: remorse-sway 2s ease-in-out infinite;
+}
+
+@keyframes remorse-sway {
+
+    0%,
+    100% {
+        transform: rotate(-2deg);
+    }
+
+    50% {
+        transform: rotate(2deg);
+    }
+}
+
+.npc.defiant .npc-head {
+    animation: defiant-tilt 4s ease-in-out infinite;
+}
+
+@keyframes defiant-tilt {
+
+    0%,
+    100% {
+        transform: translateX(-50%) rotate(0deg);
+    }
+
+    50% {
+        transform: translateX(-50%) rotate(-5deg);
+    }
+}
+
+.npc.proud {
+    transform-origin: bottom center;
+    animation: proud-stance 3s ease-in-out infinite;
+}
+
+@keyframes proud-stance {
+
+    0%,
+    100% {
+        transform: scaleY(1);
+    }
+
+    50% {
+        transform: scaleY(1.02);
+    }
+}
+
+/* ========================================
+   Speech Bubble
+======================================== */
+#speech-bubble {
+    position: absolute;
+    bottom: 200px;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 320px;
+    min-width: 250px;
+    z-index: 20;
+}
+
+#speech-bubble.hidden {
+    display: none;
+}
+
+/* Crime Type Header */
+.bubble-header {
+    background: var(--red-stamp);
+    color: var(--paper-aged);
+    padding: 6px 12px;
+    border-radius: 15px 15px 0 0;
+    font-family: var(--font-typewriter);
+    font-size: 0.8rem;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.crime-label {
+    opacity: 0.8;
+    margin-right: 4px;
+}
+
+#crime-type {
+    font-weight: bold;
+}
+
+.bubble-content {
+    background: var(--paper-aged);
+    color: var(--ink-black);
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-radius: 0 0 15px 15px;
+    font-family: var(--font-typewriter);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    box-shadow: var(--shadow-soft);
+    position: relative;
+}
+
+#speech-bubble.trembling .bubble-content {
+    animation: bubble-tremble 0.1s ease-in-out infinite;
+}
+
+@keyframes bubble-tremble {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-2px);
+    }
+
+    75% {
+        transform: translateX(2px);
+    }
+}
+
+.bubble-tail {
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-top: 20px solid var(--paper-aged);
+}
+
+#bubble-text {
+    margin: 0;
+}
+
+
+/* ========================================
+   Evidence Desk
+======================================== */
+#evidence-desk {
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+    z-index: 30;
+}
+
+#evidence-desk.hidden {
+    display: none;
+}
+
+.case-file {
+    width: 200px;
+    background: var(--paper-aged);
+    padding: var(--spacing-md);
+    border-radius: 4px;
+    box-shadow: var(--shadow-soft);
+    transform: rotate(3deg);
+}
+
+.file-header {
+    font-family: var(--font-typewriter);
+    font-size: 0.9rem;
+    color: var(--red-stamp);
+    text-align: center;
+    border-bottom: 2px solid var(--ink-black);
+    padding-bottom: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+}
+
+#evidence-content {
+    font-family: var(--font-typewriter);
+    font-size: 0.75rem;
+    color: var(--ink-black);
+    line-height: 1.6;
+}
+
+/* ========================================
+   Judge's Desk
+======================================== */
+#judges-desk {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(180deg,
+            var(--wood-medium) 0%,
+            var(--wood-dark) 100%);
+    padding: var(--spacing-md) var(--spacing-lg) var(--spacing-xl);
+    border-top: 4px solid var(--wood-light);
+    z-index: 50;
+}
+
+.desk-surface {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+    padding: 0 var(--spacing-md);
+}
+
+/* Gavel */
+#gavel {
+    position: relative;
+    width: 60px;
+    height: 40px;
+    cursor: pointer;
+    transition: transform 0.1s ease;
+}
+
+#gavel.striking {
+    animation: gavel-strike 0.3s ease-out;
+}
+
+@keyframes gavel-strike {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    30% {
+        transform: rotate(-45deg);
+    }
+
+    60% {
+        transform: rotate(10deg);
+    }
+
+    100% {
+        transform: rotate(0deg);
+    }
+}
+
+.gavel-head {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 35px;
+    height: 20px;
+    background: var(--wood-dark);
+    border: 2px solid var(--wood-light);
+    border-radius: 4px;
+}
+
+.gavel-handle {
+    position: absolute;
+    top: 15px;
+    left: 12px;
+    width: 10px;
+    height: 30px;
+    background: var(--wood-medium);
+    border-radius: 0 0 3px 3px;
+}
+
+#case-number {
+    font-family: var(--font-typewriter);
+    font-size: 0.9rem;
+    color: var(--paper-dark);
+}
+
+#case-num-value {
+    color: var(--gold-accent);
+}
+
+/* ========================================
+   Sentencing Panel - ROW LAYOUT
+======================================== */
+#sentencing-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Verdict Row */
+.verdict-row {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* Main Verdict Button Style */
+.verdict-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 12px 20px;
+    min-width: 90px;
+    min-height: 60px;
+    background: linear-gradient(180deg, var(--bg-medium) 0%, var(--bg-dark) 100%);
+    border: 2px solid var(--gold-dim);
+    border-radius: 8px;
+    color: var(--paper-aged);
+    font-family: var(--font-typewriter);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+}
+
+.verdict-btn:hover {
+    transform: translateY(-2px);
+    border-color: var(--gold-accent);
+    box-shadow: var(--glow-gold), 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+.verdict-btn:active {
+    transform: translateY(0);
+}
+
+.verdict-icon {
+    font-size: 1.5rem;
+}
+
+.verdict-label {
+    font-size: 0.7rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Verdict Group (for Fine/Jail tiers) */
+.verdict-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--gold-dim);
+}
+
+.group-label {
+    font-family: var(--font-typewriter);
+    font-size: 0.75rem;
+    color: var(--gold-accent);
+    letter-spacing: 1px;
+}
+
+.group-buttons {
+    display: flex;
+    gap: 6px;
+}
+
+.group-buttons .verdict-btn {
+    min-width: 65px;
+    min-height: 40px;
+    padding: 8px 12px;
+    font-size: 0.7rem;
+}
+
+.group-buttons .verdict-btn .verdict-icon {
+    display: none;
+}
+
+.group-buttons .verdict-btn .verdict-label {
+    display: none;
+}
+
+/* Release Button - Green */
+.verdict-btn.release {
+    border-color: var(--green-release);
+    background: linear-gradient(180deg, #1a4d30 0%, #0f2318 100%);
+}
+
+.verdict-btn.release:hover {
+    border-color: #5cb87a;
+    box-shadow: 0 0 20px rgba(74, 156, 109, 0.5), 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+/* House Arrest Button - Blue */
+.verdict-btn.house-arrest {
+    border-color: #5a7a95;
+    background: linear-gradient(180deg, #2a4a5f 0%, #1a2a3f 100%);
+}
+
+.verdict-btn.house-arrest:hover {
+    border-color: #7a9ab5;
+    box-shadow: 0 0 20px rgba(90, 122, 149, 0.5), 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+/* Death Button - Red */
+.verdict-btn.death {
+    border-color: #a03030;
+    background: linear-gradient(180deg, #4a1818 0%, #2a0a0a 100%);
+}
+
+.verdict-btn.death:hover {
+    border-color: #d04040;
+    box-shadow: 0 0 20px rgba(160, 48, 48, 0.5), 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+/* Fine Button - Gold */
+.verdict-btn.fine {
+    border-color: var(--gold-dim);
+    background: linear-gradient(180deg, #4a4020 0%, #2a2510 100%);
+}
+
+.verdict-btn.fine:hover {
+    border-color: var(--gold-accent);
+    box-shadow: 0 0 20px rgba(201, 162, 39, 0.5), 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+/* Jail Button - Dark Brown */
+.verdict-btn.jail {
+    border-color: #6a5a4a;
+    background: linear-gradient(180deg, #3a2a1a 0%, #201510 100%);
+}
+
+.verdict-btn.jail:hover {
+    border-color: #8a7a6a;
+    box-shadow: 0 0 20px rgba(106, 90, 74, 0.5), 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+
+.sub-options button {
+    padding: 10px 12px;
+    background: var(--bg-dark);
+    border: 1px solid var(--gold-dim);
+    color: var(--paper-aged);
+    font-family: var(--font-typewriter);
+    font-size: 0.8rem;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: all 0.15s ease;
+    text-align: center;
+}
+
+.sub-options button:hover {
+    background: var(--bg-light);
+    border-color: var(--gold-accent);
+    color: var(--gold-accent);
+}
+
+/* ========================================
+   Feedback Overlay
+======================================== */
+#feedback-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    animation: fade-in 0.3s ease;
+}
+
+#feedback-overlay.hidden {
+    display: none;
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+#feedback-content {
+    text-align: center;
+    padding: var(--spacing-xl);
+    position: relative;
+}
+
+#stamp-effect {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-15deg);
+    width: 200px;
+    height: 100px;
+    border: 5px solid var(--red-stamp);
+    border-radius: 10px;
+    opacity: 0;
+    animation: stamp-appear 0.5s ease forwards 0.2s;
+}
+
+#stamp-effect.justice {
+    border-color: var(--green-release);
+}
+
+@keyframes stamp-appear {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) rotate(-15deg) scale(2);
+    }
+
+    50% {
+        opacity: 1;
+        transform: translate(-50%, -50%) rotate(-15deg) scale(0.9);
+    }
+
+    100% {
+        opacity: 0.6;
+        transform: translate(-50%, -50%) rotate(-15deg) scale(1);
+    }
+}
+
+#feedback-title {
+    font-family: var(--font-typewriter);
+    font-size: 2rem;
+    color: var(--gold-accent);
+    text-shadow: 0 0 30px rgba(201, 162, 39, 0.5);
+    margin-bottom: var(--spacing-md);
+    position: relative;
+    z-index: 1;
+}
+
+#feedback-title.negative {
+    color: var(--red-stamp);
+    text-shadow: 0 0 30px rgba(139, 32, 32, 0.5);
+}
+
+#feedback-message {
+    font-family: var(--font-elegant);
+    font-size: 1.1rem;
+    color: var(--paper-dark);
+    margin-bottom: var(--spacing-lg);
+}
+
+#feedback-stats {
+    font-family: var(--font-typewriter);
+    font-size: 1rem;
+    color: var(--gold-accent);
+}
+
+/* ========================================
+   Modals
+======================================== */
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 300;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    background: linear-gradient(145deg, var(--bg-medium), var(--bg-dark));
+    border: 2px solid var(--gold-dim);
+    border-radius: 10px;
+    padding: var(--spacing-xl);
+    max-width: 350px;
+    text-align: center;
+    box-shadow: var(--shadow-soft), var(--glow-gold);
+}
+
+.modal-content h2 {
+    font-family: var(--font-typewriter);
+    color: var(--gold-accent);
+    margin-bottom: var(--spacing-lg);
+    font-size: 1.5rem;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--spacing-sm) 0;
+    border-bottom: 1px solid var(--bg-light);
+    font-family: var(--font-typewriter);
+    font-size: 0.9rem;
+}
+
+.summary-row:last-child {
+    border-bottom: none;
+}
+
+/* ========================================
+   Typewriter Button
+======================================== */
+.typewriter-btn {
+    font-family: var(--font-typewriter);
+    font-size: 1rem;
+    padding: var(--spacing-md) var(--spacing-xl);
+    background: var(--wood-dark);
+    border: 2px solid var(--gold-accent);
+    color: var(--gold-accent);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: var(--spacing-lg);
+}
+
+.typewriter-btn:hover {
+    background: var(--gold-accent);
+    color: var(--bg-darkest);
+    box-shadow: var(--glow-gold);
+    transform: scale(1.05);
+}
+
+/* ========================================
+   Event Overlay
+======================================== */
+#event-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 250;
+    animation: fade-in 0.5s ease;
+}
+
+#event-overlay.hidden {
+    display: none;
+}
+
+#event-content {
+    text-align: center;
+    padding: var(--spacing-xl);
+}
+
+#event-icon {
+    font-size: 4rem;
+    margin-bottom: var(--spacing-md);
+    animation: event-pulse 1s ease-in-out infinite;
+}
+
+@keyframes event-pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+#event-title {
+    font-family: var(--font-typewriter);
+    font-size: 1.5rem;
+    color: var(--gold-accent);
+    margin-bottom: var(--spacing-md);
+}
+
+#event-description {
+    font-family: var(--font-elegant);
+    color: var(--paper-dark);
+    max-width: 300px;
+}
+
+/* ========================================
+   Start Screen
+======================================== */
+#start-screen {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(180deg,
+            var(--bg-darkest) 0%,
+            var(--bg-dark) 50%,
+            var(--wood-dark) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 500;
+}
+
+#start-screen.hidden {
+    display: none;
+}
+
+.start-content {
+    text-align: center;
+    padding: var(--spacing-xl);
+}
+
+.game-title {
+    font-family: var(--font-elegant);
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--gold-accent);
+    text-shadow: 0 0 40px rgba(201, 162, 39, 0.5);
+    margin-bottom: var(--spacing-sm);
+    animation: title-glow 3s ease-in-out infinite;
+}
+
+@keyframes title-glow {
+
+    0%,
+    100% {
+        text-shadow: 0 0 30px rgba(201, 162, 39, 0.4);
+    }
+
+    50% {
+        text-shadow: 0 0 50px rgba(201, 162, 39, 0.7);
+    }
+}
+
+.game-subtitle {
+    font-family: var(--font-typewriter);
+    font-size: 1.2rem;
+    color: var(--paper-dark);
+    margin-bottom: var(--spacing-xl);
+    letter-spacing: 3px;
+}
+
+.game-tagline {
+    font-family: var(--font-elegant);
+    font-style: italic;
+    color: var(--paper-dark);
+    opacity: 0.8;
+    margin-bottom: var(--spacing-xl);
+    max-width: 300px;
+}
+
+/* ========================================
+   Game Over Screen
+======================================== */
+#game-over-screen {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(180deg,
+            var(--bg-darkest) 0%,
+            rgba(139, 32, 32, 0.2) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 500;
+}
+
+#game-over-screen.hidden {
+    display: none;
+}
+
+.game-over-content {
+    text-align: center;
+    padding: var(--spacing-xl);
+    max-width: 400px;
+}
+
+#ending-title {
+    font-family: var(--font-elegant);
+    font-size: 2rem;
+    color: var(--gold-accent);
+    margin-bottom: var(--spacing-md);
+}
+
+#ending-description {
+    font-family: var(--font-elegant);
+    color: var(--paper-dark);
+    line-height: 1.8;
+    margin-bottom: var(--spacing-lg);
+}
+
+#final-stats {
+    font-family: var(--font-typewriter);
+    font-size: 0.9rem;
+    color: var(--paper-aged);
+    margin-bottom: var(--spacing-lg);
+}
+
+/* ========================================
+   Utility Classes
+======================================== */
+.hidden {
+    display: none !important;
+}
+
+/* ========================================
+   Mobile Responsive
+======================================== */
+@media (max-width: 600px) {
+    #stats-bar {
+        padding: var(--spacing-xs) var(--spacing-sm);
+        gap: var(--spacing-xs);
+    }
+
+    .stat-label {
+        font-size: 0.55rem;
+    }
+
+    .stat-value {
+        font-size: 0.85rem;
+    }
+
+    .bar-container {
+        width: 40px;
+    }
+
+    /* Mobile button grid - 5 columns tight */
+    #sentencing-panel {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 4px;
+        padding: 6px 8px;
+        max-width: 100%;
+    }
+
+    .sentence-btn {
+        padding: 8px 4px;
+        min-height: 60px;
+        border-radius: 8px;
+    }
+
+    .sentence-btn .btn-icon {
+        font-size: 1.4rem;
+    }
+
+    .sentence-btn .btn-text {
+        font-size: 0.55rem;
+        white-space: normal;
+        line-height: 1.1;
+    }
+
+    .game-title {
+        font-size: 1.8rem;
+    }
+
+    .game-subtitle {
+        font-size: 1rem;
+    }
+
+    #speech-bubble {
+        max-width: 260px;
+        bottom: 180px;
+    }
+
+    .bubble-content {
+        padding: var(--spacing-sm) var(--spacing-md);
+        font-size: 0.85rem;
+    }
+
+    /* Sub-options on mobile */
+    .sub-options {
+        min-width: 80px;
+    }
+
+    .sub-options button {
+        padding: 8px 10px;
+        font-size: 0.7rem;
+    }
+
+    #judges-desk {
+        padding: var(--spacing-sm) var(--spacing-sm) var(--spacing-md);
+    }
+
+    .desk-surface {
+        margin-bottom: var(--spacing-sm);
+    }
+
+    #directive-banner {
+        top: 55px;
+        padding: var(--spacing-xs) var(--spacing-md);
+    }
+
+    #directive-text {
+        font-size: 0.7rem;
+    }
+}
+
+@media (max-width: 380px) {
+
+    /* Very small screens */
+    .sentence-btn .btn-text {
+        font-size: 0.5rem;
+    }
+
+    .sentence-btn .btn-icon {
+        font-size: 1.2rem;
+    }
+
+    .sentence-btn {
+        min-height: 55px;
+        padding: 6px 2px;
+    }
+}
+
+@media (max-height: 600px) {
+    #npc-container {
+        height: 120px;
+    }
+
+    #speech-bubble {
+        bottom: 140px;
+    }
+
+    .npc-body {
+        height: 80px;
+    }
+
+    .npc-head {
+        bottom: 70px;
+        width: 40px;
+        height: 45px;
+    }
+}
