@@ -97,6 +97,17 @@ export const TUTORIAL = [
     },
 ];
 
+// "Nasıl Oynanır" from the main menu
+export const HOW_TO_PLAY = {
+    icon: '📖',
+    title: 'Nasıl Oynanır',
+    text: 'Her gün sanıklar karşına gelir. Dava dosyasını oku, gerekirse sanığı sorgula (günlük sorgu hakkın sınırlı) ve KANUN kitabındaki maddelere göre kararını ver.\n\nKanuna uygun karar hazineye ve itibarına yarar. Fazla sert kararlar vicdanını, fazla hafif kararlar itibarını yer. Hazine ya da itibar sıfırlanırsa görevden alınırsın.\n\nRüşvet ve tehditler gelecek; kabul etmek kolaydır ama bedeli vardır. Akşamları ailenle geçen anlar da hikâyeyi değiştirir.\n\nHikâye 30 gün sürer. Bitirince Sonsuz Mod açılır.',
+    choices: [
+        { label: 'Anladım', value: 'ok' },
+        { label: 'Öğreticiyi sonraki oyunda göster', value: 'replay' },
+    ],
+};
+
 // Endless mode, unlocked by finishing the 30-day story
 export const ENDLESS_INTRO = {
     title: 'Sonsuz Mod',

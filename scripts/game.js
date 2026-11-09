@@ -6,7 +6,7 @@
 import { generateCase, buildCase, createNPCElement, evaluateVerdict, getRandomDirective, verdictFeedback, verdictLabel, activeAmendments } from './npc.js';
 import { CRIMES, GENERAL_NOTES, AMENDMENTS, VERDICT_LABELS, LADDER } from './cases.js';
 import {
-    OFFERS, buildNewspaper, FINALE, FINAL_DIRECTIVE, INTRO, TUTORIAL, ENDLESS_INTRO, inspectorReport,
+    OFFERS, buildNewspaper, FINALE, FINAL_DIRECTIVE, INTRO, TUTORIAL, ENDLESS_INTRO, HOW_TO_PLAY, inspectorReport,
     SELIN_NOTE, SELIN_DIRECTIVE, SELIN_CASE, selinAftermath, kayaVisit, finaleRumor, appealText,
 } from './story.js';
 import { createFamily, familyStatus, eveningScene, familyEpilogue, HOUSEHOLD_COST } from './family.js';
@@ -168,6 +168,16 @@ function setupEventListeners() {
         audio.resume();
         audio.playClick();
         startGame();
+    });
+
+    document.getElementById('howto-btn').addEventListener('click', async () => {
+        audio.resume();
+        audio.playClick();
+        const choice = await ui.showStory(HOW_TO_PLAY);
+        if (choice === 'replay') {
+            settings.tutorialDone = false;
+            saveSettings(settings);
+        }
     });
 
     document.getElementById('endless-btn').addEventListener('click', () => {
