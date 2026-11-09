@@ -10,6 +10,7 @@ import {
     SELIN_NOTE, SELIN_DIRECTIVE, SELIN_CASE, selinAftermath, kayaVisit, finaleRumor, appealText,
 } from './story.js';
 import { createFamily, familyStatus, eveningScene, familyEpilogue, HOUSEHOLD_COST } from './family.js';
+import { ACT_LENGTH, TOTAL_DAYS, ACT2_CASES_PER_DAY, BRANCHES, branchFor } from './acts.js';
 import { saveGame, loadGame, savedDay, clearSave, loadSettings, saveSettings } from './save.js';
 import * as ui from './ui.js';
 import { audio } from './audio.js';
@@ -23,7 +24,6 @@ const CONFIG = {
     startingMoney: 500,
     startingReputation: 75,
     startingConscience: 100,
-    maxDays: 10,
     offerChance: 0.3,
     exposeChance: 0.35,
     threatRevengeChance: 0.4,
@@ -60,7 +60,7 @@ function createInitialState() {
         pendingRevenge: false,
         offenders: [],
         usedStatements: new Set(),
-        finale: null,      // 'released' | 'correct' | 'wrong'
+        finale: null,      // 'released' | 'correct' | 'wrong' (too light) | 'harsh'
         endedEarly: false,
         appeals: [],       // wrong verdicts that come back from the high court
         appealsToday: [],
@@ -68,6 +68,10 @@ function createInitialState() {
         family: createFamily(),
         flags: {},
         selin: null,       // 'death' | 'release' | 'correct' | 'harsh'
+        branch: null,      // act 2: 'surgun' | 'borc'
+        specials: {},      // outcomes of act-2 story cases, by key
+        bonusQuestions: 0, // extra interrogations earned the evening before
+        scandal: false,    // two exposed bribes end the career
 
         currentCase: null,
         currentDirective: null,
@@ -106,66 +110,38 @@ const EVENTS = {
     },
 };
 
-// Endings based on final state (TURKISH)
+// Endings (TURKISH). The story mode ends on day 30 with the act-2 branch ending;
+// a career can also end early.
 const accuracy = (s) => s.correctTotal / Math.max(1, s.totalCases);
 
-const ENDINGS = [
+const EARLY_ENDINGS = [
     {
-        condition: (s) => s.endedEarly && s.money <= 0,
-        title: 'Hazine Boşaldı',
-        description: 'Mahkemenin kasası tamtakır. Bakanlık sizi on gün dolmadan görevden aldı; masanızdaki kanun kitabını bile geri istediler.',
-    },
-    {
-        condition: (s) => s.endedEarly,
-        title: 'Görevden Alındı',
-        description: 'Halkın ve bakanlığın güvenini yitirdiniz. Cübbenizi çıkarıp adliyeden arka kapıdan ayrıldınız.',
-    },
-    {
-        condition: (s) => s.bribesExposed >= 2,
+        condition: (s) => s.scandal,
         title: 'Rüşvet Skandalı',
         description: 'Zarflar birer birer gün yüzüne çıktı. Bir zamanlar hüküm verdiğiniz salonda bu kez sanık sandalyesinde oturuyorsunuz.',
     },
     {
-        condition: (s) => s.finale === 'released',
-        title: 'Bakanlığın Adamı',
-        description: 'Bakanın oğlu serbest kaldı, siz terfi ettiniz. Yeni odanız daha büyük ama öğretmenin ailesinin bakışları her gece rüyanıza giriyor.',
-    },
-    {
-        condition: (s) => s.finale === 'correct' && accuracy(s) >= 0.7 && s.reputation >= 60 && s.conscience >= 40,
-        title: 'Dokunulmaz Hakim',
-        description: 'Bakanın oğluna bile kanunu uyguladınız. Bakanlık sizi sürmek istedi ama halk adliyenin önünü doldurdu. Adınız artık bağımsız yargının simgesi.',
-    },
-    {
-        condition: (s) => s.conscience >= 80 && s.reputation >= 80,
-        title: 'Adil Hakim',
-        description: 'Adınız nesiller boyu hatırlanacak. Merhameti adaletle dengelediniz ve halk sizi bunun için seviyor.',
-    },
-    {
-        condition: (s) => s.money >= 2000 && s.conscience < 40,
-        title: 'Yozlaşmış Ruh',
-        description: 'Zenginleştiniz, ama ne pahasına? Vicdanınız artık sadece bir fısıltı. Değdi mi?',
-    },
-    {
-        condition: (s) => s.conscience < 20,
-        title: 'Demir Yumruk',
-        description: 'Size acımasız dediler. Cezaevleri mahkum ettiklerinizle dolup taşıyor. Masumlar bile bakışınızdan korkuyor.',
-    },
-    {
-        condition: (s) => s.reputation >= 90 && s.conscience >= 60,
-        title: 'Halkın Hakimi',
-        description: 'Vatandaşlar sizi seviyor. İnançlarını kaybettikleri sisteme umut verdiniz.',
-    },
-    {
-        condition: (s) => s.reputation < 20,
-        title: 'Düşmüş',
-        description: 'Görevden alındınız. Kariyeriniz utançla sona erdi. Yemin ettiğiniz halk size sırtını döndü.',
+        condition: (s) => s.money <= 0,
+        title: 'Hazine Boşaldı',
+        description: 'Kasanız tamtakır. Bakanlık sizi görev süreniz dolmadan görevden aldı; masanızdaki kanun kitabını bile geri istediler.',
     },
     {
         condition: () => true,
-        title: 'Hayatta Kalan',
-        description: 'Atlattınız, ne aziz ne de günahkar. Her kararın ağırlığı hâlâ içinizde.',
+        title: 'Görevden Alındı',
+        description: 'Halkın ve bakanlığın güvenini yitirdiniz. Cübbenizi çıkarıp adliyeden arka kapıdan ayrıldınız.',
     },
 ];
+
+function pickEnding() {
+    if (state.day > TOTAL_DAYS && state.branch && !state.scandal) {
+        const branch = BRANCHES[state.branch];
+        return branch.favored(state) ? branch.endings.favored : branch.endings.honest;
+    }
+    return EARLY_ENDINGS.find(e => e.condition(state));
+}
+
+const isAct2 = () => state.day > ACT_LENGTH;
+const casesToday = () => (isAct2() ? ACT2_CASES_PER_DAY : CONFIG.casesPerDay);
 
 // Initialize game
 export function initGame() {
@@ -233,11 +209,14 @@ function setupEventListeners() {
     elements.nextDayBtn.addEventListener('click', async () => {
         audio.playClick();
         ui.hideDailySummary();
-        if (state.day > CONFIG.maxDays) {
+        if (state.scandal || state.day > TOTAL_DAYS) {
             endGame();
             return;
         }
         await runEvening(state.day - 1);
+        if (state.day === ACT_LENGTH + 1) {
+            await ui.showIntro(BRANCHES[state.branch].intro);
+        }
         saveGame(state);
         startNewDay();
     });
@@ -307,8 +286,9 @@ async function restartGame() {
 }
 
 function refreshRulebook() {
+    const crimes = Object.fromEntries(Object.entries(CRIMES).filter(([, c]) => !c.branch || c.branch === state.branch));
     ui.renderRulebook({
-        crimes: CRIMES,
+        crimes,
         generalNotes: GENERAL_NOTES,
         amendments: activeAmendments(state.day),
         day: state.day,
@@ -320,15 +300,14 @@ async function startNewDay() {
     state.dayCases = 0;
     state.dayCorrect = 0;
     state.dayEarnings = 0;
-    state.questionsLeft = CONFIG.questionsPerDay;
+    state.questionsLeft = CONFIG.questionsPerDay + (state.bonusQuestions || 0);
+    state.bonusQuestions = 0;
     state.offerMadeToday = false;
     state.eventShownToday = false;
     state.dayLog = [];
 
     state.appealsToday = [];
-    state.currentDirective = state.day === CONFIG.maxDays ? FINAL_DIRECTIVE
-        : state.day === 5 ? SELIN_DIRECTIVE
-            : getRandomDirective();
+    state.currentDirective = pickDirective();
     ui.showDirective(state.currentDirective);
     refreshRulebook();
     ui.updateStats(state);
@@ -349,7 +328,7 @@ async function startNewDay() {
     }
 
     // Recurring characters
-    if (state.day === 4 || state.day === 8) {
+    if (state.day === 5 || state.day === 12) {
         const report = inspectorReport(state.correctTotal / Math.max(1, state.totalCases));
         state.money += report.money;
         state.reputation = Math.max(0, Math.min(100, state.reputation + report.reputation));
@@ -377,14 +356,15 @@ async function presentNextCase() {
     state.isProcessing = true;
     ui.setSentencingEnabled(false);
 
-    if (state.dayCases >= CONFIG.casesPerDay) {
+    if (state.dayCases >= casesToday()) {
         endDay();
         return;
     }
 
     state.totalCases++;
     state.currentCase = nextCase();
-    state.currentCase.canPostpone = Boolean(state.currentCase.delayed) && !state.currentCase.revealed && state.day < CONFIG.maxDays;
+    state.currentCase.canPostpone = Boolean(state.currentCase.delayed) && !state.currentCase.revealed
+        && state.day !== ACT_LENGTH && state.day < TOTAL_DAYS;
     ui.updateCaseNumber(state.totalCases);
 
     audio.playDoor();
@@ -424,7 +404,13 @@ async function presentNextCase() {
 // Which case walks in next: Selin's trial, a postponed case whose report arrived,
 // the finale, or a random one
 function nextCase() {
-    if (state.day === 5 && state.dayCases === 0 && !state.selin) {
+    const special = specialCaseNow();
+    if (special) {
+        return buildCase(special.crimeType, special.statement, state.day, {
+            name: special.name, age: special.age, gender: special.gender, specialKey: special.key,
+        });
+    }
+    if (state.day === 7 && state.dayCases === 0 && !state.selin) {
         return buildCase(SELIN_CASE.crimeType, SELIN_CASE.statement, state.day, { name: SELIN_CASE.name, age: SELIN_CASE.age, gender: SELIN_CASE.gender, selinCase: true });
     }
     const dueIndex = state.postponed.findIndex(p => p.day < state.day);
@@ -433,14 +419,55 @@ function nextCase() {
         const statement = CRIMES[p.crimeType].statements[p.index];
         return buildCase(p.crimeType, statement, state.day, { name: p.name, age: p.age, appearance: p.appearance, revealed: true });
     }
-    if (state.day === CONFIG.maxDays && state.dayCases === CONFIG.casesPerDay - 1) {
+    if (state.day === ACT_LENGTH && state.dayCases === casesToday() - 1) {
         return buildCase(FINALE.crimeType, FINALE.statement, state.day, { name: FINALE.name, age: FINALE.age, gender: FINALE.gender, finale: true });
     }
-    return generateCase(state.day, state.currentDirective, takeReturningOffender(), state.usedStatements);
+    return generateCase(state.day, state.currentDirective, takeReturningOffender(), state.usedStatements, state.branch);
+}
+
+// Act-2 story case scheduled for this slot, if any
+function specialCaseNow() {
+    if (!state.branch) return null;
+    const last = state.dayCases === casesToday() - 1;
+    return BRANCHES[state.branch].specials.find(sp => sp.day === state.day && !state.specials[sp.key]
+        && ((sp.position === 'first' && state.dayCases === 0) || (sp.position === 'last' && last))) || null;
+}
+
+function specialDef(key) {
+    return state.branch ? BRANCHES[state.branch].specials.find(sp => sp.key === key) : null;
+}
+
+// Today's directive: the ministry in act 1, the town or the party in act 2
+function pickDirective() {
+    if (state.day === ACT_LENGTH) return FINAL_DIRECTIVE;
+    if (state.day === 7) return SELIN_DIRECTIVE;
+    if (isAct2()) {
+        const branch = BRANCHES[state.branch];
+        if (state.day === TOTAL_DAYS) return branch.finalDirective;
+        return branch.directives[Math.floor(Math.random() * branch.directives.length)];
+    }
+    return getRandomDirective();
 }
 
 // Decide whether this case comes with a bribe or a threat
 function pickOffer(c) {
+    if (c.specialKey) {
+        const def = specialDef(c.specialKey);
+        if (!def || !def.offer) return null;
+        const o = def.offer;
+        return {
+            type: 'special',
+            forcedVerdict: o.forcedVerdict,
+            view: o,
+            onAccept: () => {
+                state.money += o.amount;
+                state.conscience = Math.max(0, state.conscience - 20);
+            },
+            onDecline: () => {
+                state.conscience = Math.min(100, state.conscience + 3);
+            },
+        };
+    }
     if (c.selinCase) {
         const o = SELIN_CASE.offer;
         return {
@@ -600,7 +627,9 @@ async function processVerdict(sentenceKey, viaOffer = null) {
     state.dayCases++;
 
     if (c.finale) {
-        state.finale = viaOffer === 'finale' ? 'released' : (result.correct ? 'correct' : 'wrong');
+        state.finale = viaOffer === 'finale' ? 'released'
+            : result.correct ? 'correct'
+                : result.diff > 0 ? 'harsh' : 'wrong';
     }
     if (c.selinCase) {
         state.selin = sentenceKey === 'death' ? 'death'
@@ -608,8 +637,17 @@ async function processVerdict(sentenceKey, viaOffer = null) {
                 : result.diff < 0 ? 'release' : 'harsh';
     }
 
+    // Act-2 story cases: did the verdict go the way the power behind them wanted?
+    if (c.specialKey) {
+        const def = specialDef(c.specialKey);
+        const favored = viaOffer === 'special'
+            || (def.wants === 'lighter' && result.diff < 0)
+            || (def.wants === 'harsher' && result.diff > 0);
+        state.specials[c.specialKey] = { verdict: sentenceKey, diff: result.diff, favored };
+    }
+
     // Some wrong verdicts are appealed and come back from the high court two days later
-    if (!result.correct && !viaOffer && !c.finale && !c.selinCase && Math.random() < CONFIG.appealChance) {
+    if (!result.correct && !viaOffer && !c.finale && !c.selinCase && !c.specialKey && Math.random() < CONFIG.appealChance) {
         state.appeals.push({
             day: state.day + 2,
             detail: c.detail,
@@ -641,6 +679,7 @@ async function processVerdict(sentenceKey, viaOffer = null) {
     if (viaOffer === 'threat') message = 'Sesiniz titredi. Sanık arkasına bakmadan çıktı.' + lawNote;
     if (viaOffer === 'finale') message = 'Bakanın oğlu sırıtarak salondan çıktı. Telefonunuz çalıyor: "Tebrikler, Hakim Bey."' + lawNote;
     if (viaOffer === 'selin') message = 'Selin Aydın size son kez baktı: "Demek siz de onlardansınız." Görevliler onu götürdü.' + lawNote;
+    if (viaOffer === 'special') message = 'Telefonu kapattığınızda salonda çıt çıkmıyordu. Herkes kimin kazandığını biliyordu.' + lawNote;
 
     const statsHtml = `
         <div style="margin-top: 1rem;">
@@ -684,20 +723,33 @@ async function morningStory() {
     };
     const ok = (beat) => ui.showStory({ icon: beat.icon, title: beat.title, text: beat.text, choices: [{ label: 'Devam', value: true }] });
 
+    if (isAct2()) {
+        const make = BRANCHES[state.branch].beats[state.day];
+        if (!make) return;
+        const beat = make(state);
+        const value = await ui.showStory({ icon: beat.icon, title: beat.title, text: beat.text, choices: beat.choices });
+        if (beat.onChoice) beat.onChoice(state, value);
+        if (beat.apply) {
+            state.family.harmony = Math.max(0, Math.min(100, state.family.harmony + (beat.apply.harmony || 0)));
+            apply(beat.apply);
+        }
+        ui.updateStats(state);
+        return;
+    }
     if (state.day === 3) {
         state.flags.selinNote = await ui.showStory(SELIN_NOTE);
     }
-    if (state.day === 6 && state.selin) {
+    if (state.day === 8 && state.selin) {
         const beat = selinAftermath(state.selin);
         await ok(beat);
         apply(beat);
     }
-    if (state.day === 7) {
+    if (state.day === 11) {
         const beat = kayaVisit(accuracy(state));
         state.flags.kayaAlly = beat.ally;
         await ok(beat);
     }
-    if (state.day === 9) {
+    if (state.day === 14) {
         const beat = finaleRumor(state.selin);
         await ok(beat);
         apply(beat);
@@ -729,7 +781,16 @@ async function runEvening(day) {
     }
     ui.updateStats(state);
 
-    const scene = eveningScene(state, day);
+    let scene;
+    if (day === ACT_LENGTH) {
+        state.branch = branchFor(state.finale);
+        scene = BRANCHES[state.branch].transition;
+    } else if (day > ACT_LENGTH) {
+        const branch = BRANCHES[state.branch];
+        scene = (branch.evenings[day] || branch.quietEvening)(state);
+    } else {
+        scene = eveningScene(state, day);
+    }
     const pick = await ui.showEvening({
         day,
         family: familyStatus(state.family),
@@ -771,6 +832,7 @@ function endDay() {
             state.reputation = Math.max(0, state.reputation - 20);
         }
     }
+    if (state.bribesExposed >= 2) state.scandal = true;
     ui.updateStats(state);
 
     ui.showDailySummary({
@@ -789,8 +851,8 @@ function endGame() {
     clearSave();
     audio.stopAmbient();
 
-    const ending = ENDINGS.find(e => e.condition(state));
-    const daysServed = Math.min(state.day, CONFIG.maxDays + 1) - 1;
+    const ending = pickEnding();
+    const daysServed = Math.min(state.day, TOTAL_DAYS + 1) - 1;
 
     const statsHtml = `
         <p>Görev Süresi: ${daysServed} gün</p>
@@ -807,7 +869,12 @@ function endGame() {
         release: 'Selin Aydın hâlâ yazıyor; köşesinde ara sıra sizden söz ediyor.',
         harsh: "Selin Aydın'ın davası Yargıtay'da bozuldu. Kararınız hukuk fakültelerinde \"baskı altında yargı\" örneği olarak okutuluyor.",
     }[state.selin];
-    const epilogue = [familyEpilogue(state), selinLine].filter(Boolean).map(t => `<p class="ending-epilogue">${t}</p>`).join('');
+    // The execution ending gets its own family line; a warm family table would contradict it
+    const executed = state.branch === 'borc' && ending === BRANCHES.borc.endings.favored;
+    const familyLine = executed
+        ? 'Son duruşmada Deniz, Ece ve annen en arka sırada oturdu. Ece başını hiç kaldırmadı.'
+        : familyEpilogue(state);
+    const epilogue = [familyLine, selinLine].filter(Boolean).map(t => `<p class="ending-epilogue">${t}</p>`).join('');
 
     ui.showGameOver({ title: ending.title, description: ending.description, stats: epilogue + statsHtml });
 }

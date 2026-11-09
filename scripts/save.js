@@ -55,6 +55,7 @@ const CAREER_FIELDS = [
     'correctTotal', 'deathSentences', 'bribesTaken', 'bribesExposed', 'threatsObeyed',
     'pendingRevenge', 'offenders', 'finale',
     'appeals', 'postponed', 'family', 'flags', 'selin',
+    'branch', 'specials', 'bonusQuestions', 'scandal',
 ];
 
 export function saveGame(state) {

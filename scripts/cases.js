@@ -64,14 +64,14 @@ export const AMENDMENTS = [
         text: 'Alkol veya uyuşturucu etkisindeyken işlenen suçlarda ceza bir derece ağırlaştırılır.',
     },
     {
-        day: 5,
+        day: 6,
         tag: 'minor',
         shift: -1,
         title: 'Ek Madde 2',
         text: '18 yaşından küçük sanıkların cezası bir derece hafifletilir.',
     },
     {
-        day: 7,
+        day: 10,
         tag: 'restitution',
         shift: -1,
         title: 'Ek Madde 3',
@@ -1295,6 +1295,295 @@ export const CRIMES = {
                     note: 'Adli tıp otopsi raporu bekleniyor',
                     evidence: 'Otopsi: ölüm ameliyattan bağımsız, önceden var olan bir damar balonundan; müdahale zamanında ve doğru.',
                 },
+            },
+        ],
+    },
+
+    // ---------- Act 2, "Sürgün" (Karaçam, a small town) ----------
+    bloodFeud: {
+        name: 'Kan Davası',
+        branch: 'surgun',
+        severity: 5,
+        laws: {
+            base: { verdict: 'jail-long', text: 'kan davası nedeniyle öldürme' },
+            provoked: { verdict: 'jail-medium', text: 'Ağır tahrik altında, önceden plan yapılmadan' },
+            pressured: { verdict: 'jail-short', text: 'Aile büyüklerinin baskısıyla, öldürmeye teşebbüs edip vazgeçmişse' },
+        },
+        statements: [
+            {
+                text: 'Dedemin kanını yerde bırakamazdım. Bu kasabada böyledir.', emotion: 'proud', sympathy: false, law: 'base',
+                detail: 'Otuz yıllık kan',
+                summary: 'Otuz yıl önce dedesini öldüren ailenin en büyük oğlunu düğün çıkışında pusu kurup vurdu.',
+                evidence: ['Silahı olaydan bir ay önce almış; maktulün yolunu günlerce gözlemiş.', 'Köy kahvesinde "Sıra onlarda" dediğini üç kişi duymuş.'],
+                question: 'Pişman mısın?', answer: 'Pişman olursam dedeme ihanet etmiş olurum.',
+            },
+            {
+                text: 'Kardeşimin mezarına tükürdü! O anı hatırlamıyorum bile.', emotion: 'panicked', sympathy: true, law: 'provoked',
+                detail: 'Mezarlık',
+                summary: 'Kardeşinin mezarını ziyaret ederken karşılaştığı düşman aileden bir adamı, mezara hakaret edince bıçakladı.',
+                evidence: ['Tanıklar maktulün mezara tükürüp küfrettiğini doğruluyor.', 'Sanığın yanında silah yoktu; bıçak mezarlık bekçisinin kulübesinden alınmış.'],
+                question: 'Bıçağı nereden aldın?', answer: 'Bekçinin kulübesinde duruyordu... Gözüm karardı.',
+            },
+            {
+                text: 'Amcam silahı elime verdi. Tetiği çekemedim, kaçtım.', emotion: 'remorseful', sympathy: true, law: 'pressured', age: 19,
+                detail: 'Çekemediği tetik',
+                summary: 'Aile büyüklerinin baskısıyla düşman ailenin evine silahla gitti, kapıda vazgeçip silahı atarak kaçtı.',
+                evidence: ['Kimse yaralanmadı; silah bahçede bulundu.', 'Amcasının "Gitmezsen bu evde yerin yok" dediğini annesi doğruluyor.'],
+                question: 'Neden vazgeçtin?', answer: 'Kapıyı küçük bir kız açtı. Bana dedemin hikâyelerini anlatan biri yoktu onun gözlerinde.',
+            },
+            {
+                text: 'Benim değil, töre kararı verdi. Ben sadece uyguladım.', emotion: 'defiant', sympathy: false, law: 'base',
+                detail: 'Töre',
+                summary: 'Aile meclisinin "kan bedeli" kararı üzerine komşu köyden bir genci öldürdü.',
+                evidence: ['Aile meclisinin toplandığı ve kararı verdiği muhtar tarafından doğrulandı.', 'Cinayet silahı aile büyüğünün evinde saklanmış.'],
+                question: 'Kararı kim verdi?', answer: 'Meclis. Ben itiraz etseydim sıra bana gelirdi.',
+            },
+        ],
+    },
+
+    landDispute: {
+        name: 'Arazi Kavgası',
+        branch: 'surgun',
+        severity: 2,
+        laws: {
+            base: { verdict: 'fine-moderate', text: 'başkasının arazisini işgal veya sınır taşını oynatma' },
+            violence: { verdict: 'jail-short', text: 'Arazi kavgasında birini yaralamışsa' },
+            rightful: { verdict: 'release', text: 'Arazi tapuyla kendisine aitse' },
+        },
+        statements: [
+            {
+                text: 'O tarla dedemden kalma! Taşı ben koymadım, onlar oynattı.', emotion: 'defiant', sympathy: true, law: 'rightful',
+                detail: 'Sınır taşı',
+                summary: 'Komşusunun tarlasına çit çektiği ve sınır taşını oynattığı iddiasıyla yargılanıyor.',
+                evidence: ['Kadastro ölçümünde çitin sanığın tapulu arazisinin içinde kaldığı görüldü.', 'Komşunun elindeki eski senet sahte çıktı.'],
+                question: 'Tapun var mı?', answer: 'Var! Dedemin adına, 1962 tarihli. Getirdim de, bakın.',
+            },
+            {
+                text: 'Sadece tarlamı sürdüm. Biraz taşmışım, ne olacak?', emotion: 'proud', sympathy: false, law: 'base',
+                detail: 'Taşan saban',
+                summary: 'Her yıl birkaç metre daha ilerleyerek komşusunun tarlasının bir dönümünü kendi tarlasına kattı.',
+                evidence: ['Uydu fotoğrafları sınırın beş yılda 40 metre kaydığını gösteriyor.', 'Komşusu yaşlı ve tek başına; itiraz edememiş.'],
+                question: 'Komşuna sordun mu?', answer: 'Kadıncağız zaten ekemiyor. Toprak boş kalmasın dedim.',
+            },
+            {
+                text: 'Kürekle üstüme geldi, ben de vurdum!', emotion: 'panicked', sympathy: false, law: 'violence',
+                detail: 'Kürek kavgası',
+                summary: 'Su kanalı yüzünden çıkan kavgada komşusunun kafasına çapayla vurdu. Komşusu hastanede dikiş aldı.',
+                evidence: ['Mağdurun kafasına 8 dikiş atıldı.', 'Tanıklara göre kavgayı sanık başlattı.'],
+                question: 'Kavgayı kim başlattı?', answer: '...Ben. Ama suyumu kesmişti!',
+            },
+            {
+                text: 'Vakıf "Bu arazi artık bizim" dedi. Ben de çiti söktüm.', emotion: 'defiant', sympathy: true, law: 'rightful',
+                detail: 'Vakıf çiti',
+                summary: 'Hikmet Vakfı\'nın tarlasına çektiği çiti söktüğü için vakıf tarafından şikayet edildi.',
+                evidence: ['Tapu kayıtları arazinin sanığa ait olduğunu gösteriyor.', 'Vakfın elindeki devir belgesinde sanığın imzası taklit edilmiş.'],
+                question: 'Araziyi vakfa sattın mı?', answer: 'Hayır! Bir gün gelip çit çektiler, o kadar.',
+            },
+        ],
+    },
+
+    election: {
+        name: 'Seçim Suçu',
+        branch: 'surgun',
+        severity: 3,
+        laws: {
+            base: { verdict: 'jail-short', text: 'oy satın alma' },
+            fraud: { verdict: 'jail-medium', text: 'Sandık veya sayım hilesi' },
+            coerced: { verdict: 'fine-moderate', text: 'Oyunu baskıyla satmak zorunda kalan seçmen' },
+        },
+        statements: [
+            {
+                text: 'Herkese bir çuval un dağıttım, hayır işi bu!', emotion: 'proud', sympathy: false, law: 'base',
+                detail: 'Un çuvalları',
+                summary: 'Belediye seçiminden önce köylere "oy verirseniz" diyerek un ve yakacak dağıttı.',
+                evidence: ['Dağıtım sırasında çekilmiş videoda "Sandıkta unutmayın" diyor.', 'Dağıtılan malların belediye deposundan çıktığı tespit edildi.'],
+                question: 'Un parası nereden çıktı?', answer: 'Belediyenin deposu boştu zaten, biz doldurduk sayılır.',
+            },
+            {
+                text: 'Sayım gecesi elektrik kesildi, ben ne yapayım?', emotion: 'defiant', sympathy: false, law: 'fraud',
+                detail: 'Kesilen elektrik',
+                summary: 'Sandık görevlisiyken sayım sırasında elektrik kesildiğinde 200 oy pusulasını değiştirdi.',
+                evidence: ['Pusulaların aynı kalemle ve aynı el yazısıyla işaretlendiği tespit edildi.', 'Elektriğin trafodan bilerek kesildiği kamera kaydında görülüyor.'],
+                question: 'Elektriği kim kesti?', answer: 'Bilmiyorum... Belediyeden biri "Rahat ol" demişti.',
+            },
+            {
+                text: 'Oyumu sattım çünkü vermezsem işten atılacaktım.', emotion: 'remorseful', sympathy: true, law: 'coerced',
+                detail: 'Fabrika işçisi',
+                summary: 'Çalıştığı fabrikanın sahibine oy pusulasının fotoğrafını göndererek karşılığında ikramiye aldı.',
+                evidence: ['Patronunun "Fotoğraf atmayan işini arasın" mesajı telefonunda kayıtlı.', 'Aldığı ikramiye: ₺500.'],
+                question: 'Patronun ne dedi?', answer: '"Fotoğrafı atmayan pazartesi gelmesin." Üç çocuğum var.',
+            },
+            {
+                text: 'Vakıf yurdundaki öğrencilere hangi oyu vereceklerini söyledim, o kadar.', emotion: 'proud', sympathy: false, law: 'base',
+                detail: 'Yurt sandığı',
+                summary: 'Hikmet Vakfı yurdunun sorumlusuyken öğrencilere burs karşılığında belirli bir adaya oy vermelerini şart koştu.',
+                evidence: ['Öğrencilere imzalatılan "taahhütname" ele geçirildi.', 'Oy vermeyen iki öğrencinin bursu kesilmiş.'],
+                question: 'Bursları kim kesti?', answer: 'Vakıf yönetimi. Ben sadece listeyi verdim.',
+            },
+        ],
+    },
+
+    defamation: {
+        name: 'Hakaret ve İftira',
+        branch: 'surgun',
+        severity: 2,
+        laws: {
+            base: { verdict: 'fine-moderate', text: 'asılsız iddialarla birini karalama' },
+            truth: { verdict: 'release', text: 'İddialar belgelerle doğrulanmışsa (gerçeği söylemek suç değildir)' },
+            falseCharge: { verdict: 'jail-short', text: 'Masum birini suçlu göstermek için sahte delil üretmek' },
+        },
+        statements: [
+            {
+                text: 'Kasaba meydanında herkes duydu, ama ben doğruyu söyledim!', emotion: 'defiant', sympathy: true, law: 'truth',
+                detail: 'Meydan konuşması',
+                summary: 'Pazar yerinde muhtarın yardım paralarını zimmetine geçirdiğini bağırarak anlattı; muhtar şikayetçi oldu.',
+                evidence: ['Muhtarlık hesaplarında açıklanamayan ₺80.000 eksik var.', 'Muhtar hakkında ayrıca zimmet soruşturması başlatıldı.'],
+                question: 'Bunu nereden biliyorsun?', answer: 'Yardım listesinde öldü diye gösterilen kişi benim annem. Hâlâ yaşıyor!',
+            },
+            {
+                text: 'Komşum hırsız! Bunu herkes biliyor.', emotion: 'proud', sympathy: false, law: 'base',
+                detail: 'Hırsız damgası',
+                summary: 'Kasabanın sosyal medya grubunda komşusunun hırsız olduğunu yazdı. Komşu işinden oldu.',
+                evidence: ['Komşunun sabıkası yok; iddia edilen hırsızlıkla ilgili hiçbir kayıt bulunmadı.', 'Mesajlar 3.000 kişilik grupta paylaşılmış.'],
+                question: 'Kanıtın var mı?', answer: 'Kanıta ne gerek var, yüzünden belli.',
+            },
+            {
+                text: 'Evine o çantayı ben koydum, evet. Ama o adam beni mahvetti.', emotion: 'remorseful', sympathy: false, law: 'falseCharge',
+                detail: 'Sahte delil',
+                summary: 'Eski ortağını hırsızlıkla suçlamak için çalıntı bir çantayı onun deposuna sakladı ve polise ihbar etti.',
+                evidence: ['Depo kamerasında çantayı bırakırken görülüyor.', 'Eski ortağı bu yüzden iki hafta tutuklu kaldı.'],
+                question: 'Neden yaptın?', answer: 'Ortaklıktan ayrılırken beni dolandırdı. İntikam istedim.',
+            },
+        ],
+    },
+
+    organizedCrime: {
+        name: 'Suç Örgütü',
+        branch: 'surgun',
+        severity: 4,
+        laws: {
+            base: { verdict: 'jail-medium', text: 'suç örgütüne üye olma' },
+            leader: { verdict: 'jail-long', text: 'Örgütü kuran veya yöneten' },
+            coerced: { verdict: 'house-arrest', text: 'Örgüte zorla sokulmuş ve suça katılmamışsa' },
+        },
+        statements: [
+            {
+                text: 'Vakfın işlerine karışmam. Bana verilen zarfları dağıttım, o kadar.', emotion: 'defiant', sympathy: false, law: 'base',
+                detail: 'Zarf dağıtıcı',
+                summary: 'Hikmet Vakfı adına esnaftan "bağış" adı altında haraç topladı.',
+                evidence: ['Esnaftan 14 kişi düzenli para verdiğini ve vermeyenin dükkanının yakıldığını söylüyor.', 'Defterinde esnafın adları ve aylık "aidatları" yazılı.'],
+                question: 'Parayı kime veriyordun?', answer: 'Vakfın muhasebesine. Ötesini bilmem.',
+            },
+            {
+                text: 'Babamın borcu yüzünden beni yurda yazdılar. Kaçamadım.', emotion: 'panicked', sympathy: true, law: 'coerced', age: 22,
+                detail: 'Yurttan kaçamayan',
+                summary: 'Hikmet Vakfı yurdunda kalırken vakfın kayıt dışı işlerinde çalıştırıldı; baskında yakalandı.',
+                evidence: ['Kimlik kartına yurt yöneticileri el koymuş.', 'Hiçbir suç eylemine katıldığına dair kanıt yok; sadece mutfakta çalışmış.'],
+                question: 'Neden kaçmadın?', answer: 'Kimliğim onlardaydı. Kaçanı köy yolunda bulup geri getiriyorlardı.',
+            },
+            {
+                text: 'Ben sadece güvenliği sağlıyordum. Kimseye silah çekmedim.', emotion: 'proud', sympathy: false, law: 'base',
+                detail: 'Vakfın korumaları',
+                summary: 'Hikmet Vakfı\'nın silahlı koruma ekibinde görev aldı; vakfa borcunu ödemeyenleri tehdit ettiler.',
+                evidence: ['Evinde ruhsatsız tabanca ve vakfın borçlu listesi bulundu.', 'İki borçlu tehdit edildiklerini ifade etti.'],
+                question: 'Borçlulara ne yaptınız?', answer: 'Konuştuk. İkna ettik. Kimse ölmedi.',
+            },
+        ],
+    },
+
+    // ---------- Act 2, "Borç" (the high court) ----------
+    bidRigging: {
+        name: 'İhaleye Fesat',
+        branch: 'borc',
+        severity: 4,
+        laws: {
+            base: { verdict: 'jail-short', text: 'kamu ihalesine hile karıştırma' },
+            massive: { verdict: 'jail-medium', text: 'Büyük kamu zararı veya can güvenliğini tehlikeye atma' },
+            whistle: { verdict: 'fine-moderate', text: 'İhaleye katılıp hileyi kendisi ihbar etmişse' },
+        },
+        statements: [
+            {
+                text: 'Şartnameyi biz yazdık ama ihaleyi hak ederek aldık.', emotion: 'proud', sympathy: false, law: 'base',
+                detail: 'Şartname',
+                summary: 'Belediye ihalesinin şartnamesini kendi firmasına uyacak şekilde, belediyedeki tanıdığıyla birlikte hazırladı.',
+                evidence: ['Şartnamenin taslağı firmanın bilgisayarında, ihaleden bir ay önce oluşturulmuş.', 'İhaleye tek teklif verilmiş.'],
+                question: 'Şartnameyi kim yazdı?', answer: 'Belediyeye "yardım" ettik. Herkes yapıyor.',
+            },
+            {
+                text: 'Okul binası çöktü ama deprem çok büyüktü!', emotion: 'panicked', sympathy: false, law: 'massive',
+                detail: 'Çöken okul',
+                summary: 'Kazandığı okul inşaatı ihalesinde eksik demir ve kalitesiz beton kullandı; depremde okul çöktü.',
+                evidence: ['Bilirkişi: kolonlarda projede öngörülen demirin yarısı kullanılmış.', 'Aynı depremde çevredeki yeni binalar ayakta kaldı.'],
+                question: 'Demiri neden eksik kullandın?', answer: 'Fiyatı düşük vermiştik. Bir yerden kısmak lazımdı.',
+            },
+            {
+                text: 'Hileyi gördüm ve savcılığa ben gittim. Şimdi beni de yargılıyorsunuz.', emotion: 'defiant', sympathy: true, law: 'whistle',
+                detail: 'İhbarcı müteahhit',
+                summary: 'Danışıklı bir ihaleye katıldı, sonra diğer firmaların anlaştığını savcılığa kendisi ihbar etti.',
+                evidence: ['Savcılık kayıtlarında ihbar dilekçesi sanığın imzasını taşıyor.', 'İhbar, ihale sonuçlanmadan önce yapılmış.'],
+                question: 'Neden ihbar ettin?', answer: 'Çocuklarımın okuyacağı yolu yapacaklardı. Çürük olacağını bildiğim halde susamazdım.',
+            },
+            {
+                text: 'Bakanlıktan "Bu firma kazanacak" dediler, ben de imzaladım.', emotion: 'remorseful', sympathy: false, law: 'massive',
+                detail: 'Hastane ihalesi',
+                summary: 'İhale komisyonu başkanıyken, bakanlığın istediği firmaya hastane ihalesini piyasanın üç katı fiyatla verdi.',
+                evidence: ['Kamu zararı: ₺40.000.000.', 'Firmanın ortaklarından biri bakan yardımcısının kayınbiraderi.'],
+                question: 'Talimatı kim verdi?', answer: 'Yazılı değil... Telefonla. Adını söylersem ailem yanar.',
+            },
+            {
+                text: 'Teklifleri önceden konuştuk, evet. Ama kimse zarar görmedi.', emotion: 'defiant', sympathy: false, law: 'base',
+                detail: 'Kartel',
+                summary: 'Dört firma, belediyenin yol ihalelerinde sırayla kazanmak için teklif fiyatlarını önceden belirledi.',
+                evidence: ['Firmalar arası yazışmalarda "Bu sefer sıra sende" mesajları var.', 'İhalelerin fiyatları piyasanın %30 üzerinde kalmış.'],
+                question: 'Sırayı kim belirliyordu?', answer: 'Toplantılarda kura çekiyorduk. Adil bir sistemdi.',
+            },
+        ],
+    },
+
+    pressCrime: {
+        name: 'Basın Yoluyla Suç',
+        branch: 'borc',
+        severity: 2,
+        laws: {
+            base: { verdict: 'fine-moderate', text: 'bilerek yalan haber yayma' },
+            truth: { verdict: 'release', text: 'Haber belgelere dayanıyorsa' },
+            incitement: { verdict: 'jail-short', text: 'Halkı şiddete kışkırtmışsa' },
+        },
+        statements: [
+            {
+                text: 'Bakanlığın gizlediği raporu yayımladım. Her satırı doğru.', emotion: 'defiant', sympathy: true, law: 'truth',
+                detail: 'Gizlenen rapor',
+                summary: 'Bir barajdaki çatlakları gösteren gizli raporu yayımladığı için "halkı paniğe sevk etmek"le yargılanıyor.',
+                evidence: ['Bağımsız mühendisler raporun gerçek olduğunu ve barajın onarım gerektirdiğini doğruladı.', 'Yayından sonra baraj acil bakıma alındı.'],
+                question: 'Raporu nereden buldun?', answer: 'Kaynağımı vermem. Ama baraj şimdi onarılıyorsa yaptığım doğruydu.',
+            },
+            {
+                text: 'Tıklanıyordu, ben de yazdım. Doğru mu yanlış mı kim bakar?', emotion: 'proud', sympathy: false, law: 'base',
+                detail: 'Uydurma haber',
+                summary: 'Bir iş insanının çocuk kaçırdığına dair tamamen uydurma bir haberi internet sitesinde yayımladı.',
+                evidence: ['Haberde adı geçen olay hiç yaşanmamış; tanık olarak gösterilen kişiler gerçek değil.', 'İş insanının evi taşlandı.'],
+                question: 'Haberin kaynağı ne?', answer: 'Kaynak... Hayal gücüm. Okurlar seviyor.',
+            },
+            {
+                text: '"Sokaklara dökülün" dedim ama kimseye silah almasını söylemedim.', emotion: 'defiant', sympathy: false, law: 'incitement',
+                detail: 'Kışkırtma',
+                summary: 'Yayın organında bir mahalle halkını "hainler" diye gösterip "Gereğini yapın" çağrısı yaptı; ertesi gün mahalle saldırıya uğradı.',
+                evidence: ['Saldırganların telefonlarında yayının linki ve "Gereğini yapıyoruz" mesajları var.', 'Saldırıda 12 kişi yaralandı.'],
+                question: 'Saldırıyı gördün mü?', answer: 'Gördüm. Benim suçum yok, ben sadece söyledim.',
+            },
+            {
+                text: 'Milletvekilinin yazışmalarını yayımladım, beni hapse atmak istiyorlar.', emotion: 'panicked', sympathy: true, law: 'truth',
+                detail: 'Vekil yazışmaları',
+                summary: 'Bir milletvekilinin yabancı bir şirketle yaptığı yazışmaları yayımladığı için "casusluk"la suçlanıyor.',
+                evidence: ['Yazışmaların gerçekliği teknik incelemeyle doğrulandı.', 'Belgeler yalnızca gazetede yayımlanmış; kimseye satılmamış.'],
+                question: 'Belgeleri kime gösterdin?', answer: 'Sadece okurlara. Ve şimdi size.',
+            },
+            {
+                text: 'Bir yorum yazdım, o kadar. Milyonlarca kişi yazıyor.', emotion: 'remorseful', sympathy: true, law: 'base',
+                detail: 'Sosyal medya',
+                summary: 'Sosyal medyada bir hakimin rüşvet aldığını iddia eden, kanıtsız bir paylaşım yaptı; paylaşım 100.000 kez paylaşıldı.',
+                evidence: ['Hakim hakkında hiçbir soruşturma veya kanıt yok.', 'Sanık paylaşımı ertesi gün silip özür diledi.'],
+                question: 'Bunu neye dayanarak yazdın?', answer: 'Bir gruptan duydum... Araştırmadım. Hata ettim.',
             },
         ],
     },

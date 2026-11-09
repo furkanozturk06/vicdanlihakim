@@ -1,5 +1,5 @@
 /**
- * The judge's private life (TURKISH)
+ * The judge\'s private life (TURKISH)
  * Every evening at home: fixed household costs, then one scene with a choice.
  * Scenes react to what happened in court (death sentences, bribes, ignored threats).
  *
@@ -12,7 +12,7 @@ export function createFamily() {
     return { harmony: 70, motherHealth: 2, spouseLeft: false };
 }
 
-const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+export const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
 // Short status lines shown at the top of the evening screen
 export function familyStatus(family) {
@@ -28,9 +28,9 @@ export function familyStatus(family) {
 }
 
 // A choice: { label, cost?, apply(state) -> result text }
-const choice = (label, apply, cost = 0) => ({ label, apply, cost });
+export const choice = (label, apply, cost = 0) => ({ label, apply, cost });
 
-function adjust(state, { harmony = 0, conscience = 0, money = 0, health = 0 }) {
+export function adjust(state, { harmony = 0, conscience = 0, money = 0, health = 0 }) {
     state.family.harmony = clamp(state.family.harmony + harmony, 0, 100);
     state.conscience = clamp(state.conscience + conscience, 0, 100);
     state.money = Math.max(0, state.money + money);
@@ -71,7 +71,7 @@ export function eveningScene(state, day) {
                 ],
             };
 
-        case 4:
+        case 5:
             if (state.flags.threatIgnored) {
                 return {
                     text: 'Ece titreyerek anlattı: okuldan dönerken siyah bir araba onu sokak boyunca takip etmiş. Mahkemede aldırmadığın o tehdit aklına geldi.',
@@ -89,7 +89,7 @@ export function eveningScene(state, day) {
                 ],
             };
 
-        case 5:
+        case 8:
             if (state.deathSentences > 0) {
                 return {
                     text: 'Ece yatmadan önce sordu: "Okulda idam ettiğin adamı konuştular. O gerçekten çok mu kötüydü?"',
@@ -115,7 +115,7 @@ export function eveningScene(state, day) {
                 ],
             };
 
-        case 6:
+        case 9:
             if (f.motherHealth <= 1) {
                 return {
                     text: 'Annen gece fenalaştı, ambulansla hastaneye kaldırıldı. Özel hastane hemen müdahale için ₺250 istiyor.',
@@ -132,7 +132,7 @@ export function eveningScene(state, day) {
                 ],
             };
 
-        case 7:
+        case 10:
             return {
                 text: 'Ev sahibi kapıya geldi: "Kirayı artırıyorum. Bu ay fazladan ₺100 istiyorum, yoksa evi boşaltın."',
                 choices: [
@@ -141,7 +141,7 @@ export function eveningScene(state, day) {
                 ],
             };
 
-        case 8:
+        case 13:
             if (state.conscience < 40 || f.harmony < 25) {
                 return {
                     text: 'Deniz bavulunu hazırlamış: "Seni tanıyamıyorum artık. Bir süre annemde kalacağım. Ece de benimle geliyor."',
@@ -158,8 +158,64 @@ export function eveningScene(state, day) {
                 ],
             };
 
+        case 4:
+            return {
+                text: 'Annen eski bir fotoğraf albümü açtı. Cübbeli bir adam gülümsüyor: dedenin, yani annenin babasının hakimlik yemin günü. "Babam derdi ki, kanun bir terazidir; ama onu tutan elin titrememesi gerekir."',
+                choices: [
+                    choice('Fotoğrafı masana koy', s => { adjust(s, { conscience: 5, harmony: 3 }); return 'Fotoğraf artık masanda. Zor kararlarda gözün ona kayacak.'; }),
+                    choice('"Eski zamanlardı anne."', s => { adjust(s, { harmony: -3 }); return 'Annen albümü sessizce kapattı.'; }),
+                ],
+            };
+
+        case 6:
+            return {
+                text: 'Bugün Deniz\'in doğum günüymüş. Mahkemenin telaşında aklından çıkmış. Ece fısıldıyor: "Pastacı hâlâ açık, ₺80."',
+                choices: [
+                    choice('Pasta ve çiçek al (₺80)', s => { adjust(s, { money: -80, harmony: 10 }); return 'Deniz mumu üflerken gözleri doldu: "Unuttuğunu sanmıştım."'; }, 80),
+                    choice('Özür dile, yarın kutlarız de', s => { adjust(s, { harmony: -10 }); return 'Deniz "Önemli değil" dedi. Önemliydi.'; }),
+                ],
+            };
+
+        case 7: {
+            const verdict = state.selin;
+            if (verdict === 'death') {
+                return {
+                    text: 'Ece akşam haberlerinde Selin Aydın\'ın davasını izledi. Sana döndü: "O gazeteci abla gerçekten hain miydi?"',
+                    choices: [
+                        choice('"Bakanlık öyle dedi."', s => { adjust(s, { conscience: -6, harmony: -5 }); return 'Ece başka bir şey sormadı. Bir daha da haber izlemedi.'; }),
+                        choice('Cevap verme, odana git', s => { adjust(s, { conscience: -3 }); return 'Kapıyı kapattın. Ama sorunun sesi kapanmadı.'; }),
+                    ],
+                };
+            }
+            return {
+                text: 'Ece akşam haberlerinde Selin Aydın\'ın davasını izledi: "Onu sen mi yargıladın? Bakanlık çok kızmış diyorlar."',
+                choices: [
+                    choice('"Kanun neyse onu verdim."', s => { adjust(s, { conscience: 3, harmony: 3 }); return 'Ece gururla gülümsedi: "Yarın okulda anlatacağım."'; }),
+                    choice('"Bunları düşünme kızım."', s => { adjust(s, { harmony: -2 }); return 'Ece omuz silkti ama gözlerinde bir merak kaldı.'; }),
+                ],
+            };
+        }
+
+        case 11:
+            return {
+                text: 'Yarın sabah Ece\'nin veli toplantısı var. Ama masanda yarının dosyaları yığılı.',
+                choices: [
+                    choice('Toplantıya git', s => { adjust(s, { harmony: 8 }); return 'Öğretmen Ece\'yi övdü. Ece eve kadar elini bırakmadı.'; }),
+                    choice('Dosyalara çalış', s => { adjust(s, { harmony: -6 }); s.bonusQuestions = 1; return 'Gece yarısına kadar dosyaları okudun. Yarın bir soru fazla sorabileceksin. Ece toplantıya Deniz\'le gitti.'; }),
+                ],
+            };
+
+        case 12:
+            return {
+                text: 'Alt kattaki komşu kapını çaldı, elinde bir tepsi börek: "Oğlum yarın sizin mahkemede, hakim bey. Bir kavga meselesi. Biraz anlayış gösterseniz..."',
+                choices: [
+                    choice('"Kanun neyse o olur."', s => { adjust(s, { conscience: 4, harmony: -3 }); return 'Komşu böreği geri götürdü. Merdivende selam vermeden geçti.'; }),
+                    choice('Böreği al, "Bakarız" de', s => { adjust(s, { conscience: -7 }); return 'Börek güzeldi. Ama her lokmada midende bir ağırlık vardı.'; }),
+                ],
+            };
+
         default: {
-            // Day 9: the night before the last day
+            // Day 14: the night before the minister\'s son
             const lines = [];
             if (f.spouseLeft) lines.push('Ev sessiz; Ece\'nin odası boş.');
             else lines.push('Ece yatmadan önce kapında durdu: "Yarın son günün, değil mi? Ne olacak?"');

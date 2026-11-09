@@ -2709,3 +2709,8 @@ body {
         linear-gradient(to right, var(--hair) 0 9px, transparent 9px calc(100% - 9px), var(--hair) calc(100% - 9px)) bottom / 100% 18px no-repeat;
     border-radius: 30px 30px 14px 14px;
 }
+
+/* Ending texts have paragraphs ("Hikâye modu sona erdi.") */
+#ending-description {
+    white-space: pre-line;
+}

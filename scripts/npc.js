@@ -85,15 +85,16 @@ export function getCorrectVerdict(crimeType, statement, day) {
  * `offender` (optional) is a previously released defendant who comes back
  * with a heavier crime, keeping their name and appearance.
  */
-export function generateCase(day, directive = null, offender = null, used = new Set()) {
-    const all = Object.keys(CRIMES);
+export function generateCase(day, directive = null, offender = null, used = new Set(), branch = null) {
+    // Act-2 crimes only appear in their own branch
+    const all = Object.keys(CRIMES).filter(c => !CRIMES[c].branch || CRIMES[c].branch === branch);
     let pool = all;
 
     if (offender) {
         pool = pool.filter(c => CRIMES[c].severity >= 3);
     } else if (day < 3) {
         pool = pool.filter(c => CRIMES[c].severity <= 3);
-    } else if (day >= 5) {
+    } else if (day >= 5 && day <= 15) {
         pool = pool.filter(c => CRIMES[c].severity >= 3);
     }
 
@@ -102,6 +103,11 @@ export function generateCase(day, directive = null, offender = null, used = new 
     if (!offender && directive && directive.crimeFilter && Math.random() < 0.6) {
         const filtered = pool.filter(c => directive.crimeFilter.includes(c));
         if (filtered.length > 0) directed = filtered;
+    }
+    // In act 2, half of the cases come from the branch's own crimes
+    if (!offender && !directed && branch && Math.random() < 0.5) {
+        const own = pool.filter(c => CRIMES[c].branch === branch);
+        if (own.length > 0) directed = own;
     }
 
     const statementsOf = (crimes) => {

@@ -64,7 +64,7 @@ export const FINAL_DIRECTIVE = {
 
 export const INTRO = {
     title: 'Adalet Bakanlığı',
-    text: 'Sayın Hakim,\n\nŞehrin Ağır Ceza Mahkemesine atandınız. Önümüzdeki on gün boyunca kararlarınız bakanlıkça değerlendirilecektir.\n\nHer sabah bakanlığın talimatını alacaksınız. Kanun kitabı masanızda. Sanıkları sorgulamak için günlük hakkınız sınırlıdır; dosyaları dikkatle okuyun.\n\nUnutmayın: Kanun ile vicdan her zaman aynı şeyi söylemez.',
+    text: 'Sayın Hakim,\n\nŞehrin Ağır Ceza Mahkemesine atandınız. Önümüzdeki on beş gün boyunca kararlarınız bakanlıkça değerlendirilecektir.\n\nHer sabah bakanlığın talimatını alacaksınız. Kanun kitabı masanızda. Sanıkları sorgulamak için günlük hakkınız sınırlıdır; dosyaları dikkatle okuyun.\n\nUnutmayın: Kanun ile vicdan her zaman aynı şeyi söylemez.',
     button: 'Göreve Başla',
 };
 
@@ -93,7 +93,7 @@ export const TUTORIAL = [
     {
         target: '#stats-bar',
         title: 'Görevin',
-        text: 'Hazine ya da itibar sıfırlanırsa görevden alınırsın. On gün dayan. Rüşvet ve tehditlere dikkat et.',
+        text: 'Hazine ya da itibar sıfırlanırsa görevden alınırsın. On beş gün dayan; ardından hikâyen başka bir yerde sürecek. Rüşvet ve tehditlere dikkat et.',
     },
 ];
 
