@@ -366,16 +366,24 @@ export function runTutorial(steps) {
 }
 
 // Start screen: offer "continue" when a save exists
-export function setContinueOption(day) {
+export function setContinueOption(day, mode = 'story') {
     const btn = document.getElementById('continue-btn');
     if (day) {
-        btn.textContent = `Devam Et (${day}. Gün)`;
+        btn.textContent = mode === 'endless' ? `Devam Et (Sonsuz · ${day}. Gün)` : `Devam Et (${day}. Gün)`;
         btn.classList.remove('hidden');
         elements.startBtn.textContent = 'Yeni Oyun';
     } else {
         btn.classList.add('hidden');
         elements.startBtn.textContent = 'Koltuğa Otur';
     }
+}
+
+// Start screen: endless mode button and best record, once the story is finished
+export function setEndlessOption(unlocked, best) {
+    document.getElementById('endless-btn').classList.toggle('hidden', !unlocked);
+    const record = document.getElementById('endless-record');
+    record.classList.toggle('hidden', !unlocked || !best);
+    record.textContent = best ? `Sonsuz mod rekoru: ${best} gün` : '';
 }
 
 export function setSoundIcon(on) {

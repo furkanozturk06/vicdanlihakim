@@ -2714,3 +2714,9 @@ body {
 #ending-description {
     white-space: pre-line;
 }
+
+.endless-record {
+    font-family: var(--font-typewriter);
+    font-size: 0.8rem;
+    color: var(--gold-dim);
+}

@@ -97,6 +97,13 @@ export const TUTORIAL = [
     },
 ];
 
+// Endless mode, unlocked by finishing the 30-day story
+export const ENDLESS_INTRO = {
+    title: 'Sonsuz Mod',
+    text: 'Hikâye bitti, ama mahkemenin kapısı hiç kapanmıyor.\n\nBu modda her gün yeni sanıklar gelir. Kanun, sorgu, temyiz ve teklifler aynen sürer; ama her on günde bir sorgu hakkın azalır ve rüşvet teklifleri sıklaşır.\n\nHazinen ya da itibarın sıfırlanana kadar ne kadar dayanabilirsin?',
+    button: 'Kürsüye Çık',
+};
+
 // Minister's son: the fixed last case of the last day
 export const FINALE = {
     crimeType: 'traffic',

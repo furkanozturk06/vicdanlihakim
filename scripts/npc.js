@@ -87,14 +87,15 @@ export function getCorrectVerdict(crimeType, statement, day) {
  */
 export function generateCase(day, directive = null, offender = null, used = new Set(), branch = null) {
     // Act-2 crimes only appear in their own branch
-    const all = Object.keys(CRIMES).filter(c => !CRIMES[c].branch || CRIMES[c].branch === branch);
+    // Act-2 crimes only appear in their own branch; endless mode ('all') uses every crime
+    const all = Object.keys(CRIMES).filter(c => branch === 'all' || !CRIMES[c].branch || CRIMES[c].branch === branch);
     let pool = all;
 
     if (offender) {
         pool = pool.filter(c => CRIMES[c].severity >= 3);
     } else if (day < 3) {
         pool = pool.filter(c => CRIMES[c].severity <= 3);
-    } else if (day >= 5 && day <= 15) {
+    } else if (day >= 5 && day <= 15 && branch !== 'all') {
         pool = pool.filter(c => CRIMES[c].severity >= 3);
     }
 
@@ -105,7 +106,7 @@ export function generateCase(day, directive = null, offender = null, used = new 
         if (filtered.length > 0) directed = filtered;
     }
     // In act 2, half of the cases come from the branch's own crimes
-    if (!offender && !directed && branch && Math.random() < 0.5) {
+    if (!offender && !directed && branch && branch !== 'all' && Math.random() < 0.5) {
         const own = pool.filter(c => CRIMES[c].branch === branch);
         if (own.length > 0) directed = own;
     }
@@ -133,7 +134,11 @@ export function generateCase(day, directive = null, offender = null, used = new 
             break;
         }
     }
-    if (!candidates) candidates = statementsOf(directed || pool);
+    if (!candidates) {
+        // Every case has been seen: start a new cycle
+        used.clear();
+        candidates = statementsOf(directed || pool);
+    }
 
     const { crimeType, statement } = pick(candidates);
     used.add(statement);

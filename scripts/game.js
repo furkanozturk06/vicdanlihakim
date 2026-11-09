@@ -6,12 +6,12 @@
 import { generateCase, buildCase, createNPCElement, evaluateVerdict, getRandomDirective, verdictFeedback, verdictLabel, activeAmendments } from './npc.js';
 import { CRIMES, GENERAL_NOTES, AMENDMENTS, VERDICT_LABELS, LADDER } from './cases.js';
 import {
-    OFFERS, buildNewspaper, FINALE, FINAL_DIRECTIVE, INTRO, TUTORIAL, inspectorReport,
+    OFFERS, buildNewspaper, FINALE, FINAL_DIRECTIVE, INTRO, TUTORIAL, ENDLESS_INTRO, inspectorReport,
     SELIN_NOTE, SELIN_DIRECTIVE, SELIN_CASE, selinAftermath, kayaVisit, finaleRumor, appealText,
 } from './story.js';
 import { createFamily, familyStatus, eveningScene, familyEpilogue, HOUSEHOLD_COST } from './family.js';
 import { ACT_LENGTH, TOTAL_DAYS, ACT2_CASES_PER_DAY, BRANCHES, branchFor } from './acts.js';
-import { saveGame, loadGame, savedDay, clearSave, loadSettings, saveSettings } from './save.js';
+import { saveGame, loadGame, savedDay, savedMode, clearSave, loadSettings, saveSettings } from './save.js';
 import * as ui from './ui.js';
 import { audio } from './audio.js';
 
@@ -72,6 +72,7 @@ function createInitialState() {
         specials: {},      // outcomes of act-2 story cases, by key
         bonusQuestions: 0, // extra interrogations earned the evening before
         scandal: false,    // two exposed bribes end the career
+        mode: 'story',     // 'story' (30 days) | 'endless'
 
         currentCase: null,
         currentDirective: null,
@@ -140,8 +141,12 @@ function pickEnding() {
     return EARLY_ENDINGS.find(e => e.condition(state));
 }
 
-const isAct2 = () => state.day > ACT_LENGTH;
+const isEndless = () => state.mode === 'endless';
+const isAct2 = () => !isEndless() && state.day > ACT_LENGTH;
 const casesToday = () => (isAct2() ? ACT2_CASES_PER_DAY : CONFIG.casesPerDay);
+
+// Endless mode gets harder every 10 days: one interrogation fewer, more offers
+const endlessTier = () => (isEndless() ? Math.floor((state.day - 1) / 10) : 0);
 
 // Initialize game
 export function initGame() {
@@ -152,7 +157,8 @@ export function initGame() {
     ui.setSoundIcon(settings.sound);
     setupEventListeners();
     ui.showStartScreen();
-    ui.setContinueOption(savedDay());
+    ui.setContinueOption(savedDay(), savedMode());
+    ui.setEndlessOption(settings.endlessUnlocked, settings.endlessBest);
 }
 
 function setupEventListeners() {
@@ -162,6 +168,12 @@ function setupEventListeners() {
         audio.resume();
         audio.playClick();
         startGame();
+    });
+
+    document.getElementById('endless-btn').addEventListener('click', () => {
+        audio.resume();
+        audio.playClick();
+        startEndless();
     });
 
     document.getElementById('continue-btn').addEventListener('click', () => {
@@ -209,13 +221,15 @@ function setupEventListeners() {
     elements.nextDayBtn.addEventListener('click', async () => {
         audio.playClick();
         ui.hideDailySummary();
-        if (state.scandal || state.day > TOTAL_DAYS) {
+        if (state.scandal || (!isEndless() && state.day > TOTAL_DAYS)) {
             endGame();
             return;
         }
-        await runEvening(state.day - 1);
-        if (state.day === ACT_LENGTH + 1) {
-            await ui.showIntro(BRANCHES[state.branch].intro);
+        if (!isEndless()) {
+            await runEvening(state.day - 1);
+            if (state.day === ACT_LENGTH + 1) {
+                await ui.showIntro(BRANCHES[state.branch].intro);
+            }
         }
         saveGame(state);
         startNewDay();
@@ -261,6 +275,19 @@ async function startGame() {
     startNewDay();
 }
 
+// Endless mode: random cases until the career ends
+async function startEndless() {
+    clearSave();
+    state = createInitialState();
+    state.mode = 'endless';
+    state.branch = 'all';
+    ui.hideStartScreen();
+    audio.startAmbient();
+    ui.updateStats(state);
+    await ui.showIntro(ENDLESS_INTRO);
+    startNewDay();
+}
+
 // Pick up at the start of the day after the last completed one
 function continueGame() {
     const loaded = loadGame(createInitialState());
@@ -276,6 +303,11 @@ function continueGame() {
 }
 
 async function restartGame() {
+    if (isEndless()) {
+        document.getElementById('game-over-screen').classList.add('hidden');
+        startEndless();
+        return;
+    }
     clearSave();
     state = createInitialState();
     document.getElementById('game-over-screen').classList.add('hidden');
@@ -286,7 +318,7 @@ async function restartGame() {
 }
 
 function refreshRulebook() {
-    const crimes = Object.fromEntries(Object.entries(CRIMES).filter(([, c]) => !c.branch || c.branch === state.branch));
+    const crimes = Object.fromEntries(Object.entries(CRIMES).filter(([, c]) => state.branch === 'all' || !c.branch || c.branch === state.branch));
     ui.renderRulebook({
         crimes,
         generalNotes: GENERAL_NOTES,
@@ -300,7 +332,7 @@ async function startNewDay() {
     state.dayCases = 0;
     state.dayCorrect = 0;
     state.dayEarnings = 0;
-    state.questionsLeft = CONFIG.questionsPerDay + (state.bonusQuestions || 0);
+    state.questionsLeft = Math.max(1, CONFIG.questionsPerDay - endlessTier()) + (state.bonusQuestions || 0);
     state.bonusQuestions = 0;
     state.offerMadeToday = false;
     state.eventShownToday = false;
@@ -328,14 +360,14 @@ async function startNewDay() {
     }
 
     // Recurring characters
-    if (state.day === 5 || state.day === 12) {
+    if (!isEndless() && (state.day === 5 || state.day === 12)) {
         const report = inspectorReport(state.correctTotal / Math.max(1, state.totalCases));
         state.money += report.money;
         state.reputation = Math.max(0, Math.min(100, state.reputation + report.reputation));
         await ui.showEvent('inspector', report.title, report.text);
         ui.updateStats(state);
     }
-    await morningStory();
+    if (!isEndless()) await morningStory();
     await deliverAppeals();
 
     await presentNextCase();
@@ -364,7 +396,7 @@ async function presentNextCase() {
     state.totalCases++;
     state.currentCase = nextCase();
     state.currentCase.canPostpone = Boolean(state.currentCase.delayed) && !state.currentCase.revealed
-        && state.day !== ACT_LENGTH && state.day < TOTAL_DAYS;
+        && (isEndless() || (state.day !== ACT_LENGTH && state.day < TOTAL_DAYS));
     ui.updateCaseNumber(state.totalCases);
 
     audio.playDoor();
@@ -404,6 +436,14 @@ async function presentNextCase() {
 // Which case walks in next: Selin's trial, a postponed case whose report arrived,
 // the finale, or a random one
 function nextCase() {
+    if (isEndless()) {
+        const due = state.postponed.findIndex(p => p.day < state.day);
+        if (due >= 0) {
+            const p = state.postponed.splice(due, 1)[0];
+            return buildCase(p.crimeType, CRIMES[p.crimeType].statements[p.index], state.day, { name: p.name, age: p.age, appearance: p.appearance, revealed: true });
+        }
+        return generateCase(state.day, state.currentDirective, takeReturningOffender(), state.usedStatements, 'all');
+    }
     const special = specialCaseNow();
     if (special) {
         return buildCase(special.crimeType, special.statement, state.day, {
@@ -427,7 +467,7 @@ function nextCase() {
 
 // Act-2 story case scheduled for this slot, if any
 function specialCaseNow() {
-    if (!state.branch) return null;
+    if (!BRANCHES[state.branch]) return null;
     const last = state.dayCases === casesToday() - 1;
     return BRANCHES[state.branch].specials.find(sp => sp.day === state.day && !state.specials[sp.key]
         && ((sp.position === 'first' && state.dayCases === 0) || (sp.position === 'last' && last))) || null;
@@ -439,6 +479,7 @@ function specialDef(key) {
 
 // Today's directive: the ministry in act 1, the town or the party in act 2
 function pickDirective() {
+    if (isEndless()) return getRandomDirective();
     if (state.day === ACT_LENGTH) return FINAL_DIRECTIVE;
     if (state.day === 7) return SELIN_DIRECTIVE;
     if (isAct2()) {
@@ -496,7 +537,7 @@ function pickOffer(c) {
     }
     if (state.day < 2 || state.offerMadeToday) return null;
     if (c.severity < 3 || LADDER.indexOf(c.correctVerdict) < LADDER.indexOf('house-arrest')) return null;
-    if (Math.random() > CONFIG.offerChance) return null;
+    if (Math.random() > Math.min(0.6, CONFIG.offerChance + 0.1 * endlessTier())) return null;
 
     const type = state.day >= 4 && Math.random() < 0.4 ? 'threat' : 'bribe';
     const def = OFFERS[type];
@@ -852,7 +893,21 @@ function endGame() {
     audio.stopAmbient();
 
     const ending = pickEnding();
-    const daysServed = Math.min(state.day, TOTAL_DAYS + 1) - 1;
+    const daysServed = isEndless() ? state.day - 1 : Math.min(state.day, TOTAL_DAYS + 1) - 1;
+
+    // Finishing the story unlocks endless mode; endless mode keeps a record
+    let modeNote = '';
+    if (isEndless()) {
+        const isRecord = daysServed > (settings.endlessBest || 0);
+        if (isRecord) settings.endlessBest = daysServed;
+        saveSettings(settings);
+        modeNote = `<p class="ending-epilogue">Sonsuz modda ${daysServed} gün dayandın. ${isRecord ? 'Yeni rekor!' : `Rekor: ${settings.endlessBest} gün.`}</p>`;
+    } else if (state.day > TOTAL_DAYS && state.branch) {
+        const firstTime = !settings.endlessUnlocked;
+        settings.endlessUnlocked = true;
+        saveSettings(settings);
+        if (firstTime) modeNote = '<p class="ending-epilogue">Sonsuz Mod açıldı! Giriş ekranından oynayabilirsin.</p>';
+    }
 
     const statsHtml = `
         <p>Görev Süresi: ${daysServed} gün</p>
@@ -876,7 +931,8 @@ function endGame() {
         : familyEpilogue(state);
     const epilogue = [familyLine, selinLine].filter(Boolean).map(t => `<p class="ending-epilogue">${t}</p>`).join('');
 
-    ui.showGameOver({ title: ending.title, description: ending.description, stats: epilogue + statsHtml });
+    ui.showGameOver({ title: ending.title, description: ending.description, stats: modeNote + (isEndless() ? '' : epilogue) + statsHtml });
+    ui.setEndlessOption(settings.endlessUnlocked, settings.endlessBest);
 }
 
 export function getState() {

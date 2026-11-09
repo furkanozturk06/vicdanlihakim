@@ -55,7 +55,7 @@ const CAREER_FIELDS = [
     'correctTotal', 'deathSentences', 'bribesTaken', 'bribesExposed', 'threatsObeyed',
     'pendingRevenge', 'offenders', 'finale',
     'appeals', 'postponed', 'family', 'flags', 'selin',
-    'branch', 'specials', 'bonusQuestions', 'scandal',
+    'branch', 'specials', 'bonusQuestions', 'scandal', 'mode',
 ];
 
 export function saveGame(state) {
@@ -80,12 +80,17 @@ export function savedDay() {
     return data && typeof data.day === 'number' ? data.day : null;
 }
 
+export function savedMode() {
+    const data = read(SAVE_KEY);
+    return (data && data.mode) || 'story';
+}
+
 export function clearSave() {
     remove(SAVE_KEY);
 }
 
 export function loadSettings() {
-    return { sound: true, tutorialDone: false, ...(read(SETTINGS_KEY) || {}) };
+    return { sound: true, tutorialDone: false, endlessUnlocked: false, endlessBest: 0, ...(read(SETTINGS_KEY) || {}) };
 }
 
 export function saveSettings(settings) {
