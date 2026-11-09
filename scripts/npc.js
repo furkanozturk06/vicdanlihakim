@@ -4,35 +4,52 @@
  */
 
 import { CRIMES, LADDER, VERDICT_LABELS, AMENDMENTS } from './cases.js';
-import { DIRECTIVES, randomName } from './story.js';
+import { DIRECTIVES, randomName, randomGender } from './story.js';
 
 // NPC appearance options
 const NPC_APPEARANCES = {
     skinTones: ['#f5d0c5', '#e8beac', '#d4a574', '#c68642', '#8d5524', '#5c3811'],
-    hairColors: ['#1a1a1a', '#4a3728', '#8b6914', '#d4a574', '#2c1810', '#6b2d12'],
+    // No hair colour may match a skin tone, or the defendant looks bald
+    hairColors: ['#1a1a1a', '#4a3728', '#8b6914', '#a8742a', '#2c1810', '#6b2d12'],
     grayHair: ['#b8b8b8', '#d9d9d9', '#8f8f8f'],
     clothingColors: ['#2d3748', '#4a5568', '#553c2e', '#1a365d', '#2f4858', '#4a3728', '#5c4033', '#5a2a2a', '#2f4a32'],
-    hairStyles: ['short', 'long', 'curly', 'bun', 'side'],
-    outfits: ['suit', 'shirt', 'hoodie', 'sweater'],
+    whiteHair: ['#ececec', '#f5f5f5'],
+    // Women always get clearly long hair, a bun or a shoulder-length bob
+    hairStyles: { f: ['long', 'bun', 'bob', 'long'], m: ['short', 'side', 'curly', 'short'] },
+    oldHairStyles: { f: ['bun', 'bob'], m: ['short', 'side'] },
+    outfits: { f: ['shirt', 'hoodie', 'sweater'], m: ['suit', 'shirt', 'hoodie', 'sweater'] },
 };
 
 const pick = (list) => list[Math.floor(Math.random() * list.length)];
 const chance = (p) => Math.random() < p;
 
-// Look of a defendant; older people go gray or bald more often
-function generateNPCAppearance(age) {
-    const old = age >= 55;
-    const middle = age >= 38;
-    const bald = middle && chance(old ? 0.35 : 0.15);
+// Hair colour by age: graying starts in the fifties, always gray from 60, white from 70
+function hairColorFor(age) {
+    if (age >= 70) return pick(NPC_APPEARANCES.whiteHair);
+    if (age >= 60) return pick(NPC_APPEARANCES.grayHair);
+    if (age >= 50 && chance(0.4)) return pick(NPC_APPEARANCES.grayHair);
+    return pick(NPC_APPEARANCES.hairColors);
+}
+
+// Look of a defendant, matching their gender and age
+function generateNPCAppearance(age, gender) {
+    const female = gender === 'f';
+    const old = age >= 60;
+    const middle = age >= 40;
+    const baldChance = age >= 60 ? 0.45 : age >= 40 ? 0.15 : 0;
+    const bald = !female && chance(baldChance);
+    const styles = old ? NPC_APPEARANCES.oldHairStyles : NPC_APPEARANCES.hairStyles;
     return {
+        gender,
         skin: pick(NPC_APPEARANCES.skinTones),
-        hair: old && chance(0.75) ? pick(NPC_APPEARANCES.grayHair) : pick(NPC_APPEARANCES.hairColors),
-        hairStyle: bald ? 'bald' : pick(NPC_APPEARANCES.hairStyles),
-        facialHair: age >= 18 && chance(0.35) ? pick(['mustache', 'beard']) : 'none',
-        glasses: chance(middle ? 0.35 : 0.15),
-        wrinkles: old,
+        hair: hairColorFor(age),
+        hairStyle: bald ? 'bald' : pick(styles[female ? 'f' : 'm']),
+        facialHair: !female && age >= 18 && chance(0.4) ? pick(['mustache', 'beard']) : 'none',
+        earrings: female && chance(0.5),
+        glasses: chance(old ? 0.6 : middle ? 0.35 : 0.15),
+        age: age >= 70 ? 'elderly' : old ? 'old' : '',
         clothing: pick(NPC_APPEARANCES.clothingColors),
-        outfit: pick(NPC_APPEARANCES.outfits),
+        outfit: pick(NPC_APPEARANCES.outfits[female ? 'f' : 'm']),
     };
 }
 
@@ -91,7 +108,9 @@ export function generateCase(day, directive = null, offender = null, used = new 
         let list = crimes.flatMap(crimeType => CRIMES[crimeType].statements.map(statement => ({ crimeType, statement })));
         if (offender) {
             // Adults with an unsympathetic story; fixed-age and minor statements would contradict the offender's age
-            const fitting = list.filter(c => !c.statement.sympathy && !c.statement.age && !(c.statement.tags || []).includes('minor'));
+            const offenderGender = offender.appearance && offender.appearance.gender;
+            const fitting = list.filter(c => !c.statement.sympathy && !c.statement.age && !(c.statement.tags || []).includes('minor')
+                && (!c.statement.gender || !offenderGender || c.statement.gender === offenderGender));
             if (fitting.length > 0) list = fitting;
         }
         return list;
@@ -130,6 +149,8 @@ export function buildCase(crimeType, statement, day, overrides = {}) {
     const crime = CRIMES[crimeType];
     const isMinor = statement.tags && statement.tags.includes('minor');
     const age = statement.age || (isMinor ? 15 + Math.floor(Math.random() * 3) : 21 + Math.floor(Math.random() * 45));
+    // Gender: fixed by the story (e.g. a stepfather), carried by a returning defendant, or random
+    const gender = overrides.gender || statement.gender || overrides.appearance?.gender || randomGender();
 
     return {
         id: Date.now(),
@@ -138,7 +159,8 @@ export function buildCase(crimeType, statement, day, overrides = {}) {
         crime: crime.name,
         detail: statement.detail,
         severity: crime.severity,
-        name: randomName(),
+        name: randomName(gender),
+        gender,
         age,
         statement: statement.text,
         emotion: statement.emotion,
@@ -148,7 +170,7 @@ export function buildCase(crimeType, statement, day, overrides = {}) {
         question: statement.question,
         answer: statement.answer,
         correctVerdict: getCorrectVerdict(crimeType, statement, day),
-        appearance: generateNPCAppearance(overrides.age ?? age),
+        appearance: generateNPCAppearance(overrides.age ?? age, gender),
         returning: false,
         asked: false,
         // Multi-stage cases: a report is pending; postponing brings the case back with it
@@ -194,7 +216,9 @@ export function createNPCElement(caseData) {
         'npc', emotion,
         `hair-${a.hairStyle || 'short'}`,
         `outfit-${a.outfit || 'shirt'}`,
-        a.wrinkles ? 'old' : '',
+        // 'old' (60+) adds lines on the face; 'elderly' (70+) adds more on top
+        a.age === 'elderly' ? 'old elderly' : a.age === 'old' || a.wrinkles ? 'old' : '',
+        a.earrings ? 'earrings' : '',
     ].join(' ');
     npc.style.setProperty('--skin', a.skin);
     npc.style.setProperty('--hair', a.hair);

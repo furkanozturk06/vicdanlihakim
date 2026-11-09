@@ -28,6 +28,7 @@ for (const [crimeKey, crime] of Object.entries(CRIMES)) {
         if (s.law === 'innocent' && !s.delayed) errors.push(`${where}: innocence must be revealed by delayed evidence`);
         if (s.delayed && (!s.delayed.note || !s.delayed.evidence)) errors.push(`${where}: delayed needs note and evidence`);
         if (!Array.isArray(s.evidence) || s.evidence.length !== 2) errors.push(`${where}: evidence must have 2 items`);
+        if (s.gender !== undefined && s.gender !== 'f' && s.gender !== 'm') errors.push(`${where}: gender must be 'f' or 'm'`);
         for (const t of s.tags || []) if (!TAGS.includes(t)) errors.push(`${where}: unknown tag ${t}`);
         if ((s.tags || []).includes('minor') && s.age !== undefined && s.age >= 18) errors.push(`${where}: minor tag but age ${s.age}`);
         if (!(s.tags || []).includes('minor') && s.age !== undefined && s.age < 18) errors.push(`${where}: age ${s.age} without minor tag`);

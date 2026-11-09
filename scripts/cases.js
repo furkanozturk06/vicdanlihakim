@@ -648,7 +648,7 @@ export const CRIMES = {
             },
             {
                 text: 'Eşimin suyu gelmişti! Hastaneye yetişmem gerekiyordu.', emotion: 'panicked', sympathy: true, law: 'emergency',
-                detail: 'Doğum sancısı',
+                detail: 'Doğum sancısı', gender: 'm',
                 summary: 'Doğum sancısı çeken eşini hastaneye yetiştirirken hız sınırını iki katı aştı. Kimse zarar görmedi.',
                 evidence: ['Radar ölçümü: saatte 140 km.', 'Hastane kaydı: bebek, varıştan 20 dakika sonra doğdu.'],
                 question: 'Ambulans çağırdın mı?', answer: 'Aradım, 40 dakika dediler. Bekleyemezdik.',
@@ -847,7 +847,7 @@ export const CRIMES = {
             },
             {
                 text: 'Ailemizin içinde olan ailede kalır. Sizi ilgilendirmez.', emotion: 'proud', sympathy: false, law: 'base',
-                detail: 'Üvey baba',
+                detail: 'Üvey baba', gender: 'm',
                 summary: 'Üvey kızını yıllarca istismar ettiği, çocuğun okul rehber öğretmenine anlatmasıyla ortaya çıktı.',
                 evidence: ['Rehber öğretmen ve okul psikoloğu çocuğun ifadesini kayda geçirdi.', 'Adli tıp raporu istismarı doğruluyor.'],
                 question: 'Çocuğun ifadesine ne diyorsun?', answer: 'Çocuk bu, ne anlar? Annesi kışkırtıyor.',
@@ -921,14 +921,14 @@ export const CRIMES = {
             },
             {
                 text: 'O benim de çocuğum! Altı aydır göremiyordum.', emotion: 'remorseful', sympathy: true, law: 'parental',
-                detail: 'Velayet',
+                detail: 'Velayet', gender: 'm',
                 summary: 'Velayeti eski eşinde olan oğlunu okuldan izinsiz alıp başka şehre götürdü.',
                 evidence: ['Çocuk iki gün sonra sağlıklı bulundu.', 'Mahkeme kararına rağmen eski eşi altı aydır görüşmeye izin vermiyormuş.'],
                 question: 'Çocuk ne diyor?', answer: 'Babasını özlediğini söylüyor. Ben de onu...',
             },
             {
                 text: 'Ona kötü bir şey yapmadım, sadece götürdüm!', emotion: 'defiant', sympathy: true, law: 'parental',
-                detail: 'Kayıp çocuk',
+                detail: 'Kayıp çocuk', gender: 'm',
                 summary: '6 yaşındaki bir çocuğu okul çıkışında arabasına bindirip götürdü. Çocuk iki gün sonra başka bir şehirde bulundu.',
                 evidence: ['Çocuğun annesi kaçırıldığını ihbar etti; çocuk sağlıklı bulundu.', 'Sanık fidye istememiş.'],
                 question: 'Çocukla ne ilişkin var?', answer: 'Söylesem kimse inanmaz zaten...',
@@ -1141,7 +1141,7 @@ export const CRIMES = {
             },
             {
                 text: 'Oğlumu korumak istedim... Ertesi gün gelip gerçeği anlattım.', emotion: 'remorseful', sympathy: true, law: 'corrected',
-                detail: 'Anne',
+                detail: 'Anne', gender: 'f',
                 summary: 'Oğlunun karıştığı bir kavgada mahkemede oğlunun orada olmadığını söyledi.',
                 evidence: ['Ertesi gün mahkemeye gelip ifadesini kendisi düzeltti.', 'Yalan ifade nedeniyle kimse ceza almadı.'],
                 question: 'Neden fikrini değiştirdin?', answer: 'Aynaya bakamadım. Oğlum da hatasını üstlenmeli.',

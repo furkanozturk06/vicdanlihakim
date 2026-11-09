@@ -102,6 +102,7 @@ export const FINALE = {
     crimeType: 'traffic',
     name: 'Kerem B.',
     age: 24,
+    gender: 'm',
     statement: {
         text: 'Babamın kim olduğunu biliyor musunuz? Bu dava burada kapanır.', emotion: 'proud', sympathy: false, law: 'flee', tags: ['alcohol'],
         detail: 'Bakanın oğlu',
@@ -159,6 +160,7 @@ export const SELIN_CASE = {
     crimeType: 'treason',
     name: 'Selin Aydın',
     age: 34,
+    gender: 'f',
     statement: {
         text: 'Halk, vergilerinin rüşvete gittiğini bilmeliydi. Pişman değilim.', emotion: 'defiant', sympathy: true, law: 'whistleblower',
         detail: 'Gazeteci Selin Aydın',
@@ -217,15 +219,28 @@ export function appealText(a) {
     return `"${a.detail}" davasında verdiğiniz "${a.verdictLabel}" kararı bozuldu. Kanuna göre doğrusu: ${a.correctLabel}. ${fix}`;
 }
 
-const FIRST_NAMES = [
-    'Ahmet', 'Mehmet', 'Ayşe', 'Fatma', 'Mustafa', 'Zeynep', 'Emine', 'Hüseyin', 'Elif', 'Hasan',
-    'Hatice', 'İbrahim', 'Merve', 'Osman', 'Esra', 'Murat', 'Derya', 'Kemal', 'Sevgi', 'Burak',
-    'Gül', 'Serkan', 'Nur', 'Cem', 'Deniz', 'Tolga', 'Yasemin', 'Erkan', 'Selma', 'Barış',
-];
+// Names by gender so a defendant's name matches how they look
+const FIRST_NAMES = {
+    f: [
+        'Ayşe', 'Fatma', 'Zeynep', 'Emine', 'Elif', 'Hatice', 'Merve', 'Esra', 'Derya', 'Sevgi',
+        'Gül', 'Nur', 'Yasemin', 'Selma', 'Büşra', 'Canan', 'Dilek', 'Ebru', 'Filiz', 'Gamze',
+        'Hülya', 'İpek', 'Kübra', 'Leyla', 'Melek', 'Nesrin', 'Özlem', 'Pınar', 'Sibel', 'Tuğba',
+    ],
+    m: [
+        'Ahmet', 'Mehmet', 'Mustafa', 'Hüseyin', 'Hasan', 'İbrahim', 'Osman', 'Murat', 'Kemal', 'Burak',
+        'Serkan', 'Cem', 'Tolga', 'Erkan', 'Barış', 'Ali', 'Emre', 'Fatih', 'Gökhan', 'Halil',
+        'İsmail', 'Kadir', 'Levent', 'Mert', 'Necati', 'Okan', 'Ramazan', 'Sinan', 'Tuncay', 'Volkan',
+    ],
+};
 const SURNAME_INITIALS = 'ABÇDEGHKMÖSŞTUYZ';
 
-export function randomName() {
-    const first = FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)];
+export function randomGender() {
+    return Math.random() < 0.5 ? 'f' : 'm';
+}
+
+export function randomName(gender = randomGender()) {
+    const list = FIRST_NAMES[gender] || FIRST_NAMES.m;
+    const first = list[Math.floor(Math.random() * list.length)];
     const initial = SURNAME_INITIALS[Math.floor(Math.random() * SURNAME_INITIALS.length)];
     return `${first} ${initial}.`;
 }

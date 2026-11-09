@@ -2638,3 +2638,74 @@ body {
         opacity: 1;
     }
 }
+
+/* Earrings for some female defendants */
+.npc.earrings .npc-ear::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--gold-accent);
+}
+
+/* Shoulder-length bob for women */
+.hair-bob .npc-hair {
+    left: -6px;
+    right: -6px;
+    height: 50px;
+    background:
+        linear-gradient(var(--hair), var(--hair)) top / 100% 22px no-repeat,
+        linear-gradient(to right, var(--hair) 0 10px, transparent 10px calc(100% - 10px), var(--hair) calc(100% - 10px)) bottom / 100% 30px no-repeat;
+    border-radius: 30px 30px 12px 12px;
+}
+
+/* Age: creases from nose to mouth (60+) */
+.npc.old .npc-face::before {
+    content: '';
+    position: absolute;
+    top: 38px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 30px;
+    height: 14px;
+    border-left: 1.5px solid rgba(0, 0, 0, 0.22);
+    border-right: 1.5px solid rgba(0, 0, 0, 0.22);
+    border-radius: 50%;
+}
+
+/* 70+: deeper under-eye lines, a lined forehead, white brows and a slight stoop */
+.npc.elderly .npc-face::after {
+    height: 2px;
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.3) 0 9px, transparent 9px 23px, rgba(0, 0, 0, 0.3) 23px);
+    box-shadow: 0 3px 0 -1px rgba(0, 0, 0, 0.12);
+}
+
+.npc.elderly .npc-brows span {
+    filter: none;
+    background: #e6e6e6;
+}
+
+.npc.elderly .npc-head {
+    bottom: 62px;
+    box-shadow: inset -5px -6px 10px rgba(0, 0, 0, 0.18);
+}
+
+.npc.elderly .npc-body {
+    width: 80px;
+    border-radius: 40px 40px 6px 6px;
+}
+
+/* Bun: hair swept down over the temples so it reads as long hair tied up */
+.hair-bun .npc-hair {
+    left: -5px;
+    right: -5px;
+    height: 38px;
+    background:
+        linear-gradient(var(--hair), var(--hair)) top / 100% 22px no-repeat,
+        linear-gradient(to right, var(--hair) 0 9px, transparent 9px calc(100% - 9px), var(--hair) calc(100% - 9px)) bottom / 100% 18px no-repeat;
+    border-radius: 30px 30px 14px 14px;
+}

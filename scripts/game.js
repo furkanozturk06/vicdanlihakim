@@ -425,7 +425,7 @@ async function presentNextCase() {
 // the finale, or a random one
 function nextCase() {
     if (state.day === 5 && state.dayCases === 0 && !state.selin) {
-        return buildCase(SELIN_CASE.crimeType, SELIN_CASE.statement, state.day, { name: SELIN_CASE.name, age: SELIN_CASE.age, selinCase: true });
+        return buildCase(SELIN_CASE.crimeType, SELIN_CASE.statement, state.day, { name: SELIN_CASE.name, age: SELIN_CASE.age, gender: SELIN_CASE.gender, selinCase: true });
     }
     const dueIndex = state.postponed.findIndex(p => p.day < state.day);
     if (dueIndex >= 0) {
@@ -434,7 +434,7 @@ function nextCase() {
         return buildCase(p.crimeType, statement, state.day, { name: p.name, age: p.age, appearance: p.appearance, revealed: true });
     }
     if (state.day === CONFIG.maxDays && state.dayCases === CONFIG.casesPerDay - 1) {
-        return buildCase(FINALE.crimeType, FINALE.statement, state.day, { name: FINALE.name, age: FINALE.age, finale: true });
+        return buildCase(FINALE.crimeType, FINALE.statement, state.day, { name: FINALE.name, age: FINALE.age, gender: FINALE.gender, finale: true });
     }
     return generateCase(state.day, state.currentDirective, takeReturningOffender(), state.usedStatements);
 }
