@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Otomatik oyun testi</title>
+<link rel="stylesheet" href="/styles/main.css">
+</head>
+<body>
+<script type="module">
+// Plays a whole game automatically and writes a JSON report into #result.
+// Used by tests/run.mjs (npm test). Not part of the game build.
+//
+//   ?policy=honest         always the law, refuses every offer
+//   ?policy=surgunFavored  honest in act 1, accepts the ağa's offers in act 2
+//   ?policy=borcHonest     takes the minister's deal on day 15, honest afterwards
+//   ?policy=borcCorrupt    takes the deal and the party's offers in act 2
+//   ?policy=sloppy         30% of verdicts two steps too harsh
+//   &endless=1             play endless mode (unlocked for the test)
+
+// Fast clock: every timer runs immediately, in the order it was due
+(() => {
+    let now = 0, seq = 0, nextId = 1; const q = []; const ch = new MessageChannel(); let pending = false;
+    const kick = () => { if (!pending) { pending = true; ch.port1.postMessage(0); } };
+    ch.port2.onmessage = () => {
+        pending = false;
+        for (let n = 0; n < 50 && q.length; n++) {
+            q.sort((a, b) => a.due - b.due || a.seq - b.seq);
+            const t = q.shift(); now = Math.max(now, t.due);
+            if (t.interval) { t.due = now + t.ms; t.seq = seq++; q.push(t); }
+            try { t.f(...t.a); } catch (e) { console.error(e); }
+        }
+        if (q.length) kick();
+    };
+    window.setTimeout = (f, ms = 0, ...a) => { const id = nextId++; q.push({ id, f, a, due: now + (ms || 0), ms: Math.max(1, ms || 0), seq: seq++ }); kick(); return id; };
+    window.setInterval = (f, ms = 0, ...a) => { const id = nextId++; q.push({ id, f, a, due: now + Math.max(1, ms || 0), ms: Math.max(1, ms || 0), seq: seq++, interval: true }); kick(); return id; };
+    window.clearTimeout = window.clearInterval = (id) => { const i = q.findIndex(t => t.id === id); if (i >= 0) q.splice(i, 1); };
+})();
+
+// Reuse the game's own page markup
+const html = await fetch('/').then(r => r.text());
+const doc = new DOMParser().parseFromString(html, 'text/html');
+doc.querySelectorAll('script').forEach(s => s.remove());
+document.body.innerHTML = doc.body.innerHTML;
+const pre = document.createElement('pre'); pre.id = 'result'; pre.textContent = 'RUNNING';
+document.documentElement.appendChild(pre);
+
+const errors = [];
+window.addEventListener('error', e => errors.push(String(e.message)));
+window.addEventListener('unhandledrejection', e => errors.push('rejection: ' + String(e.reason && e.reason.stack || e.reason)));
+
+const params = new URLSearchParams(location.search);
+const policy = params.get('policy') || 'honest';
+const endless = Boolean(params.get('endless'));
+localStorage.clear();
+localStorage.setItem('hakim.settings.v1', JSON.stringify({ sound: false, vibration: false, tutorialDone: false, endlessUnlocked: endless, endlessBest: 0 }));
+
+const g = await import('/scripts/game.js');
+g.initGame();
+
+const vis = id => !document.getElementById(id).classList.contains('hidden');
+const button = k => [...document.querySelectorAll('.verdict-btn')].find(b => (b.dataset.level ? b.dataset.sentence + '-' + b.dataset.level : b.dataset.sentence) === k);
+const LADDER = ['release', 'fine-minor', 'fine-moderate', 'fine-major', 'house-arrest', 'jail-short', 'jail-medium', 'jail-long', 'death'];
+const ORDINARY_OFFERS = ['Masada bir zarf', 'Kapıda bir fısıltı'];
+const wait = ms => new Promise(r => setTimeout(r, ms));
+const out = { policy, endless, errors, cases: [], tutorialSteps: 0, stories: [], evenings: 0 };
+
+document.getElementById(endless ? 'endless-btn' : 'start-btn').click();
+for (let step = 0; step < 90000; step++) {
+    await wait(50);
+    if (vis('game-over-screen')) {
+        out.end = document.getElementById('ending-title').textContent;
+        out.endText = document.getElementById('final-stats').innerText;
+        break;
+    }
+    if (vis('intro-modal')) { document.getElementById('intro-btn').click(); continue; }
+    if (vis('story-modal')) {
+        const btns = [...document.querySelectorAll('#story-choices button')].filter(b => !b.disabled);
+        out.stories.push(`g${g.getState().day}: ${document.getElementById('story-title').textContent}`);
+        btns[0].click(); continue;
+    }
+    if (vis('evening-modal')) {
+        const btns = [...document.querySelectorAll('#evening-choices button')].filter(b => !b.disabled);
+        if (btns.length === 1 && btns[0].textContent === 'Sabah oldu') out.evenings++;
+        btns[0].click(); continue;
+    }
+    if (vis('tutorial')) { out.tutorialSteps++; document.getElementById('tutorial-next').click(); continue; }
+    if (vis('event-overlay')) continue;
+    if (vis('offer-modal')) {
+        const title = document.getElementById('offer-title').textContent;
+        const day = g.getState().day;
+        const special = !ORDINARY_OFFERS.includes(title);
+        const accept = (policy === 'borcHonest' && day === 15)
+            || (policy === 'borcCorrupt' && day >= 15 && special)
+            || (policy === 'surgunFavored' && day > 15 && special);
+        document.getElementById(accept ? 'offer-accept' : 'offer-decline').click(); continue;
+    }
+    if (vis('daily-summary-modal')) { document.getElementById('next-day-btn').click(); continue; }
+
+    const st = g.getState();
+    if (endless && st.day > Number(params.get('maxDays') || 1e9)) { out.stoppedAt = st.day; break; }
+    if (!st.isProcessing && st.currentCase && !st.gameOver) {
+        const c = st.currentCase;
+        if (!c.asked && st.questionsLeft > 0) { document.querySelector('.interrogate-btn')?.click(); await wait(3000); }
+        let k = c.correctVerdict;
+        if (policy === 'sloppy' && Math.random() < 0.3) k = LADDER[Math.min(7, LADDER.indexOf(k) + 2)];
+        out.cases.push(`${c.crime} / ${c.detail}`);
+        button(k).click();
+    }
+}
+
+const s = g.getState();
+out.branch = s.branch;
+out.mode = s.mode;
+out.day = s.day;
+out.settings = JSON.parse(localStorage.getItem('hakim.settings.v1') || '{}');
+out.repeats = out.cases.length - new Set(out.cases).size;
+pre.textContent = JSON.stringify(out);
+</script>
+</body>
+</html>

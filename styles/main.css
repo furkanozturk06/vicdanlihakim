@@ -3095,3 +3095,169 @@ body {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
 }
+
+/* ========================================
+   Settings
+======================================== */
+#settings-modal {
+    z-index: 640;
+}
+
+#settings-btn::before {
+    content: '⚙';
+}
+
+.menu-row {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    max-width: 280px;
+}
+
+.start-buttons .menu-row .typewriter-btn {
+    flex: 1;
+    max-width: none;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+}
+
+.settings-content {
+    width: calc(100% - 2 * var(--spacing-md));
+    max-width: 380px;
+    max-height: calc(100% - 2 * var(--spacing-lg));
+    overflow-y: auto;
+    padding: var(--spacing-lg) var(--spacing-md);
+    text-align: left;
+}
+
+.settings-content h2 {
+    text-align: center;
+}
+
+.setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-sm);
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(201, 162, 39, 0.2);
+    font-family: var(--font-typewriter);
+    font-size: 0.95rem;
+}
+
+.setting-column {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.setting-toggle {
+    min-width: 76px;
+    padding: 6px 12px;
+    background: transparent;
+    border: 1px solid var(--gold-dim);
+    border-radius: 20px;
+    color: var(--paper-dark);
+    font-family: var(--font-typewriter);
+    cursor: pointer;
+}
+
+.setting-toggle.on {
+    background: var(--gold-accent);
+    border-color: var(--gold-accent);
+    color: #1a120d;
+    font-weight: 700;
+}
+
+#setting-volume {
+    width: 55%;
+    accent-color: var(--gold-accent);
+}
+
+.setting-choices {
+    display: flex;
+    gap: 6px;
+    margin-top: 6px;
+}
+
+.setting-choices button {
+    flex: 1;
+    padding: 8px 4px;
+    background: transparent;
+    border: 1px solid var(--gold-dim);
+    border-radius: 4px;
+    color: var(--paper-dark);
+    font-family: var(--font-typewriter);
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.setting-choices button.selected {
+    border-color: var(--gold-accent);
+    color: var(--gold-accent);
+    font-weight: 700;
+    background: rgba(201, 162, 39, 0.12);
+}
+
+.setting-danger {
+    display: block;
+    width: 100%;
+    margin-top: var(--spacing-md);
+    padding: 10px;
+    background: transparent;
+    border: 1px solid #8b2020;
+    border-radius: 4px;
+    color: #d06a5a;
+    font-family: var(--font-typewriter);
+    cursor: pointer;
+}
+
+.settings-content #settings-close {
+    display: block;
+    width: 100%;
+    margin-top: var(--spacing-sm);
+}
+
+.pause-buttons #pause-settings-btn {
+    min-width: 200px;
+}
+
+.start-buttons .menu-row .typewriter-btn {
+    font-size: 0.8rem !important;
+    white-space: nowrap;
+}
+
+/* ========================================
+   Text size setting: reading text only
+======================================== */
+html.text-large #evidence-content { font-size: 0.9rem; }
+html.text-large .bubble-content { font-size: 1rem; }
+html.text-large .rulebook-content { font-size: 0.95rem; }
+html.text-large #story-text { font-size: 1.02rem; }
+html.text-large .evening-text { font-size: 1.15rem; }
+html.text-large #event-description,
+html.text-large #feedback-message { font-size: 1.1rem; }
+html.text-large #intro-text { font-size: 0.9rem; }
+html.text-large .paper-side { font-size: 1rem; }
+html.text-large .paper-headline { font-size: 1.45rem; }
+html.text-large #directive-text { font-size: 0.85rem; }
+
+html.text-xlarge #evidence-content { font-size: 1rem; }
+html.text-xlarge .bubble-content { font-size: 1.1rem; }
+html.text-xlarge .rulebook-content { font-size: 1.05rem; }
+html.text-xlarge #story-text { font-size: 1.12rem; }
+html.text-xlarge .evening-text { font-size: 1.25rem; }
+html.text-xlarge #event-description,
+html.text-xlarge #feedback-message { font-size: 1.2rem; }
+html.text-xlarge #intro-text { font-size: 1rem; }
+html.text-xlarge .paper-side { font-size: 1.1rem; }
+html.text-xlarge .paper-headline { font-size: 1.6rem; }
+html.text-xlarge #directive-text { font-size: 0.92rem; }
+
+.start-buttons .menu-row .typewriter-btn {
+    letter-spacing: 0 !important;
+}
+
+.start-buttons .menu-row .typewriter-btn::before {
+    width: auto;
+    margin-right: 5px;
+}

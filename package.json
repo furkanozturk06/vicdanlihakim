@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "check": "node tools/check-cases.mjs"
+    "check": "node tools/check-cases.mjs",
+    "test": "node tools/check-cases.mjs && node tests/run.mjs"
   },
   "keywords": [
     "game",
@@ -24,6 +25,7 @@
   "dependencies": {
     "@capacitor/android": "^8.6.0",
     "@capacitor/core": "^8.6.0",
+    "@capacitor/haptics": "^8.0.2",
     "@capacitor/ios": "^8.6.0",
     "@fontsource/courier-prime": "^5.3.0",
     "@fontsource/crimson-text": "^5.3.0",

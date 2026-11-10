@@ -204,6 +204,35 @@
             </div>
         </div>
 
+        <!-- Settings -->
+        <div id="settings-modal" class="modal hidden">
+            <div class="modal-content settings-content">
+                <h2>Ayarlar</h2>
+                <div class="setting-row">
+                    <span>Ses</span>
+                    <button type="button" class="setting-toggle" data-setting="sound"></button>
+                </div>
+                <div class="setting-row">
+                    <span>Ses düzeyi</span>
+                    <input type="range" id="setting-volume" min="0" max="100" step="5">
+                </div>
+                <div class="setting-row">
+                    <span>Titreşim</span>
+                    <button type="button" class="setting-toggle" data-setting="vibration"></button>
+                </div>
+                <div class="setting-row setting-column">
+                    <span>Yazı boyutu</span>
+                    <div class="setting-choices" id="setting-textsize">
+                        <button type="button" data-size="normal">Normal</button>
+                        <button type="button" data-size="large">Büyük</button>
+                        <button type="button" data-size="xlarge">Çok büyük</button>
+                    </div>
+                </div>
+                <button type="button" id="settings-reset" class="setting-danger">İlerlemeyi sıfırla</button>
+                <button type="button" id="settings-close" class="typewriter-btn">Kapat</button>
+            </div>
+        </div>
+
         <!-- Pause Menu -->
         <div id="pause-modal" class="modal hidden">
             <div class="modal-content pause-content">
@@ -211,6 +240,7 @@
                 <p id="pause-note"></p>
                 <div class="pause-buttons">
                     <button id="resume-btn" class="typewriter-btn">Oyuna Dön</button>
+                    <button id="pause-settings-btn" class="typewriter-btn">Ayarlar</button>
                     <button id="main-menu-btn" class="typewriter-btn">Ana Menü</button>
                 </div>
             </div>
@@ -277,11 +307,14 @@
                         <button id="endless-btn" class="typewriter-btn locked" aria-disabled="true" title="30 gün boyunca koltukta kaldıktan sonra Sonsuz Mod'u açabilirsin.">Sonsuz Mod</button>
                         <p id="endless-hint" class="endless-hint">30 gün boyunca koltukta kaldıktan sonra Sonsuz Mod'u açabilirsin.</p>
                     </div>
-                    <button id="howto-btn" class="typewriter-btn menu-quiet">Nasıl Oynanır</button>
+                    <div class="menu-row">
+                        <button id="howto-btn" class="typewriter-btn menu-quiet">Nasıl Oynanır</button>
+                        <button id="settings-btn" class="typewriter-btn menu-quiet">Ayarlar</button>
+                    </div>
                     <p id="endless-record" class="endless-record hidden"></p>
                 </div>
             </div>
-            <p class="menu-footer">Kurgusal bir eserdir · Bütün kişi ve kurumlar hayal ürünüdür</p>
+            <p class="menu-footer"><span id="app-version"></span> · Kurgusal bir eserdir · Bütün kişi ve kurumlar hayal ürünüdür</p>
         </div>
 
         <!-- Tutorial card (first game only) -->

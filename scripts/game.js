@@ -14,6 +14,7 @@ import { ACT_LENGTH, TOTAL_DAYS, ACT2_CASES_PER_DAY, BRANCHES, branchFor } from 
 import { saveGame, loadGame, savedDay, savedMode, clearSave, loadSettings, saveSettings } from './save.js';
 import * as ui from './ui.js';
 import { audio } from './audio.js';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 
 // Game configuration
 const CONFIG = {
@@ -153,8 +154,8 @@ export function initGame() {
     state = createInitialState();
     ui.initUI();
     audio.init();
-    audio.setEnabled(settings.sound);
-    ui.setSoundIcon(settings.sound);
+    applySettings();
+    document.getElementById('app-version').textContent = `v${__APP_VERSION__}`;
     setupEventListeners();
     ui.showStartScreen();
     ui.setContinueOption(savedDay(), savedMode());
@@ -164,10 +165,21 @@ export function initGame() {
 function setupEventListeners() {
     const elements = ui.getElements();
 
-    elements.startBtn.addEventListener('click', () => {
+    elements.startBtn.addEventListener('click', async () => {
         audio.resume();
         audio.playClick();
+        if (!(await confirmOverwrite())) return;
         startGame();
+    });
+
+    document.getElementById('settings-btn').addEventListener('click', () => {
+        audio.resume();
+        audio.playClick();
+        openSettings();
+    });
+    document.getElementById('pause-settings-btn').addEventListener('click', () => {
+        audio.playClick();
+        openSettings();
     });
 
     document.getElementById('howto-btn').addEventListener('click', async () => {
@@ -180,13 +192,14 @@ function setupEventListeners() {
         }
     });
 
-    document.getElementById('endless-btn').addEventListener('click', () => {
+    document.getElementById('endless-btn').addEventListener('click', async () => {
         audio.resume();
         if (!settings.endlessUnlocked) {
             ui.showEndlessHint();
             return;
         }
         audio.playClick();
+        if (!(await confirmOverwrite())) return;
         startEndless();
     });
 
@@ -196,8 +209,12 @@ function setupEventListeners() {
         continueGame();
     });
 
+    // Tap the bubble or the defendant to show the whole sentence at once
+    document.getElementById('npc-stage').addEventListener('click', () => ui.skipTyping());
+
     // Pause menu: back to the game or out to the start screen
     const pauseModal = document.getElementById('pause-modal');
+
     document.getElementById('menu-btn').addEventListener('click', () => {
         audio.playClick();
         const day = savedDay();
@@ -221,8 +238,7 @@ function setupEventListeners() {
         settings.sound = !settings.sound;
         saveSettings(settings);
         audio.resume();
-        audio.setEnabled(settings.sound);
-        ui.setSoundIcon(settings.sound);
+        applySettings();
         // Ambient drone only while a game is actually running
         if (settings.sound && state.currentDirective && !state.gameOver) audio.startAmbient();
     });
@@ -277,6 +293,62 @@ function setupEventListeners() {
             const key = btn.dataset.level ? `${btn.dataset.sentence}-${btn.dataset.level}` : btn.dataset.sentence;
             processVerdict(key);
         });
+    });
+}
+
+// ---------- Settings ----------
+// Text size scales reading text only (file, bubble, books, stories); buttons keep their size
+
+function applySettings() {
+    audio.setEnabled(settings.sound);
+    audio.setVolume(settings.volume ?? 0.5);
+    ui.setSoundIcon(settings.sound);
+    const root = document.documentElement;
+    root.classList.toggle('text-large', settings.textSize === 'large');
+    root.classList.toggle('text-xlarge', settings.textSize === 'xlarge');
+}
+
+function openSettings() {
+    ui.showSettings(settings, {
+        onChange(key, value) {
+            settings[key] = value;
+            saveSettings(settings);
+            applySettings();
+            if (key === 'sound' && value && state.currentDirective && !state.gameOver) audio.startAmbient();
+            if (key === 'vibration' && value) vibrate();
+        },
+        async onReset() {
+            const ok = await ui.showStory({
+                icon: '⚠️',
+                title: 'İlerlemeyi Sıfırla',
+                text: 'Kayıtlı oyunun, Sonsuz Mod kilidi, rekorun ve öğretici bilgisi silinecek. Bu işlem geri alınamaz.',
+                choices: [{ label: 'Evet, hepsini sıfırla', value: true }, { label: 'Vazgeç', value: false }],
+            });
+            if (!ok) return;
+            clearSave();
+            Object.assign(settings, { endlessUnlocked: false, endlessBest: 0, tutorialDone: false });
+            saveSettings(settings);
+            location.reload();
+        },
+    });
+}
+
+// A short buzz when the gavel falls (native haptics on phones, vibration API on the web)
+function vibrate() {
+    if (!settings.vibration) return;
+    Haptics.impact({ style: ImpactStyle.Medium }).catch(() => {});
+}
+
+// Starting a new game replaces the saved one: ask first
+async function confirmOverwrite() {
+    const day = savedDay();
+    if (!day) return true;
+    const mode = savedMode() === 'endless' ? 'Sonsuz Mod' : 'Hikâye';
+    return ui.showStory({
+        icon: '⚠️',
+        title: 'Kayıtlı Oyun Silinecek',
+        text: `${mode} kaydın (${day}. gün) silinecek ve yeni bir oyun başlayacak. Emin misin?`,
+        choices: [{ label: 'Evet, yeni oyuna başla', value: true }, { label: 'Vazgeç', value: false }],
     });
 }
 
@@ -633,6 +705,7 @@ async function processVerdict(sentenceKey, viaOffer = null) {
     ui.setSentencingEnabled(false);
 
     audio.playGavel();
+    vibrate();
     await new Promise(resolve => setTimeout(resolve, 300));
 
     const result = evaluateVerdict(c.correctVerdict, sentenceKey);

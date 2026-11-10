@@ -200,21 +200,33 @@ export function showSpeechBubble(text, crimeType) {
 
 // Typewriter effect into the speech bubble; a new call cancels the previous one
 let typeInterval = null;
+let finishTyping = null;
 export function typeIntoBubble(text) {
     clearInterval(typeInterval);
+    if (finishTyping) finishTyping();
     elements.bubbleText.textContent = '';
     return new Promise(resolve => {
         let i = 0;
+        finishTyping = () => {
+            clearInterval(typeInterval);
+            elements.bubbleText.textContent = text;
+            finishTyping = null;
+            resolve();
+        };
         typeInterval = setInterval(() => {
             if (i < text.length) {
                 elements.bubbleText.textContent += text[i];
                 i++;
             } else {
-                clearInterval(typeInterval);
-                resolve();
+                finishTyping();
             }
         }, 30);
     });
+}
+
+// A tap on the bubble or the defendant shows the whole sentence at once
+export function skipTyping() {
+    if (finishTyping) finishTyping();
 }
 
 // Hide speech bubble
@@ -390,6 +402,35 @@ export function setEndlessOption(unlocked, best) {
     record.textContent = best ? `Sonsuz mod rekoru: ${best} gün` : '';
 }
 
+// Settings window. `onChange(key, value)` saves each change right away.
+export function showSettings(settings, { onChange, onReset }) {
+    const modal = document.getElementById('settings-modal');
+    const render = () => {
+        modal.querySelectorAll('.setting-toggle').forEach(btn => {
+            const on = Boolean(settings[btn.dataset.setting]);
+            btn.textContent = on ? 'Açık' : 'Kapalı';
+            btn.classList.toggle('on', on);
+        });
+        document.getElementById('setting-volume').value = Math.round((settings.volume ?? 0.5) * 100);
+        document.querySelectorAll('#setting-textsize button').forEach(b => {
+            b.classList.toggle('selected', b.dataset.size === (settings.textSize || 'normal'));
+        });
+    };
+
+    modal.querySelectorAll('.setting-toggle').forEach(btn => {
+        btn.onclick = () => { onChange(btn.dataset.setting, !settings[btn.dataset.setting]); render(); };
+    });
+    document.getElementById('setting-volume').oninput = (e) => onChange('volume', Number(e.target.value) / 100);
+    document.querySelectorAll('#setting-textsize button').forEach(b => {
+        b.onclick = () => { onChange('textSize', b.dataset.size); render(); };
+    });
+    document.getElementById('settings-reset').onclick = () => onReset();
+    document.getElementById('settings-close').onclick = () => modal.classList.add('hidden');
+
+    render();
+    modal.classList.remove('hidden');
+}
+
 // Phones have no hover: a tap on the locked button shows the hint for a few seconds
 let hintTimer = null;
 export function showEndlessHint() {
@@ -537,11 +578,22 @@ export function showFeedback(isCorrect, title, message, stats, stampLabel = '') 
     elements.stampEffect.textContent = stampLabel;
     elements.feedbackOverlay.classList.remove('hidden');
 
+    // Closes by itself, or on a tap once it has been up long enough to be seen
+    const shownAt = Date.now();
     return new Promise(resolve => {
-        setTimeout(() => {
+        let done = false;
+        const close = () => {
+            if (done) return;
+            done = true;
+            clearTimeout(timer);
+            elements.feedbackOverlay.onclick = null;
             elements.feedbackOverlay.classList.add('hidden');
             resolve();
-        }, 2600);
+        };
+        const timer = setTimeout(close, 2600);
+        elements.feedbackOverlay.onclick = () => {
+            if (Date.now() - shownAt > 400) close();
+        };
     });
 }
 

@@ -90,7 +90,11 @@ export function clearSave() {
 }
 
 export function loadSettings() {
-    return { sound: true, tutorialDone: false, endlessUnlocked: false, endlessBest: 0, ...(read(SETTINGS_KEY) || {}) };
+    return {
+        sound: true, volume: 0.5, textSize: 'normal', vibration: true,
+        tutorialDone: false, endlessUnlocked: false, endlessBest: 0,
+        ...(read(SETTINGS_KEY) || {}),
+    };
 }
 
 export function saveSettings(settings) {
