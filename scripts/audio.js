@@ -249,8 +249,9 @@ class AudioManager {
 
     // Defendant's murmur: called for every letter as the statement is typed (30 ms
     // apart). Each vowel becomes a muffled syllable shaped like that vowel, so the
-    // babble follows the sentence; lower voice for men, higher for women.
-    speakLetter(text, index, gender) {
+    // babble follows the sentence; lower voice for men, higher for women, and a
+    // child's voice for defendants under 18.
+    speakLetter(text, index, gender, age) {
         if (!this.enabled || !this.audioContext) return;
         const lower = text.toLocaleLowerCase('tr');
         const formants = VOWEL_FORMANTS[lower[index]];
@@ -259,6 +260,7 @@ class AudioManager {
         const ctx = this.audioContext;
         const now = ctx.currentTime;
         const female = gender === 'f';
+        const child = age < 18;
         let next = index + 1;
         while (next < lower.length && !VOWEL_FORMANTS[lower[next]]) next++;
         const length = Math.min(0.14, Math.max(0.07, (next - index) * 0.03));
@@ -266,7 +268,8 @@ class AudioManager {
         const progress = index / Math.max(1, lower.length - 1);
 
         // Sentence melody: slowly falling, rising at the end of a question
-        let pitch = (female ? 215 : 112) * (1.08 - 0.16 * progress) * (0.95 + Math.random() * 0.1);
+        const basePitch = child ? (female ? 300 : 265) : (female ? 215 : 112);
+        let pitch = basePitch * (1.08 - 0.16 * progress) * (0.95 + Math.random() * 0.1);
         if (lower.trim().endsWith('?') && progress > 0.85) pitch *= 1.25;
 
         if (!this.voiceWave) {
@@ -292,7 +295,7 @@ class AudioManager {
         muffle.type = 'lowpass';
         muffle.frequency.value = 1300;
         muffle.Q.value = 0.5;
-        const scale = female ? 1.17 : 1;
+        const scale = child ? 1.3 : female ? 1.17 : 1;
         [[0, 1, 80], [1, 0.5, 100], [2, 0.25, 140]].forEach(([n, level, width]) => {
             const f = formants[n] * scale;
             const band = ctx.createBiquadFilter();

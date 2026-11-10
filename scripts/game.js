@@ -496,7 +496,7 @@ async function presentNextCase() {
     await ui.closeDoor();
 
     ui.showEvidence(state.currentCase, state.questionsLeft);
-    await ui.showSpeechBubble(state.currentCase.statement, state.currentCase.crime, (text, i) => audio.speakLetter(text, i, state.currentCase.gender));
+    await ui.showSpeechBubble(state.currentCase.statement, state.currentCase.crime, (text, i) => audio.speakLetter(text, i, state.currentCase.gender, state.currentCase.age));
 
     if (!settings.tutorialDone) {
         await ui.runTutorial(TUTORIAL);
@@ -713,7 +713,7 @@ async function interrogate() {
     c.asked = true;
     state.questionsLeft--;
     ui.showEvidence(c, state.questionsLeft);
-    await ui.typeIntoBubble(c.answer, (text, i) => audio.speakLetter(text, i, c.gender));
+    await ui.typeIntoBubble(c.answer, (text, i) => audio.speakLetter(text, i, c.gender, c.age));
 }
 
 // Send a multi-stage case back until its report arrives; it returns tomorrow
