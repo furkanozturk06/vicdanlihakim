@@ -443,9 +443,12 @@ export function showSettings(settings, { onChange, onReset }) {
 let hintTimer = null;
 export function showEndlessHint() {
     const hint = document.getElementById('endless-hint');
+    const hide = () => hint.classList.remove('visible');
     hint.classList.add('visible');
     clearTimeout(hintTimer);
-    hintTimer = setTimeout(() => hint.classList.remove('visible'), 3500);
+    hintTimer = setTimeout(hide, 3500);
+    // A tap anywhere closes it
+    document.addEventListener('pointerdown', hide, { once: true });
 }
 
 export function setSoundIcon(on) {
@@ -586,6 +589,12 @@ export function hidePendingOffer() {
 export function openRulebook() {
     elements.rulebookModal.classList.remove('hidden');
 }
+
+// The close button fades into a floating corner button once the book is scrolled
+const rulebookContent = document.querySelector('.rulebook-content');
+rulebookContent?.addEventListener('scroll', () => {
+    document.getElementById('rulebook-close').classList.toggle('floating', rulebookContent.scrollTop > 8);
+}, { passive: true });
 
 export function closeRulebook() {
     elements.rulebookModal.classList.add('hidden');

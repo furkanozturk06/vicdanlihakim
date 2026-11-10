@@ -2670,10 +2670,17 @@ body {
     border-top-color: var(--gold-accent);
 }
 
-#endless-btn.locked:hover + .endless-hint,
 .endless-hint.visible {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
+}
+
+/* Mouse hover also shows it; on touch screens hover would stick after a tap */
+@media (hover: hover) and (pointer: fine) {
+    #endless-btn.locked:hover + .endless-hint {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
 }
 
 /* ========================================
@@ -2956,19 +2963,28 @@ html.text-xlarge #directive-text { font-size: 0.92rem; }
     }
 }
 
-/* Rulebook close button stays in the top-right corner while the book scrolls */
+/* Rulebook close button: in its usual corner at the top of the book; while the
+   book is scrolled it follows along in the top-right corner, faded so the text
+   underneath stays readable */
 #rulebook-close {
     position: sticky;
-    top: 0;
+    /* sticky offsets count from inside the padding: this is 0.5rem from the edge */
+    top: calc(var(--spacing-sm) - var(--spacing-lg));
     z-index: 2;
     float: right;
-    margin: -6px -4px -34px 0;
-    width: 36px;
-    height: 36px;
+    margin: calc(var(--spacing-sm) - var(--spacing-lg)) calc(var(--spacing-sm) - var(--spacing-md)) -32px 0;
     border-radius: 50%;
-    background: var(--paper-aged);
-    border: 1px solid rgba(26, 22, 19, 0.35);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    font-size: 1rem;
     line-height: 1;
+    transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+#rulebook-close.floating {
+    background: rgba(212, 197, 169, 0.45);
+    border: 1px solid rgba(26, 22, 19, 0.2);
+    opacity: 0.6;
+}
+
+#rulebook-close.floating:hover,
+#rulebook-close.floating:active {
+    opacity: 1;
 }
