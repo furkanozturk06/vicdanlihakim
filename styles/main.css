@@ -1791,20 +1791,6 @@ body {
         linear-gradient(180deg, #2b1e15 0%, #1d1510 55%, #120d0a 100%);
 }
 
-/* Scales of justice on the wall behind the defendant */
-#npc-stage::before {
-    content: '';
-    position: absolute;
-    top: 6px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: min(150px, 40%);
-    aspect-ratio: 1;
-    background: var(--emblem) center / contain no-repeat;
-    opacity: 0.1;
-    pointer-events: none;
-}
-
 /* Defendant's box: a wooden rail in front of the defendant */
 #npc-container {
     z-index: 1;
