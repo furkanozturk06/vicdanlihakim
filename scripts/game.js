@@ -156,7 +156,8 @@ export function initGame() {
     ui.initUI();
     audio.init();
     applySettings();
-    document.getElementById('app-version').textContent = `v${__APP_VERSION__}`;
+    // Filled in by Vite (vite.config.js); guarded for pages that load the game without it
+    document.getElementById('app-version').textContent = typeof __APP_VERSION__ === 'undefined' ? '' : `v${__APP_VERSION__}`;
     setupEventListeners();
     ui.showStartScreen();
     ui.setContinueOption(savedDay(), savedMode());
