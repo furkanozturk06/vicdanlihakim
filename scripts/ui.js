@@ -537,25 +537,41 @@ export function showIntro({ title, text, button }) {
     });
 }
 
-// Bribe / threat offer. Resolves to true when accepted.
-export function showOffer({ icon, title, text, accept, decline }) {
+// Bribe / threat offer. Resolves to 'accept', 'decline' or 'defer'.
+// `deferLabel` adds a third option that puts the offer aside to read the case first.
+export function showOffer({ icon, title, text, accept, decline }, deferLabel = null) {
+    const deferBtn = document.getElementById('offer-defer');
     elements.offerIcon.textContent = icon;
     elements.offerTitle.textContent = title;
     elements.offerText.textContent = text;
     elements.offerAccept.textContent = accept;
     elements.offerDecline.textContent = decline;
+    deferBtn.textContent = deferLabel || '';
+    deferBtn.classList.toggle('hidden', !deferLabel);
     elements.offerModal.classList.remove('hidden');
 
     return new Promise(resolve => {
-        const done = (accepted) => {
+        const done = (choice) => {
             elements.offerAccept.onclick = null;
             elements.offerDecline.onclick = null;
+            deferBtn.onclick = null;
             elements.offerModal.classList.add('hidden');
-            resolve(accepted);
+            resolve(choice);
         };
-        elements.offerAccept.onclick = () => done(true);
-        elements.offerDecline.onclick = () => done(false);
+        elements.offerAccept.onclick = () => done('accept');
+        elements.offerDecline.onclick = () => done('decline');
+        deferBtn.onclick = () => done('defer');
     });
+}
+
+// The set-aside offer waits on the desk, between the rulebook and the case number
+export function showPendingOffer(icon) {
+    document.getElementById('pending-offer-icon').textContent = icon;
+    document.getElementById('pending-offer').classList.remove('hidden');
+}
+
+export function hidePendingOffer() {
+    document.getElementById('pending-offer').classList.add('hidden');
 }
 
 // Rulebook modal

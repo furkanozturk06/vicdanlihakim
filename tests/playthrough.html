@@ -62,7 +62,9 @@ const button = k => [...document.querySelectorAll('.verdict-btn')].find(b => (b.
 const LADDER = ['release', 'fine-minor', 'fine-moderate', 'fine-major', 'house-arrest', 'jail-short', 'jail-medium', 'jail-long', 'death'];
 const ORDINARY_OFFERS = ['Masada bir zarf', 'Kapıda bir fısıltı'];
 const wait = ms => new Promise(r => setTimeout(r, ms));
-const out = { policy, endless, errors, cases: [], tutorialSteps: 0, stories: [], evenings: 0 };
+const out = { policy, endless, errors, cases: [], tutorialSteps: 0, stories: [], evenings: 0, deferred: 0, reopened: 0 };
+// Every offer is first set aside on the desk, then decided from the envelope
+const deferredCases = new Set();
 
 document.getElementById(endless ? 'endless-btn' : 'start-btn').click();
 for (let step = 0; step < 90000; step++) {
@@ -86,6 +88,11 @@ for (let step = 0; step < 90000; step++) {
     if (vis('tutorial')) { out.tutorialSteps++; document.getElementById('tutorial-next').click(); continue; }
     if (vis('event-overlay')) continue;
     if (vis('offer-modal')) {
+        const caseNo = g.getState().totalCases;
+        if (vis('offer-defer') && !deferredCases.has(caseNo)) {
+            deferredCases.add(caseNo); out.deferred++;
+            document.getElementById('offer-defer').click(); continue;
+        }
         const title = document.getElementById('offer-title').textContent;
         const day = g.getState().day;
         const special = !ORDINARY_OFFERS.includes(title);
@@ -98,6 +105,10 @@ for (let step = 0; step < 90000; step++) {
 
     const st = g.getState();
     if (endless && st.day > Number(params.get('maxDays') || 1e9)) { out.stoppedAt = st.day; break; }
+    if (!st.isProcessing && st.currentCase && !st.gameOver && vis('pending-offer')) {
+        out.reopened++;
+        document.getElementById('pending-offer').click(); continue;
+    }
     if (!st.isProcessing && st.currentCase && !st.gameOver) {
         const c = st.currentCase;
         if (!c.asked && st.questionsLeft > 0) { document.querySelector('.interrogate-btn')?.click(); await wait(3000); }

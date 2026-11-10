@@ -95,6 +95,8 @@ function check(scenario, r) {
     if (e.stoppedAt && r.stoppedAt !== e.stoppedAt) problems.push(`${r.stoppedAt}. günde durdu, beklenen ${e.stoppedAt}`);
     if (e.tutorial && r.tutorialSteps !== e.tutorial) problems.push(`öğretici ${r.tutorialSteps} adım, beklenen ${e.tutorial}`);
     if (r.repeats) problems.push(`${r.repeats} dava tekrar etti`);
+    if (r.deferred !== r.reopened) problems.push(`${r.deferred} teklif masaya bırakıldı ama ${r.reopened} kez açıldı`);
+    if (e.end && !r.deferred) problems.push('hiç teklif masaya bırakılmadı');
     if (e.end && e.branch && !r.settings.endlessUnlocked) problems.push('hikâye bitti ama sonsuz mod açılmadı');
     return problems;
 }
@@ -117,7 +119,7 @@ for (const scenario of SCENARIOS) {
             failed++;
             console.log(`✗ ${scenario.name} (${secs} sn) – ${problems.join('; ')}`);
         } else {
-            console.log(`✓ ${scenario.name} (${secs} sn) – ${summary}, ${r.cases.length} dava, tekrar yok`);
+            console.log(`✓ ${scenario.name} (${secs} sn) – ${summary}, ${r.cases.length} dava, ${r.deferred} teklif masadan karara bağlandı`);
         }
     } catch (err) {
         failed++;

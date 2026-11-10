@@ -77,6 +77,7 @@ function createInitialState() {
 
         currentCase: null,
         currentDirective: null,
+        pendingOffer: null, // an offer set aside on the desk until the judge decides
         isProcessing: false,
         gameOver: false,
     };
@@ -208,6 +209,8 @@ function setupEventListeners() {
         audio.playClick();
         continueGame();
     });
+
+    document.getElementById('pending-offer').addEventListener('click', () => reopenPendingOffer());
 
     // Tap the bubble or the defendant to show the whole sentence at once
     document.getElementById('npc-stage').addEventListener('click', () => ui.skipTyping());
@@ -503,16 +506,18 @@ async function presentNextCase() {
     const offer = pickOffer(state.currentCase);
     if (offer) {
         state.offerMadeToday = true;
-        const accepted = await ui.showOffer(offer.view);
-        if (accepted) {
-            offer.onAccept();
-            ui.updateStats(state);
-            state.isProcessing = false;
-            await processVerdict(offer.forcedVerdict, offer.type);
+        const choice = await ui.showOffer(offer.view, 'Davayı inceledikten sonra karar ver');
+        if (choice === 'accept') {
+            await acceptOffer(offer);
             return;
         }
-        offer.onDecline();
-        ui.updateStats(state);
+        if (choice === 'decline') {
+            offer.onDecline();
+            ui.updateStats(state);
+        } else {
+            state.pendingOffer = offer;
+            ui.showPendingOffer(offer.view.icon);
+        }
     }
 
     state.isProcessing = false;
@@ -574,6 +579,43 @@ function pickDirective() {
         return branch.directives[Math.floor(Math.random() * branch.directives.length)];
     }
     return getRandomDirective();
+}
+
+async function acceptOffer(offer) {
+    offer.onAccept();
+    ui.updateStats(state);
+    state.isProcessing = false;
+    await processVerdict(offer.forcedVerdict, offer.type);
+}
+
+// The judge opens the set-aside offer again from the desk
+async function reopenPendingOffer() {
+    const offer = state.pendingOffer;
+    if (!offer || state.isProcessing) return;
+    audio.playClick();
+    ui.setSentencingEnabled(false);
+    const choice = await ui.showOffer(offer.view, 'İncelemeye devam et');
+    if (choice === 'defer') {
+        ui.setSentencingEnabled(true);
+        return;
+    }
+    state.pendingOffer = null;
+    ui.hidePendingOffer();
+    if (choice === 'accept') {
+        await acceptOffer(offer);
+        return;
+    }
+    offer.onDecline();
+    ui.updateStats(state);
+    ui.setSentencingEnabled(true);
+}
+
+// Deciding the case without touching the set-aside offer means turning it down
+function settlePendingOffer() {
+    if (!state.pendingOffer) return;
+    state.pendingOffer.onDecline();
+    state.pendingOffer = null;
+    ui.hidePendingOffer();
 }
 
 // Decide whether this case comes with a bribe or a threat
@@ -681,6 +723,7 @@ async function postponeCase() {
     state.isProcessing = true;
     ui.setSentencingEnabled(false);
     audio.playClick();
+    settlePendingOffer();
 
     state.postponed.push({
         day: state.day,
@@ -703,6 +746,7 @@ async function processVerdict(sentenceKey, viaOffer = null) {
     const c = state.currentCase;
     state.isProcessing = true;
     ui.setSentencingEnabled(false);
+    if (!viaOffer) settlePendingOffer();
 
     audio.playGavel();
     vibrate();
