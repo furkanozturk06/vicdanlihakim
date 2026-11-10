@@ -2955,3 +2955,20 @@ html.text-xlarge #directive-text { font-size: 0.92rem; }
         font-size: 0.52rem;
     }
 }
+
+/* Rulebook close button stays in the top-right corner while the book scrolls */
+#rulebook-close {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    float: right;
+    margin: -6px -4px -34px 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--paper-aged);
+    border: 1px solid rgba(26, 22, 19, 0.35);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    font-size: 1rem;
+    line-height: 1;
+}

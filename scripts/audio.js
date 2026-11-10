@@ -240,6 +240,38 @@ class AudioManager {
         }
     }
 
+    // One "bıdı" syllable of a speaking defendant: a short voiced blip through a
+    // vowel-like filter, higher for women, lower for men
+    playBlip(gender) {
+        if (!this.enabled || !this.audioContext) return;
+        const ctx = this.audioContext;
+        const now = ctx.currentTime;
+        const female = gender === 'f';
+        const pitch = (female ? 240 : 115) * (0.88 + Math.random() * 0.28);
+        const length = 0.055 + Math.random() * 0.035;
+
+        const osc = ctx.createOscillator();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(pitch, now);
+        osc.frequency.linearRampToValueAtTime(pitch * (0.9 + Math.random() * 0.2), now + length);
+
+        const formant = ctx.createBiquadFilter();
+        formant.type = 'bandpass';
+        formant.frequency.value = (female ? 900 : 650) + Math.random() * 600;
+        formant.Q.value = 2.5;
+
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(this.volume * 0.55, now + 0.012);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + length);
+
+        osc.connect(formant);
+        formant.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + length + 0.02);
+    }
+
     // Turn all sound on or off (the setting the player chose)
     setEnabled(on) {
         this.enabled = Boolean(on) && Boolean(this.audioContext);

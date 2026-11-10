@@ -186,7 +186,7 @@ export function hideNPC() {
 }
 
 // Show speech bubble with typewriter effect
-export function showSpeechBubble(text, crimeType) {
+export function showSpeechBubble(text, crimeType, onSyllable) {
     elements.speechBubble.classList.remove('hidden');
     elements.bubbleText.textContent = '';
 
@@ -195,18 +195,20 @@ export function showSpeechBubble(text, crimeType) {
         elements.crimeType.textContent = crimeType;
     }
 
-    return typeIntoBubble(text);
+    return typeIntoBubble(text, onSyllable);
 }
 
-// Typewriter effect into the speech bubble; a new call cancels the previous one
+// Typewriter effect into the speech bubble; a new call cancels the previous one.
+// onSyllable is called every few letters while typing (the speaking sound).
 let typeInterval = null;
 let finishTyping = null;
-export function typeIntoBubble(text) {
+export function typeIntoBubble(text, onSyllable) {
     clearInterval(typeInterval);
     if (finishTyping) finishTyping();
     elements.bubbleText.textContent = '';
     return new Promise(resolve => {
         let i = 0;
+        let letters = 0;
         finishTyping = () => {
             clearInterval(typeInterval);
             elements.bubbleText.textContent = text;
@@ -216,6 +218,12 @@ export function typeIntoBubble(text) {
         typeInterval = setInterval(() => {
             if (i < text.length) {
                 elements.bubbleText.textContent += text[i];
+                if (/\p{L}/u.test(text[i])) {
+                    if (onSyllable && letters % 3 === 0) onSyllable();
+                    letters++;
+                } else {
+                    letters = 0;
+                }
                 i++;
             } else {
                 finishTyping();
