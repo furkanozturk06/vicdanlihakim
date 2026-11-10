@@ -3,6 +3,13 @@
  * Handles sound effects (Web Audio API based)
  */
 
+// Vowel resonances (formants, Hz) of Turkish vowels for a man's voice
+const VOWEL_FORMANTS = {
+    a: [730, 1090, 2440], e: [530, 1840, 2480], 'ı': [400, 1400, 2500], i: [270, 2290, 3010],
+    o: [570, 840, 2410], 'ö': [450, 1550, 2400], u: [300, 870, 2240], 'ü': [280, 1750, 2200],
+};
+const VOICE_LEVEL = 0.35;
+
 class AudioManager {
     constructor() {
         this.audioContext = null;
@@ -240,34 +247,69 @@ class AudioManager {
         }
     }
 
-    // One "bıdı" syllable of a speaking defendant: a short voiced blip through a
-    // vowel-like filter, higher for women, lower for men
-    playBlip(gender) {
+    // Defendant's murmur: called for every letter as the statement is typed (30 ms
+    // apart). Each vowel becomes a muffled syllable shaped like that vowel, so the
+    // babble follows the sentence; lower voice for men, higher for women.
+    speakLetter(text, index, gender) {
         if (!this.enabled || !this.audioContext) return;
+        const lower = text.toLocaleLowerCase('tr');
+        const formants = VOWEL_FORMANTS[lower[index]];
+        if (!formants) return;
+
         const ctx = this.audioContext;
         const now = ctx.currentTime;
         const female = gender === 'f';
-        const pitch = (female ? 240 : 115) * (0.88 + Math.random() * 0.28);
-        const length = 0.055 + Math.random() * 0.035;
+        let next = index + 1;
+        while (next < lower.length && !VOWEL_FORMANTS[lower[next]]) next++;
+        const length = Math.min(0.14, Math.max(0.07, (next - index) * 0.03));
+        const endOfWord = !/\p{L}/u.test(lower[index + 1] || ' ');
+        const progress = index / Math.max(1, lower.length - 1);
 
+        // Sentence melody: slowly falling, rising at the end of a question
+        let pitch = (female ? 215 : 112) * (1.08 - 0.16 * progress) * (0.95 + Math.random() * 0.1);
+        if (lower.trim().endsWith('?') && progress > 0.85) pitch *= 1.25;
+
+        if (!this.voiceWave) {
+            const real = new Float32Array(40);
+            const imag = new Float32Array(40);
+            for (let k = 1; k < 40; k++) imag[k] = 1 / Math.pow(k, 1.5);
+            this.voiceWave = ctx.createPeriodicWave(real, imag);
+        }
         const osc = ctx.createOscillator();
-        osc.type = 'sawtooth';
+        osc.setPeriodicWave(this.voiceWave);
         osc.frequency.setValueAtTime(pitch, now);
-        osc.frequency.linearRampToValueAtTime(pitch * (0.9 + Math.random() * 0.2), now + length);
+        osc.frequency.linearRampToValueAtTime(pitch * (endOfWord ? 0.9 : 1.02), now + length);
 
-        const formant = ctx.createBiquadFilter();
-        formant.type = 'bandpass';
-        formant.frequency.value = (female ? 900 : 650) + Math.random() * 600;
-        formant.Q.value = 2.5;
+        const envelope = ctx.createGain();
+        envelope.gain.setValueAtTime(0.0001, now);
+        envelope.gain.exponentialRampToValueAtTime(1, now + 0.015);
+        envelope.gain.setValueAtTime(1, now + length * 0.6);
+        envelope.gain.exponentialRampToValueAtTime(0.0001, now + length);
+        osc.connect(envelope);
 
-        const gain = ctx.createGain();
-        gain.gain.setValueAtTime(0.0001, now);
-        gain.gain.exponentialRampToValueAtTime(this.volume * 0.55, now + 0.012);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + length);
+        // Mouth shape: three vowel resonances, then muffled as if through a wall
+        const muffle = ctx.createBiquadFilter();
+        muffle.type = 'lowpass';
+        muffle.frequency.value = 1300;
+        muffle.Q.value = 0.5;
+        const scale = female ? 1.17 : 1;
+        [[0, 1, 80], [1, 0.5, 100], [2, 0.25, 140]].forEach(([n, level, width]) => {
+            const f = formants[n] * scale;
+            const band = ctx.createBiquadFilter();
+            band.type = 'bandpass';
+            band.frequency.value = f;
+            band.Q.value = f / width;
+            const gain = ctx.createGain();
+            gain.gain.value = level * (f / width) * 0.35;
+            envelope.connect(band);
+            band.connect(gain);
+            gain.connect(muffle);
+        });
 
-        osc.connect(formant);
-        formant.connect(gain);
-        gain.connect(ctx.destination);
+        const out = ctx.createGain();
+        out.gain.value = this.volume * VOICE_LEVEL;
+        muffle.connect(out);
+        out.connect(ctx.destination);
         osc.start(now);
         osc.stop(now + length + 0.02);
     }
