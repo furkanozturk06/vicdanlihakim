@@ -182,6 +182,10 @@ function setupEventListeners() {
 
     document.getElementById('endless-btn').addEventListener('click', () => {
         audio.resume();
+        if (!settings.endlessUnlocked) {
+            ui.showEndlessHint();
+            return;
+        }
         audio.playClick();
         startEndless();
     });

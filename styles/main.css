@@ -3024,3 +3024,70 @@ body {
         font-size: 0.85rem;
     }
 }
+
+/* Endless mode: always visible, locked until the 30-day story is finished */
+.endless-wrap {
+    position: relative;
+    width: 100%;
+    max-width: 280px;
+}
+
+.start-buttons .endless-wrap .typewriter-btn {
+    max-width: none;
+}
+
+#endless-btn.locked {
+    opacity: 0.55;
+    border-style: dashed;
+    cursor: not-allowed;
+}
+
+#endless-btn.locked:hover {
+    transform: none;
+    background: rgba(26, 18, 13, 0.75);
+    color: var(--gold-accent);
+    box-shadow: none;
+}
+
+#endless-btn.locked::before {
+    content: '🔒';
+}
+
+/* Tooltip above the button: hover on computers, tap on phones */
+.endless-hint {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 8px);
+    width: 260px;
+    transform: translateX(-50%) translateY(4px);
+    padding: 8px 12px;
+    background: #120d0a;
+    border: 1px solid var(--gold-accent);
+    border-radius: 6px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+    color: var(--paper-aged);
+    font-family: var(--font-typewriter);
+    font-size: 0.75rem;
+    line-height: 1.4;
+    text-align: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 5;
+}
+
+.endless-hint::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: var(--gold-accent);
+}
+
+#endless-btn.locked:hover + .endless-hint,
+.endless-hint.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}

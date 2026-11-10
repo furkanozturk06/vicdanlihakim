@@ -379,11 +379,24 @@ export function setContinueOption(day, mode = 'story') {
 }
 
 // Start screen: endless mode button and best record, once the story is finished
+// The button is always visible; until the story is finished it is locked and explains why
 export function setEndlessOption(unlocked, best) {
-    document.getElementById('endless-btn').classList.toggle('hidden', !unlocked);
+    const btn = document.getElementById('endless-btn');
+    btn.classList.toggle('locked', !unlocked);
+    btn.setAttribute('aria-disabled', String(!unlocked));
+    btn.title = unlocked ? '' : '30 gün boyunca koltukta kaldıktan sonra Sonsuz Mod\'u açabilirsin.';
     const record = document.getElementById('endless-record');
     record.classList.toggle('hidden', !unlocked || !best);
     record.textContent = best ? `Sonsuz mod rekoru: ${best} gün` : '';
+}
+
+// Phones have no hover: a tap on the locked button shows the hint for a few seconds
+let hintTimer = null;
+export function showEndlessHint() {
+    const hint = document.getElementById('endless-hint');
+    hint.classList.add('visible');
+    clearTimeout(hintTimer);
+    hintTimer = setTimeout(() => hint.classList.remove('visible'), 3500);
 }
 
 export function setSoundIcon(on) {
