@@ -298,12 +298,19 @@ body {
     justify-content: center;
 }
 
-/* NPC Styles: built from CSS parts, colours come from --skin / --hair / --cloth */
+/* Defendant: an SVG portrait (scripts/portrait.js); the wrapper moves with the emotion */
 .npc {
     width: 100%;
     height: 100%;
     position: relative;
+    transform-origin: bottom center;
     animation: npc-idle 3s ease-in-out infinite;
+}
+
+.npc svg {
+    display: block;
+    width: 100%;
+    height: 100%;
 }
 
 @keyframes npc-idle {
@@ -318,405 +325,60 @@ body {
     }
 }
 
-.npc-body {
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 86px;
-    height: 64px;
-    background: var(--cloth);
-    border-radius: 36px 36px 6px 6px;
-    box-shadow: inset 0 -10px 18px rgba(0, 0, 0, 0.35);
-}
-
-.npc-collar {
-    position: absolute;
-    top: -1px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 28px;
-    height: 17px;
-    background: #e8e2d4;
-    clip-path: polygon(0 0, 100% 0, 50% 100%);
-}
-
-.npc-neck {
-    position: absolute;
-    bottom: 58px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 20px;
-    height: 14px;
-    background: var(--skin);
-    filter: brightness(0.88);
-}
-
-.npc-head {
-    position: absolute;
-    bottom: 66px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 54px;
-    height: 62px;
-    background: var(--skin);
-    border-radius: 48% 48% 44% 44%;
-    box-shadow: inset -5px -6px 10px rgba(0, 0, 0, 0.12);
-}
-
-.npc-ear {
-    position: absolute;
-    top: 27px;
-    width: 10px;
-    height: 14px;
-    background: var(--skin);
-    border-radius: 50%;
-    filter: brightness(0.93);
-}
-
-.npc-ear.left {
-    left: -5px;
-}
-
-.npc-ear.right {
-    right: -5px;
-}
-
-/* Hair styles */
-.npc-hair {
-    position: absolute;
-    top: -4px;
-    left: -3px;
-    right: -3px;
-    height: 24px;
-    background: var(--hair);
-    border-radius: 28px 28px 8px 8px;
-}
-
-.hair-side .npc-hair {
-    height: 27px;
-    border-radius: 28px 30px 16px 4px;
-}
-
-.hair-long .npc-hair {
-    left: -6px;
-    right: -6px;
-    height: 72px;
-    background:
-        linear-gradient(var(--hair), var(--hair)) top / 100% 22px no-repeat,
-        linear-gradient(to right, var(--hair) 0 10px, transparent 10px calc(100% - 10px), var(--hair) calc(100% - 10px)) bottom / 100% 52px no-repeat;
-    border-radius: 30px 30px 10px 10px;
-}
-
-.hair-curly .npc-hair {
-    top: -9px;
-    left: -6px;
-    right: -6px;
-    height: 30px;
-    border-radius: 50% 50% 40% 40%;
-    box-shadow: -8px 8px 0 -3px var(--hair), 8px 8px 0 -3px var(--hair), 0 -4px 0 -1px var(--hair);
-}
-
-.hair-bun .npc-hair::after {
-    content: '';
-    position: absolute;
-    top: -12px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 22px;
-    height: 18px;
-    background: var(--hair);
-    border-radius: 50%;
-}
-
-.hair-bald .npc-hair {
-    top: 20px;
-    left: -2px;
-    right: -2px;
-    height: 13px;
-    background: linear-gradient(to right, var(--hair) 0 6px, transparent 6px calc(100% - 6px), var(--hair) calc(100% - 6px));
-    border-radius: 6px;
-}
-
-/* Face */
-.npc-face {
-    position: absolute;
-    inset: 0;
-}
-
-/* Lines under the eyes for older defendants */
-.npc.old .npc-face::after {
-    content: '';
-    position: absolute;
-    top: 35px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 32px;
-    height: 1px;
-    background: linear-gradient(to right, rgba(0, 0, 0, 0.25) 0 8px, transparent 8px 24px, rgba(0, 0, 0, 0.25) 24px);
-}
-
-.npc-brows {
-    position: absolute;
-    top: 19px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 11px;
-}
-
-.npc-brows span {
-    display: block;
-    width: 11px;
-    height: 3px;
-    background: var(--hair);
-    filter: brightness(0.6);
-    border-radius: 2px;
-    transition: transform 0.3s ease;
-}
-
-.npc-eyes {
-    position: absolute;
-    top: 26px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 14px;
-}
-
-.npc-eye {
-    width: 7px;
-    height: 7px;
-    background: var(--ink-black);
-    border-radius: 50%;
-}
-
-.npc-glasses {
-    position: absolute;
-    top: 22px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 44px;
-    height: 14px;
-    background:
-        linear-gradient(#222, #222) center / 6px 2px no-repeat;
-}
-
-.npc-glasses::before,
-.npc-glasses::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    width: 16px;
-    height: 12px;
-    border: 2px solid #222;
-    border-radius: 4px;
-    background: rgba(200, 220, 255, 0.15);
-}
-
-.npc-glasses::before {
-    left: 0;
-}
-
-.npc-glasses::after {
-    right: 0;
-}
-
-.npc-mustache {
-    position: absolute;
-    top: 40px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 24px;
-    height: 6px;
-    background: var(--hair);
-    border-radius: 8px 8px 3px 3px;
-}
-
-.npc-beard {
-    position: absolute;
-    bottom: -3px;
-    left: 3px;
-    right: 3px;
-    height: 26px;
-    background: var(--hair);
-    border-radius: 6px 6px 28px 28px;
-    clip-path: polygon(0 0, 30% 0, 30% 30%, 70% 30%, 70% 0, 100% 0, 100% 100%, 0 100%);
-}
-
-.npc-mouth {
-    position: absolute;
-    top: 46px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 14px;
-    height: 6px;
-    border: 2px solid var(--ink-black);
-    border-top: none;
-    border-radius: 0 0 10px 10px;
-}
-
-/* Outfits */
-.outfit-suit .npc-body {
-    background:
-        linear-gradient(110deg, transparent 38%, rgba(0, 0, 0, 0.28) 38% 44%, transparent 44%),
-        linear-gradient(-110deg, transparent 38%, rgba(0, 0, 0, 0.28) 38% 44%, transparent 44%),
-        var(--cloth);
-}
-
-.outfit-suit .npc-body::after {
-    content: '';
-    position: absolute;
-    top: 8px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 7px;
-    height: 30px;
-    background: #7a1f1f;
-    clip-path: polygon(20% 0, 80% 0, 100% 85%, 50% 100%, 0 85%);
-}
-
-.outfit-hoodie .npc-collar {
-    top: -6px;
-    width: 46px;
-    height: 15px;
-    background: var(--cloth);
-    filter: brightness(0.75);
-    border-radius: 0 0 22px 22px;
-    clip-path: none;
-}
-
-.outfit-hoodie .npc-body::after {
-    content: '';
-    position: absolute;
-    top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 14px;
-    height: 16px;
-    border-left: 2px solid rgba(255, 255, 255, 0.6);
-    border-right: 2px solid rgba(255, 255, 255, 0.6);
-}
-
-.outfit-sweater .npc-collar {
-    top: 0;
-    width: 30px;
-    height: 8px;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 0 0 16px 16px;
-    clip-path: none;
-}
-
-/* Emotions */
-.npc.panicked .npc-eye {
-    width: 8px;
-    height: 8px;
-    animation: panic-eyes 0.3s ease-in-out infinite;
-}
-
-.npc.panicked .npc-brows {
-    top: 16px;
-}
-
-.npc.panicked .npc-mouth {
-    width: 9px;
-    height: 9px;
-    border: 2px solid var(--ink-black);
-    border-radius: 50%;
-}
-
-@keyframes panic-eyes {
-
-    0%,
-    100% {
-        transform: scale(1);
-    }
-
-    50% {
-        transform: scale(1.25);
-    }
-}
-
 .npc.remorseful {
-    animation: remorse-sway 2s ease-in-out infinite;
-}
-
-.npc.remorseful .npc-brows span:first-child {
-    transform: rotate(-16deg);
-}
-
-.npc.remorseful .npc-brows span:last-child {
-    transform: rotate(16deg);
-}
-
-.npc.remorseful .npc-eyes {
-    top: 28px;
-}
-
-.npc.remorseful .npc-mouth {
-    top: 49px;
-    border-top: 2px solid var(--ink-black);
-    border-bottom: none;
-    border-radius: 10px 10px 0 0;
+    animation: remorse-sway 2.4s ease-in-out infinite;
 }
 
 @keyframes remorse-sway {
 
     0%,
     100% {
-        transform: rotate(-2deg);
+        transform: rotate(-1.5deg);
     }
 
     50% {
-        transform: rotate(2deg);
+        transform: rotate(1.5deg) translateY(1px);
     }
 }
 
-.npc.defiant .npc-head {
+.npc.panicked {
+    animation: panic-shiver 0.5s ease-in-out infinite;
+}
+
+@keyframes panic-shiver {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-1px);
+    }
+
+    75% {
+        transform: translateX(1px);
+    }
+}
+
+.npc.defiant {
     animation: defiant-tilt 4s ease-in-out infinite;
-}
-
-.npc.defiant .npc-brows span:first-child {
-    transform: rotate(18deg);
-}
-
-.npc.defiant .npc-brows span:last-child {
-    transform: rotate(-18deg);
-}
-
-.npc.defiant .npc-mouth {
-    height: 0;
-    border-radius: 0;
 }
 
 @keyframes defiant-tilt {
 
     0%,
     100% {
-        transform: translateX(-50%) rotate(0deg);
+        transform: rotate(0deg);
     }
 
     50% {
-        transform: translateX(-50%) rotate(-5deg);
+        transform: rotate(-2deg);
     }
 }
 
 .npc.proud {
-    transform-origin: bottom center;
     animation: proud-stance 3s ease-in-out infinite;
-}
-
-.npc.proud .npc-brows span:last-child {
-    transform: translateY(-3px) rotate(-8deg);
-}
-
-.npc.proud .npc-eye {
-    height: 4px;
-    margin-top: 2px;
-}
-
-.npc.proud .npc-mouth {
-    transform: translateX(-30%) rotate(-10deg);
 }
 
 @keyframes proud-stance {
@@ -2087,9 +1749,6 @@ body {
         font-size: 0.66rem;
     }
 
-    #courtroom-door {
-        display: none;
-    }
 
     .verdict-row > .verdict-btn {
         min-height: 44px;
@@ -2643,76 +2302,11 @@ body {
     }
 }
 
-/* Earrings for some female defendants */
-.npc.earrings .npc-ear::after {
-    content: '';
-    position: absolute;
-    bottom: -4px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: var(--gold-accent);
-}
 
-/* Shoulder-length bob for women */
-.hair-bob .npc-hair {
-    left: -6px;
-    right: -6px;
-    height: 50px;
-    background:
-        linear-gradient(var(--hair), var(--hair)) top / 100% 22px no-repeat,
-        linear-gradient(to right, var(--hair) 0 10px, transparent 10px calc(100% - 10px), var(--hair) calc(100% - 10px)) bottom / 100% 30px no-repeat;
-    border-radius: 30px 30px 12px 12px;
-}
 
-/* Age: creases from nose to mouth (60+) */
-.npc.old .npc-face::before {
-    content: '';
-    position: absolute;
-    top: 38px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 30px;
-    height: 14px;
-    border-left: 1.5px solid rgba(0, 0, 0, 0.22);
-    border-right: 1.5px solid rgba(0, 0, 0, 0.22);
-    border-radius: 50%;
-}
 
-/* 70+: deeper under-eye lines, a lined forehead, white brows and a slight stoop */
-.npc.elderly .npc-face::after {
-    height: 2px;
-    background: linear-gradient(to right, rgba(0, 0, 0, 0.3) 0 9px, transparent 9px 23px, rgba(0, 0, 0, 0.3) 23px);
-    box-shadow: 0 3px 0 -1px rgba(0, 0, 0, 0.12);
-}
 
-.npc.elderly .npc-brows span {
-    filter: none;
-    background: #e6e6e6;
-}
 
-.npc.elderly .npc-head {
-    bottom: 62px;
-    box-shadow: inset -5px -6px 10px rgba(0, 0, 0, 0.18);
-}
-
-.npc.elderly .npc-body {
-    width: 80px;
-    border-radius: 40px 40px 6px 6px;
-}
-
-/* Bun: hair swept down over the temples so it reads as long hair tied up */
-.hair-bun .npc-hair {
-    left: -5px;
-    right: -5px;
-    height: 38px;
-    background:
-        linear-gradient(var(--hair), var(--hair)) top / 100% 22px no-repeat,
-        linear-gradient(to right, var(--hair) 0 9px, transparent 9px calc(100% - 9px), var(--hair) calc(100% - 9px)) bottom / 100% 18px no-repeat;
-    border-radius: 30px 30px 14px 14px;
-}
 
 /* Ending texts have paragraphs ("Hikâye modu sona erdi.") */
 #ending-description {
@@ -3260,4 +2854,29 @@ html.text-xlarge #directive-text { font-size: 0.92rem; }
 .start-buttons .menu-row .typewriter-btn::before {
     width: auto;
     margin-right: 5px;
+}
+
+/* ========================================
+   Door behind the case file
+   Between cases the file is hidden but keeps its place, so the door shows there
+   while the defendant walks in; once the file opens it covers the door.
+======================================== */
+#evidence-desk.hidden {
+    display: flex !important;
+    visibility: hidden;
+}
+
+#evidence-desk #courtroom-door {
+    top: 4px;
+    z-index: 0;
+    visibility: visible;
+}
+
+#evidence-desk:not(.hidden) #courtroom-door {
+    visibility: hidden;
+}
+
+#evidence-desk .case-file {
+    position: relative;
+    z-index: 1;
 }

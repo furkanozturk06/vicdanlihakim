@@ -5,6 +5,7 @@
 
 import { CRIMES, LADDER, VERDICT_LABELS, AMENDMENTS } from './cases.js';
 import { DIRECTIVES, randomName, randomGender } from './story.js';
+import { makePortrait } from './portrait.js';
 
 // NPC appearance options
 const NPC_APPEARANCES = {
@@ -216,43 +217,16 @@ export function evaluateVerdict(correct, player) {
     };
 }
 
-// Create NPC HTML element
+// Create NPC element: an illustrated portrait; the wrapper carries the emotion animation
 export function createNPCElement(caseData) {
     const { appearance, emotion } = caseData;
-
-    const a = appearance;
+    const a = { ...appearance };
+    // Saves from before the age styles only had a "wrinkles" flag
+    if (!a.age && a.wrinkles) a.age = 'old';
 
     const npc = document.createElement('div');
-    npc.className = [
-        'npc', emotion,
-        `hair-${a.hairStyle || 'short'}`,
-        `outfit-${a.outfit || 'shirt'}`,
-        // 'old' (60+) adds lines on the face; 'elderly' (70+) adds more on top
-        a.age === 'elderly' ? 'old elderly' : a.age === 'old' || a.wrinkles ? 'old' : '',
-        a.earrings ? 'earrings' : '',
-    ].join(' ');
-    npc.style.setProperty('--skin', a.skin);
-    npc.style.setProperty('--hair', a.hair);
-    npc.style.setProperty('--cloth', a.clothing);
-
-    const facial = a.facialHair && a.facialHair !== 'none' ? `<div class="npc-${a.facialHair}"></div>` : '';
-    npc.innerHTML = `
-        <div class="npc-body"><div class="npc-collar"></div></div>
-        <div class="npc-neck"></div>
-        <div class="npc-head">
-            <div class="npc-ear left"></div>
-            <div class="npc-ear right"></div>
-            <div class="npc-hair"></div>
-            <div class="npc-face">
-                <div class="npc-brows"><span></span><span></span></div>
-                <div class="npc-eyes"><div class="npc-eye"></div><div class="npc-eye"></div></div>
-                ${a.glasses ? '<div class="npc-glasses"></div>' : ''}
-                ${facial}
-                <div class="npc-mouth"></div>
-            </div>
-        </div>
-    `;
-
+    npc.className = `npc ${emotion}`;
+    npc.innerHTML = makePortrait(a, emotion);
     return npc;
 }
 
