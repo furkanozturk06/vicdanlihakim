@@ -6,6 +6,7 @@
 import { CRIMES, LADDER, VERDICT_LABELS, AMENDMENTS } from './cases.js';
 import { DIRECTIVES, randomName, randomGender } from './story.js';
 import { makePortrait } from './portrait.js';
+import { L, withPronouns } from './i18n.js';
 
 // NPC appearance options
 const NPC_APPEARANCES = {
@@ -152,7 +153,7 @@ export function generateCase(day, directive = null, offender = null, used = new 
         appearance: offender.appearance,
         returning: true,
     });
-    c.evidence[0] = `Sanık ${offender.day}. gün mahkemenizden "${verdictLabel(offender.verdict)}" kararıyla ayrılmıştı. ${c.evidence[0]}`;
+    c.evidence[0] = L('Sanık {0}. gün mahkemenizden "{1}" kararıyla ayrılmıştı. {2}', offender.day, verdictLabel(offender.verdict), c.evidence[0]);
     return c;
 }
 
@@ -177,8 +178,8 @@ export function buildCase(crimeType, statement, day, overrides = {}) {
         statement: statement.text,
         emotion: statement.emotion,
         sympathy: statement.sympathy,
-        summary: statement.summary,
-        evidence: [...statement.evidence],
+        summary: withPronouns(statement.summary, gender),
+        evidence: statement.evidence.map(e => withPronouns(e, gender)),
         question: statement.question,
         answer: statement.answer,
         correctVerdict: getCorrectVerdict(crimeType, statement, day),
@@ -186,7 +187,9 @@ export function buildCase(crimeType, statement, day, overrides = {}) {
         returning: false,
         asked: false,
         // Multi-stage cases: a report is pending; postponing brings the case back with it
-        delayed: statement.delayed || null,
+        delayed: statement.delayed
+            ? { ...statement.delayed, note: withPronouns(statement.delayed.note, gender), evidence: withPronouns(statement.delayed.evidence, gender) }
+            : null,
         revealed: false,
         ...overrides,
     };
@@ -245,28 +248,28 @@ function verdictWeight(verdict) {
 // The defendant reacts to what happened to them, not to whether the judge was right
 const DEFENDANT_REACTIONS = {
     release: {
-        remorseful: 'Sanık gözyaşları içinde size teşekkür etti.',
-        panicked: 'Sanık rahatlamayla dizlerinin üstüne çöktü.',
-        defiant: 'Sanık sırıtarak salondan çıktı.',
-        proud: 'Sanık "Biliyordum" der gibi başını salladı ve kibirle çıktı.',
+        remorseful: L('Sanık gözyaşları içinde size teşekkür etti.'),
+        panicked: L('Sanık rahatlamayla dizlerinin üstüne çöktü.'),
+        defiant: L('Sanık sırıtarak salondan çıktı.'),
+        proud: L('Sanık "Biliyordum" der gibi başını salladı ve kibirle çıktı.'),
     },
     light: {
-        remorseful: 'Sanık başını eğip kararı kabul etti.',
-        panicked: 'Sanık derin bir nefes aldı; beklediğinden hafif çıkmıştı.',
-        defiant: 'Sanık homurdandı ama sesini çıkarmadı.',
-        proud: 'Sanık omuz silkti; bu cezayı umursamıyor gibiydi.',
+        remorseful: L('Sanık başını eğip kararı kabul etti.'),
+        panicked: L('Sanık derin bir nefes aldı; beklediğinden hafif çıkmıştı.'),
+        defiant: L('Sanık homurdandı ama sesini çıkarmadı.'),
+        proud: L('Sanık omuz silkti; bu cezayı umursamıyor gibiydi.'),
     },
     heavy: {
-        remorseful: 'Sanık sessizce ağladı; görevliler kolundan tuttu.',
-        panicked: 'Sanık "Hayır, hayır!" diye haykırdı.',
-        defiant: 'Sanık öfkeyle masaya vurdu; görevliler zor tuttu.',
-        proud: 'Sanığın kibri bir anda söndü.',
+        remorseful: L('Sanık sessizce ağladı; görevliler kolundan tuttu.'),
+        panicked: L('Sanık "Hayır, hayır!" diye haykırdı.'),
+        defiant: L('Sanık öfkeyle masaya vurdu; görevliler zor tuttu.'),
+        proud: L('Sanığın kibri bir anda söndü.'),
     },
     death: {
-        remorseful: 'Sanık bembeyaz kesildi, tek kelime edemedi.',
-        panicked: 'Sanık bayıldı; görevliler kucaklayarak çıkardı.',
-        defiant: 'Sanık size lanetler yağdırarak götürüldü.',
-        proud: 'Sanık son kez size baktı, yüzünde hiçbir ifade yoktu.',
+        remorseful: L('Sanık bembeyaz kesildi, tek kelime edemedi.'),
+        panicked: L('Sanık bayıldı; görevliler kucaklayarak çıkardı.'),
+        defiant: L('Sanık size lanetler yağdırarak götürüldü.'),
+        proud: L('Sanık son kez size baktı, yüzünde hiçbir ifade yoktu.'),
     },
 };
 
@@ -275,25 +278,25 @@ const DEFENDANT_REACTIONS = {
  * to their own fate, and the courtroom's reaction when the verdict strays from the law.
  */
 export function verdictFeedback(caseData, result, verdict) {
-    let title = 'Adalet Yerini Buldu!';
-    if (result.partial) title = 'Kanuna Yakın';
-    else if (result.tooLenient) title = 'Fazla Hafif Karar';
-    else if (result.tooHarsh) title = 'Fazla Ağır Karar';
+    let title = L('Adalet Yerini Buldu!');
+    if (result.partial) title = L('Kanuna Yakın');
+    else if (result.tooLenient) title = L('Fazla Hafif Karar');
+    else if (result.tooHarsh) title = L('Fazla Ağır Karar');
 
     const parts = [DEFENDANT_REACTIONS[verdictWeight(verdict)][caseData.emotion]];
 
     if (result.tooLenient) {
         parts.push(caseData.sympathy
-            ? 'Salonda şaşkın mırıltılar yükseldi.'
-            : 'Mağdur yakınları öfkeyle salonu terk etti.');
+            ? L('Salonda şaşkın mırıltılar yükseldi.')
+            : L('Mağdur yakınları öfkeyle salonu terk etti.'));
     } else if (result.tooHarsh) {
         parts.push(caseData.sympathy
-            ? 'Sanığın ailesi feryat etti; avukat temyize gideceğini açıkladı.'
-            : 'Sanığın avukatı temyize gideceğini açıkladı.');
+            ? L('Sanığın ailesi feryat etti; avukat temyize gideceğini açıkladı.')
+            : L('Sanığın avukatı temyize gideceğini açıkladı.'));
     }
 
     if (!result.correct || result.partial) {
-        parts.push(`Kanuna göre doğru karar: ${verdictLabel(caseData.correctVerdict)}.`);
+        parts.push(L('Kanuna göre doğru karar: {0}.', verdictLabel(caseData.correctVerdict)));
     }
 
     return { title, message: parts.join(' ') };

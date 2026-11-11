@@ -15,6 +15,7 @@ import { saveGame, loadGame, savedDay, savedMode, clearSave, loadSettings, saveS
 import * as ui from './ui.js';
 import { audio } from './audio.js';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import { L, LANG, translatePage } from './i18n.js';
 
 // Game configuration
 const CONFIG = {
@@ -88,28 +89,28 @@ const EVENTS = {
     media: {
         check: (s) => s.reputation >= 90,
         chance: 0.2,
-        title: 'Medya İlgisi!',
-        description: 'Adil kararlarınız basının dikkatini çekti. Milletin gözleri sizin üzerinizde.',
+        title: L('Medya İlgisi!'),
+        description: L('Adil kararlarınız basının dikkatini çekti. Milletin gözleri sizin üzerinizde.'),
     },
     protest: {
         check: (s) => s.conscience <= 30,
         chance: 0.3,
-        title: 'Halk Protestosu!',
-        description: 'Vatandaşlar dışarıda toplanıyor, sert cezalarınıza öfkeliler. İtibarınız zarar gördü.',
+        title: L('Halk Protestosu!'),
+        description: L('Vatandaşlar dışarıda toplanıyor, sert cezalarınıza öfkeliler. İtibarınız zarar gördü.'),
         apply: (s) => { s.reputation = Math.max(0, s.reputation - 10); },
     },
     praise: {
         check: (s) => s.reputation >= 95 && s.conscience >= 80,
         chance: 0.15,
-        title: 'Resmi Takdir',
-        description: 'Adalet Bakanı dengeli yaklaşımınızı övdü. ₺100 prim kazandınız.',
+        title: L('Resmi Takdir'),
+        description: L('Adalet Bakanı dengeli yaklaşımınızı övdü. ₺100 prim kazandınız.'),
         apply: (s) => { s.money += 100; },
     },
     warning: {
         check: (s) => s.reputation <= 25,
         chance: 0.4,
-        title: 'Resmi Uyarı',
-        description: 'Bakanlık performansınızdan endişe duyuyor. Gelişin, yoksa sonuçlarına katlanın.',
+        title: L('Resmi Uyarı'),
+        description: L('Bakanlık performansınızdan endişe duyuyor. Gelişin, yoksa sonuçlarına katlanın.'),
     },
 };
 
@@ -120,18 +121,18 @@ const accuracy = (s) => s.correctTotal / Math.max(1, s.totalCases);
 const EARLY_ENDINGS = [
     {
         condition: (s) => s.scandal,
-        title: 'Rüşvet Skandalı',
-        description: 'Zarflar birer birer gün yüzüne çıktı. Bir zamanlar hüküm verdiğiniz salonda bu kez sanık sandalyesinde oturuyorsunuz.',
+        title: L('Rüşvet Skandalı'),
+        description: L('Zarflar birer birer gün yüzüne çıktı. Bir zamanlar hüküm verdiğiniz salonda bu kez sanık sandalyesinde oturuyorsunuz.'),
     },
     {
         condition: (s) => s.money <= 0,
-        title: 'Hazine Boşaldı',
-        description: 'Kasanız tamtakır. Bakanlık sizi görev süreniz dolmadan görevden aldı; masanızdaki kanun kitabını bile geri istediler.',
+        title: L('Hazine Boşaldı'),
+        description: L('Kasanız tamtakır. Bakanlık sizi görev süreniz dolmadan görevden aldı; masanızdaki kanun kitabını bile geri istediler.'),
     },
     {
         condition: () => true,
-        title: 'Görevden Alındı',
-        description: 'Halkın ve bakanlığın güvenini yitirdiniz. Cübbenizi çıkarıp adliyeden arka kapıdan ayrıldınız.',
+        title: L('Görevden Alındı'),
+        description: L('Halkın ve bakanlığın güvenini yitirdiniz. Cübbenizi çıkarıp adliyeden arka kapıdan ayrıldınız.'),
     },
 ];
 
@@ -153,6 +154,7 @@ const endlessTier = () => (isEndless() ? Math.floor((state.day - 1) / 10) : 0);
 // Initialize game
 export function initGame() {
     state = createInitialState();
+    translatePage();
     ui.initUI();
     audio.init();
     applySettings();
@@ -182,6 +184,19 @@ function setupEventListeners() {
     document.getElementById('pause-settings-btn').addEventListener('click', () => {
         audio.playClick();
         openSettings();
+    });
+
+    // Language: the choice is saved and the page reloads in the new language
+    document.querySelectorAll('.lang-switch button').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === LANG);
+        btn.setAttribute('aria-pressed', String(btn.dataset.lang === LANG));
+        btn.addEventListener('click', () => {
+            if (btn.dataset.lang === LANG) return;
+            audio.playClick();
+            settings.lang = btn.dataset.lang;
+            saveSettings(settings);
+            location.reload();
+        });
     });
 
     document.getElementById('howto-btn').addEventListener('click', async () => {
@@ -223,8 +238,8 @@ function setupEventListeners() {
         audio.playClick();
         const day = savedDay();
         document.getElementById('pause-note').textContent = day
-            ? `Oyun her günün sonunda kaydedilir. Şimdi çıkarsan bugünkü davalar kaybolur; "Devam Et" ile ${day}. günün başından sürersin.`
-            : 'Henüz kayıt yok; oyun ilk günün sonunda kaydedilir. Şimdi çıkarsan bu oyun kaybolur.';
+            ? L('Oyun her günün sonunda kaydedilir. Şimdi çıkarsan bugünkü davalar kaybolur; "Devam Et" ile {0}. günün başından sürersin.', day)
+            : L('Henüz kayıt yok; oyun ilk günün sonunda kaydedilir. Şimdi çıkarsan bu oyun kaybolur.');
         pauseModal.classList.remove('hidden');
     });
     document.getElementById('resume-btn').addEventListener('click', () => {
@@ -324,9 +339,9 @@ function openSettings() {
         async onReset() {
             const ok = await ui.showStory({
                 icon: '⚠️',
-                title: 'İlerlemeyi Sıfırla',
-                text: 'Kayıtlı oyunun, Sonsuz Mod kilidi, rekorun ve öğretici bilgisi silinecek. Bu işlem geri alınamaz.',
-                choices: [{ label: 'Evet, hepsini sıfırla', value: true }, { label: 'Vazgeç', value: false }],
+                title: L('İlerlemeyi Sıfırla'),
+                text: L('Kayıtlı oyunun, Sonsuz Mod kilidi, rekorun ve öğretici bilgisi silinecek. Bu işlem geri alınamaz.'),
+                choices: [{ label: L('Evet, hepsini sıfırla'), value: true }, { label: L('Vazgeç'), value: false }],
             });
             if (!ok) return;
             clearSave();
@@ -347,12 +362,12 @@ function vibrate() {
 async function confirmOverwrite() {
     const day = savedDay();
     if (!day) return true;
-    const mode = savedMode() === 'endless' ? 'Sonsuz Mod' : 'Hikâye';
+    const mode = savedMode() === 'endless' ? L('Sonsuz Mod') : L('Hikâye');
     return ui.showStory({
         icon: '⚠️',
-        title: 'Kayıtlı Oyun Silinecek',
-        text: `${mode} kaydın (${day}. gün) silinecek ve yeni bir oyun başlayacak. Emin misin?`,
-        choices: [{ label: 'Evet, yeni oyuna başla', value: true }, { label: 'Vazgeç', value: false }],
+        title: L('Kayıtlı Oyun Silinecek'),
+        text: L('{0} kaydın ({1}. gün) silinecek ve yeni bir oyun başlayacak. Emin misin?', mode, day),
+        choices: [{ label: L('Evet, yeni oyuna başla'), value: true }, { label: L('Vazgeç'), value: false }],
     });
 }
 
@@ -439,14 +454,14 @@ async function startNewDay() {
         state.pendingRevenge = false;
         if (Math.random() < CONFIG.threatRevengeChance) {
             state.money = Math.max(0, state.money - 150);
-            await ui.showEvent('warning', 'Gece Yarısı Saldırı', 'Tehdidi ciddiye almadınız. Arabanız kundaklandı: ₺150 zarar.');
+            await ui.showEvent('warning', L('Gece Yarısı Saldırı'), L('Tehdidi ciddiye almadınız. Arabanız kundaklandı: ₺150 zarar.'));
             ui.updateStats(state);
         }
     }
 
     // New amendments
     for (const a of AMENDMENTS.filter(a => a.day === state.day)) {
-        await ui.showEvent('law', `Kanunda Değişiklik: ${a.title}`, `${a.text} Ayrıntılar kanun kitabında.`);
+        await ui.showEvent('law', L('Kanunda Değişiklik: {0}', a.title), L('{0} Ayrıntılar kanun kitabında.', a.text));
     }
 
     // Recurring characters
@@ -507,7 +522,7 @@ async function presentNextCase() {
     const offer = pickOffer(state.currentCase);
     if (offer) {
         state.offerMadeToday = true;
-        const choice = await ui.showOffer(offer.view, 'Davayı inceledikten sonra karar ver');
+        const choice = await ui.showOffer(offer.view, L('Davayı inceledikten sonra karar ver'));
         if (choice === 'accept') {
             await acceptOffer(offer);
             return;
@@ -595,7 +610,7 @@ async function reopenPendingOffer() {
     if (!offer || state.isProcessing) return;
     audio.playClick();
     ui.setSentencingEnabled(false);
-    const choice = await ui.showOffer(offer.view, 'İncelemeye devam et');
+    const choice = await ui.showOffer(offer.view, L('İncelemeye devam et'));
     if (choice === 'defer') {
         ui.setSentencingEnabled(true);
         return;
@@ -737,7 +752,7 @@ async function postponeCase() {
     state.dayCases++;
     state.totalCases--; // it is counted again when it returns with the report
 
-    await ui.showFeedback(true, 'Dava Ertelendi', `${c.name} tutukevine geri gönderildi. Rapor gelince dosya yarın yeniden önünüze gelecek.`, '', 'Ertelendi');
+    await ui.showFeedback(true, L('Dava Ertelendi'), L('{0} tutukevine geri gönderildi. Rapor gelince dosya yarın yeniden önünüze gelecek.', c.name), '', L('Ertelendi'));
     await finishCase();
 }
 
@@ -847,12 +862,12 @@ async function processVerdict(sentenceKey, viaOffer = null) {
     });
 
     let { title, message } = verdictFeedback(c, result, sentenceKey);
-    const lawNote = !result.correct || result.partial ? ` Kanuna göre doğru karar: ${verdictLabel(c.correctVerdict)}.` : '';
-    if (viaOffer === 'bribe') message = 'Zarf cebinizde. Sanık gülümseyerek salondan çıktı.' + lawNote;
-    if (viaOffer === 'threat') message = 'Sesiniz titredi. Sanık arkasına bakmadan çıktı.' + lawNote;
-    if (viaOffer === 'finale') message = 'Bakanın oğlu sırıtarak salondan çıktı. Telefonunuz çalıyor: "Tebrikler, Hakim Bey."' + lawNote;
-    if (viaOffer === 'selin') message = 'Selin Aydın size son kez baktı: "Demek siz de onlardansınız." Görevliler onu götürdü.' + lawNote;
-    if (viaOffer === 'special') message = 'Telefonu kapattığınızda salonda çıt çıkmıyordu. Herkes kimin kazandığını biliyordu.' + lawNote;
+    const lawNote = !result.correct || result.partial ? ' ' + L('Kanuna göre doğru karar: {0}.', verdictLabel(c.correctVerdict)) : '';
+    if (viaOffer === 'bribe') message = L('Zarf cebinizde. Sanık gülümseyerek salondan çıktı.') + lawNote;
+    if (viaOffer === 'threat') message = L('Sesiniz titredi. Sanık arkasına bakmadan çıktı.') + lawNote;
+    if (viaOffer === 'finale') message = L('Bakanın oğlu sırıtarak salondan çıktı. Telefonunuz çalıyor: "Tebrikler, Hakim Bey."') + lawNote;
+    if (viaOffer === 'selin') message = L('Selin Aydın size son kez baktı: "Demek siz de onlardansınız." Görevliler onu götürdü.') + lawNote;
+    if (viaOffer === 'special') message = L('Telefonu kapattığınızda salonda çıt çıkmıyordu. Herkes kimin kazandığını biliyordu.') + lawNote;
 
     const statsHtml = `
         <div style="margin-top: 1rem;">
@@ -894,7 +909,7 @@ async function morningStory() {
         state.conscience = Math.max(0, Math.min(100, state.conscience + (r.conscience || 0)));
         ui.updateStats(state);
     };
-    const ok = (beat) => ui.showStory({ icon: beat.icon, title: beat.title, text: beat.text, choices: [{ label: 'Devam', value: true }] });
+    const ok = (beat) => ui.showStory({ icon: beat.icon, title: beat.title, text: beat.text, choices: [{ label: L('Devam'), value: true }] });
 
     if (isAct2()) {
         const make = BRANCHES[state.branch].beats[state.day];
@@ -937,7 +952,7 @@ async function deliverAppeals() {
         state.reputation = Math.max(0, state.reputation - 4);
         if (a.tooHarsh) state.conscience = Math.max(0, state.conscience - 3);
         state.appealsToday.push(a);
-        await ui.showStory({ icon: '⚖️', title: 'Yargıtay Kararı', text: appealText(a) + ' İtibar -4.', choices: [{ label: 'Anlaşıldı', value: true }] });
+        await ui.showStory({ icon: '⚖️', title: L('Yargıtay Kararı'), text: appealText(a) + ' ' + L('İtibar -4.'), choices: [{ label: L('Anlaşıldı'), value: true }] });
         ui.updateStats(state);
     }
 }
@@ -947,10 +962,10 @@ async function runEvening(day) {
     let bills;
     if (state.money >= HOUSEHOLD_COST) {
         state.money -= HOUSEHOLD_COST;
-        bills = `Kira, faturalar ve mutfak: -₺${HOUSEHOLD_COST}`;
+        bills = L('Kira, faturalar ve mutfak: -₺{0}', HOUSEHOLD_COST);
     } else {
         state.family.harmony = Math.max(0, state.family.harmony - 10);
-        bills = 'Bu akşam kira ve faturalar ödenemedi. Aile huzuru -10.';
+        bills = L('Bu akşam kira ve faturalar ödenemedi. Aile huzuru -10.');
     }
     ui.updateStats(state);
 
@@ -1033,33 +1048,34 @@ function endGame() {
         const isRecord = daysServed > (settings.endlessBest || 0);
         if (isRecord) settings.endlessBest = daysServed;
         saveSettings(settings);
-        modeNote = `<p class="ending-epilogue">Sonsuz modda ${daysServed} gün dayandın. ${isRecord ? 'Yeni rekor!' : `Rekor: ${settings.endlessBest} gün.`}</p>`;
+        const record = isRecord ? L('Yeni rekor!') : L('Rekor: {0} gün.', settings.endlessBest);
+        modeNote = `<p class="ending-epilogue">${L('Sonsuz modda {0} gün dayandın.', daysServed)} ${record}</p>`;
     } else if (state.day > TOTAL_DAYS && state.branch) {
         const firstTime = !settings.endlessUnlocked;
         settings.endlessUnlocked = true;
         saveSettings(settings);
-        if (firstTime) modeNote = '<p class="ending-epilogue">Sonsuz Mod açıldı! Giriş ekranından oynayabilirsin.</p>';
+        if (firstTime) modeNote = `<p class="ending-epilogue">${L('Sonsuz Mod açıldı! Giriş ekranından oynayabilirsin.')}</p>`;
     }
 
-    const statsHtml = `
-        <p>Görev Süresi: ${daysServed} gün</p>
-        <p>Görülen Davalar: ${state.totalCases}</p>
-        <p>Kanuna Uygun Kararlar: ${state.correctTotal} (%${Math.round(accuracy(state) * 100)})</p>
-        <p>Son Hazine: ₺${state.money}</p>
-        <p>Son İtibar: %${state.reputation}</p>
-        <p>Son Vicdan: %${state.conscience}</p>
-    `;
+    const statsHtml = [
+        L('Görev Süresi: {0} gün', daysServed),
+        L('Görülen Davalar: {0}', state.totalCases),
+        L('Kanuna Uygun Kararlar: {0} (%{1})', state.correctTotal, Math.round(accuracy(state) * 100)),
+        L('Son Hazine: ₺{0}', state.money),
+        L('Son İtibar: %{0}', state.reputation),
+        L('Son Vicdan: %{0}', state.conscience),
+    ].map(line => `<p>${line}</p>`).join('');
 
     const selinLine = {
-        death: "Selin Aydın'ın adı yıllar sonra bir sokağa verildi. Sizin adınız ise hiçbir yere.",
-        correct: 'Selin Aydın cezasını tamamlayıp çıktığında ilk röportajını size ayırdı.',
-        release: 'Selin Aydın hâlâ yazıyor; köşesinde ara sıra sizden söz ediyor.',
-        harsh: "Selin Aydın'ın davası Yargıtay'da bozuldu. Kararınız hukuk fakültelerinde \"baskı altında yargı\" örneği olarak okutuluyor.",
+        death: L('Selin Aydın\'ın adı yıllar sonra bir sokağa verildi. Sizin adınız ise hiçbir yere.'),
+        correct: L('Selin Aydın cezasını tamamlayıp çıktığında ilk röportajını size ayırdı.'),
+        release: L('Selin Aydın hâlâ yazıyor; köşesinde ara sıra sizden söz ediyor.'),
+        harsh: L('Selin Aydın\'ın davası Yargıtay\'da bozuldu. Kararınız hukuk fakültelerinde "baskı altında yargı" örneği olarak okutuluyor.'),
     }[state.selin];
     // The execution ending gets its own family line; a warm family table would contradict it
     const executed = state.branch === 'borc' && ending === BRANCHES.borc.endings.favored;
     const familyLine = executed
-        ? 'Son duruşmada Deniz, Ece ve annen en arka sırada oturdu. Ece başını hiç kaldırmadı.'
+        ? L('Son duruşmada Deniz, Ece ve annen en arka sırada oturdu. Ece başını hiç kaldırmadı.')
         : familyEpilogue(state);
     const epilogue = [familyLine, selinLine].filter(Boolean).map(t => `<p class="ending-epilogue">${t}</p>`).join('');
 

@@ -18,7 +18,12 @@
  *   answer    defendant's reply
  *   tags      optional: alcohol | minor | restitution (see AMENDMENTS)
  *   age       optional fixed age
+ *
+ * Texts are written in Turkish; the calls at the end of the file swap in the
+ * English texts from i18n/en.js when the game runs in English.
  */
+
+import { translateTree } from './i18n.js';
 
 // Verdicts from lightest to harshest
 export const LADDER = [
@@ -2129,3 +2134,5 @@ export const CRIMES = {
         ],
     },
 };
+
+[VERDICT_LABELS, GENERAL_NOTES, AMENDMENTS, CRIMES].forEach(translateTree);

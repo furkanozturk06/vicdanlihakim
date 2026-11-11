@@ -55,12 +55,13 @@ localStorage.clear();
 localStorage.setItem('hakim.settings.v1', JSON.stringify({ sound: false, vibration: false, tutorialDone: false, endlessUnlocked: endless, endlessBest: 0 }));
 
 const g = await import('/scripts/game.js');
+const { L, missing } = await import('/scripts/i18n.js');
 g.initGame();
 
 const vis = id => !document.getElementById(id).classList.contains('hidden');
 const button = k => [...document.querySelectorAll('.verdict-btn')].find(b => (b.dataset.level ? b.dataset.sentence + '-' + b.dataset.level : b.dataset.sentence) === k);
 const LADDER = ['release', 'fine-minor', 'fine-moderate', 'fine-major', 'house-arrest', 'jail-short', 'jail-medium', 'jail-long', 'death'];
-const ORDINARY_OFFERS = ['Masada bir zarf', 'Kapıda bir fısıltı'];
+const ORDINARY_OFFERS = [L('Masada bir zarf'), L('Kapıda bir fısıltı')];
 const wait = ms => new Promise(r => setTimeout(r, ms));
 const out = { policy, endless, errors, cases: [], tutorialSteps: 0, stories: [], evenings: 0, deferred: 0, reopened: 0 };
 // Every offer is first set aside on the desk, then decided from the envelope
@@ -125,6 +126,7 @@ out.mode = s.mode;
 out.day = s.day;
 out.settings = JSON.parse(localStorage.getItem('hakim.settings.v1') || '{}');
 out.repeats = out.cases.length - new Set(out.cases).size;
+out.missing = [...missing].filter(t => t !== 'Otomatik oyun testi'); // the test page's own title
 pre.textContent = JSON.stringify(out);
 </script>
 </body>

@@ -9,13 +9,17 @@ import { spawn } from 'node:child_process';
 import { existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import EN from '../scripts/i18n/en.js';
 
 const SCENARIOS = [
-    { name: 'Dürüst hakim', query: 'policy=honest', expect: { end: 'Kasabanın Hakimi', branch: 'surgun', tutorial: 5 } },
-    { name: 'Ağaya boyun eğen', query: 'policy=surgunFavored', expect: { end: 'Emekli', branch: 'surgun' } },
-    { name: 'Kıyak geçip dürüst kalan', query: 'policy=borcHonest', expect: { end: 'Emekli', branch: 'borc' } },
-    { name: 'Vatana ihaneti örtbas eden', query: 'policy=borcCorrupt', expect: { end: 'İdam', branch: 'borc' } },
-    { name: 'Sonsuz mod, 25 gün', query: 'policy=honest&endless=1&maxDays=25', expect: { mode: 'endless', stoppedAt: 26 } },
+    { name: 'Dürüst hakim', query: 'policy=honest&lang=tr', expect: { end: 'Kasabanın Hakimi', branch: 'surgun', tutorial: 5 } },
+    { name: 'Ağaya boyun eğen', query: 'policy=surgunFavored&lang=tr', expect: { end: 'Emekli', branch: 'surgun' } },
+    { name: 'Kıyak geçip dürüst kalan', query: 'policy=borcHonest&lang=tr', expect: { end: 'Emekli', branch: 'borc' } },
+    { name: 'Vatana ihaneti örtbas eden', query: 'policy=borcCorrupt&lang=tr', expect: { end: 'İdam', branch: 'borc' } },
+    { name: 'Sonsuz mod, 25 gün', query: 'policy=honest&endless=1&maxDays=25&lang=tr', expect: { mode: 'endless', stoppedAt: 26 } },
+    { name: 'İngilizce, dürüst hakim', query: 'policy=honest&lang=en', expect: { end: EN['Kasabanın Hakimi'], branch: 'surgun', tutorial: 5, english: true } },
+    { name: 'İngilizce, vatana ihaneti örtbas eden', query: 'policy=borcCorrupt&lang=en', expect: { end: EN['İdam'], branch: 'borc', english: true } },
+    { name: 'İngilizce sonsuz mod, 25 gün', query: 'policy=honest&endless=1&maxDays=25&lang=en', expect: { mode: 'endless', stoppedAt: 26, english: true } },
 ];
 
 function findChrome() {
@@ -94,6 +98,7 @@ function check(scenario, r) {
     if (e.mode && r.mode !== e.mode) problems.push(`mod "${r.mode}", beklenen "${e.mode}"`);
     if (e.stoppedAt && r.stoppedAt !== e.stoppedAt) problems.push(`${r.stoppedAt}. günde durdu, beklenen ${e.stoppedAt}`);
     if (e.tutorial && r.tutorialSteps !== e.tutorial) problems.push(`öğretici ${r.tutorialSteps} adım, beklenen ${e.tutorial}`);
+    if (e.english && r.missing.length) problems.push(`${r.missing.length} metin İngilizceye çevrilmemiş: ${r.missing.slice(0, 3).join(' | ')}`);
     if (r.repeats) problems.push(`${r.repeats} dava tekrar etti`);
     if (r.deferred !== r.reopened) problems.push(`${r.deferred} teklif masaya bırakıldı ama ${r.reopened} kez açıldı`);
     if (e.end && !r.deferred) problems.push('hiç teklif masaya bırakılmadı');

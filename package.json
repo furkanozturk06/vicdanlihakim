@@ -7,8 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "check": "node tools/check-cases.mjs",
-    "test": "node tools/check-cases.mjs && node tests/run.mjs"
+    "check": "node tools/check-cases.mjs && node tools/check-i18n.mjs",
+    "test": "npm run check && node tests/run.mjs"
   },
   "keywords": [
     "game",

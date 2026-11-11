@@ -3,6 +3,8 @@
  * Handles animations, transitions, and visual feedback
  */
 
+import { L } from './i18n.js';
+
 // DOM Elements cache
 let elements = {};
 
@@ -245,7 +247,7 @@ const el = (tag, className, text) => {
 
 // Show the case file. The second evidence item stays hidden until the defendant is questioned.
 export function showEvidence(caseData, questionsLeft) {
-    const header = el('p', 'case-defendant', `Sanık: ${caseData.name}, ${caseData.age} yaşında`);
+    const header = el('p', 'case-defendant', L('Sanık: {0}, {1} yaşında', caseData.name, caseData.age));
     const summary = el('p', 'case-summary', caseData.summary);
 
     const list = el('ul', 'case-evidence');
@@ -257,12 +259,12 @@ export function showEvidence(caseData, questionsLeft) {
     // Multi-stage case: the pending report, or the new evidence once it arrived
     let pending = null;
     if (caseData.delayed && caseData.revealed) {
-        list.appendChild(el('li', 'new-evidence', `Yeni delil: ${caseData.delayed.evidence}`));
+        list.appendChild(el('li', 'new-evidence', L('Yeni delil: {0}', caseData.delayed.evidence)));
     } else if (caseData.delayed) {
         pending = el('div', 'case-pending');
         pending.appendChild(el('p', '', `⏳ ${caseData.delayed.note}.`));
         if (caseData.canPostpone) {
-            const btn = el('button', 'postpone-btn', 'Davayı ertele · rapor gelince yarın görülür');
+            const btn = el('button', 'postpone-btn', L('Davayı ertele · rapor gelince yarın görülür'));
             btn.type = 'button';
             pending.appendChild(btn);
         }
@@ -270,13 +272,13 @@ export function showEvidence(caseData, questionsLeft) {
 
     const interrogation = el('div', 'case-interrogation');
     if (caseData.asked) {
-        interrogation.appendChild(el('p', 'interrogation-answer', `Sorgu: "${caseData.answer}"`));
+        interrogation.appendChild(el('p', 'interrogation-answer', L('Sorgu: "{0}"', caseData.answer)));
     } else {
         const btn = el('button', 'interrogate-btn');
         btn.type = 'button';
         btn.disabled = questionsLeft <= 0;
         btn.appendChild(el('span', 'interrogate-q', `🔎 "${caseData.question}"`));
-        btn.appendChild(el('span', 'interrogate-left', questionsLeft > 0 ? `Sorgula · kalan hak: ${questionsLeft}` : 'Bugünkü sorgu hakkın bitti'));
+        btn.appendChild(el('span', 'interrogate-left', questionsLeft > 0 ? L('Sorgula · kalan hak: {0}', questionsLeft) : L('Bugünkü sorgu hakkın bitti')));
         interrogation.appendChild(btn);
     }
 
@@ -299,11 +301,11 @@ export function renderRulebook({ crimes, generalNotes, amendments, day, labels }
 
     if (amendments.length > 0) {
         const section = el('section', 'law law-amendments');
-        section.appendChild(el('h3', '', 'Ek Maddeler'));
+        section.appendChild(el('h3', '', L('Ek Maddeler')));
         const ul = el('ul');
         amendments.forEach(a => {
             const li = el('li', '', `${a.title}: ${a.text}`);
-            if (a.day === day) li.appendChild(el('span', 'law-new', 'YENİ'));
+            if (a.day === day) li.appendChild(el('span', 'law-new', L('YENİ')));
             ul.appendChild(li);
         });
         section.appendChild(ul);
@@ -315,7 +317,7 @@ export function renderRulebook({ crimes, generalNotes, amendments, day, labels }
         section.appendChild(el('h3', '', crime.name));
         const base = crime.laws.base;
         const baseCond = base.text ? ` (${base.text})` : '';
-        section.appendChild(el('p', 'law-base', `Olağan ceza${baseCond}: ${labels[base.verdict]}`));
+        section.appendChild(el('p', 'law-base', L('Olağan ceza{0}: {1}', baseCond, labels[base.verdict])));
 
         const ul = el('ul');
         for (const [key, law] of Object.entries(crime.laws)) {
@@ -365,7 +367,7 @@ export function runTutorial(steps) {
             document.getElementById('tutorial-step').textContent = `${i + 1} / ${steps.length}`;
             document.getElementById('tutorial-title').textContent = step.title;
             document.getElementById('tutorial-text').textContent = step.text;
-            next.textContent = i === steps.length - 1 ? 'Başla' : 'İleri';
+            next.textContent = i === steps.length - 1 ? L('Başla') : L('İleri');
             box.classList.remove('hidden');
         };
 
@@ -383,12 +385,12 @@ export function runTutorial(steps) {
 export function setContinueOption(day, mode = 'story') {
     const btn = document.getElementById('continue-btn');
     if (day) {
-        btn.textContent = mode === 'endless' ? `Devam Et (Sonsuz · ${day}. Gün)` : `Devam Et (${day}. Gün)`;
+        btn.textContent = mode === 'endless' ? L('Devam Et (Sonsuz · {0}. Gün)', day) : L('Devam Et ({0}. Gün)', day);
         btn.classList.remove('hidden');
-        elements.startBtn.textContent = 'Yeni Oyun';
+        elements.startBtn.textContent = L('Yeni Oyun');
     } else {
         btn.classList.add('hidden');
-        elements.startBtn.textContent = 'Koltuğa Otur';
+        elements.startBtn.textContent = L('Koltuğa Otur');
     }
 }
 
@@ -398,10 +400,10 @@ export function setEndlessOption(unlocked, best) {
     const btn = document.getElementById('endless-btn');
     btn.classList.toggle('locked', !unlocked);
     btn.setAttribute('aria-disabled', String(!unlocked));
-    btn.title = unlocked ? '' : '30 gün boyunca koltukta kaldıktan sonra Sonsuz Mod\'u açabilirsin.';
+    btn.title = unlocked ? '' : L('30 gün boyunca koltukta kaldıktan sonra Sonsuz Mod\'u açabilirsin.');
     const record = document.getElementById('endless-record');
     record.classList.toggle('hidden', !unlocked || !best);
-    record.textContent = best ? `Sonsuz mod rekoru: ${best} gün` : '';
+    record.textContent = best ? L('Sonsuz mod rekoru: {0} gün', best) : '';
 }
 
 // Settings window. `onChange(key, value)` saves each change right away.
@@ -410,7 +412,7 @@ export function showSettings(settings, { onChange, onReset }) {
     const render = () => {
         modal.querySelectorAll('.setting-toggle').forEach(btn => {
             const on = Boolean(settings[btn.dataset.setting]);
-            btn.textContent = on ? 'Açık' : 'Kapalı';
+            btn.textContent = on ? L('Açık') : L('Kapalı');
             btn.classList.toggle('on', on);
         });
         document.getElementById('setting-volume').value = Math.round((settings.volume ?? 0.5) * 100);
@@ -448,7 +450,7 @@ export function showEndlessHint() {
 export function setSoundIcon(on) {
     const btn = document.getElementById('sound-btn');
     btn.textContent = on ? '🔊' : '🔇';
-    btn.setAttribute('aria-label', on ? 'Sesi kapat' : 'Sesi aç');
+    btn.setAttribute('aria-label', on ? L('Sesi kapat') : L('Sesi aç'));
 }
 
 // Story moment with one or more choices. Resolves to the chosen value.
@@ -477,7 +479,7 @@ export function showStory({ icon, title, text, choices }) {
 // Evening at home: family status, bills and a scene. Resolves to the chosen index.
 export function showEvening({ day, family, harmony, bills, text, choices }) {
     const modal = document.getElementById('evening-modal');
-    document.getElementById('evening-day').textContent = `${day}. Gün · Akşam`;
+    document.getElementById('evening-day').textContent = L('{0}. Gün · Akşam', day);
     document.getElementById('evening-family').replaceChildren(...family.map(m => {
         const li = el('li');
         li.appendChild(el('span', 'member', `${m.name} `));
@@ -514,7 +516,7 @@ export function showEveningResult(text, harmony) {
     document.getElementById('evening-text').textContent = text;
     const box = document.getElementById('evening-choices');
     return new Promise(resolve => {
-        const b = el('button', 'typewriter-btn', 'Sabah oldu');
+        const b = el('button', 'typewriter-btn', L('Sabah oldu'));
         b.type = 'button';
         b.onclick = () => {
             document.getElementById('evening-modal').classList.add('hidden');
@@ -626,7 +628,7 @@ export function showFeedback(isCorrect, title, message, stats, stampLabel = '') 
 
 // Show the end-of-day newspaper
 export function showDailySummary(dayStats, paper) {
-    elements.paperDate.textContent = `${dayStats.day}. Gün`;
+    elements.paperDate.textContent = L('{0}. Gün', dayStats.day);
     elements.paperHeadline.textContent = paper.main;
     elements.paperSide.replaceChildren(...paper.side.map(t => el('li', '', t)));
 
