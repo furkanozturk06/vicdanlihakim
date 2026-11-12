@@ -72,6 +72,7 @@ function createInitialState() {
         flags: {},
         selin: null,       // 'death' | 'release' | 'correct' | 'harsh'
         trial: {},         // act 1: the Ayla Öğretmen trial (see trial.js)
+        economy: 100,      // price scale of this save (older saves were 1)
         branch: null,      // act 2: 'surgun' | 'borc'
         specials: {},      // outcomes of act-2 story cases, by key
         bonusQuestions: 0, // extra interrogations earned the evening before

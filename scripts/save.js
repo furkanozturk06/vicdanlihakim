@@ -55,7 +55,7 @@ const CAREER_FIELDS = [
     'correctTotal', 'deathSentences', 'bribesTaken', 'bribesExposed', 'threatsObeyed',
     'pendingRevenge', 'offenders', 'finale',
     'appeals', 'postponed', 'family', 'flags', 'selin', 'trial',
-    'branch', 'specials', 'bonusQuestions', 'scandal', 'mode',
+    'branch', 'specials', 'bonusQuestions', 'scandal', 'mode', 'economy',
 ];
 
 export function saveGame(state) {
@@ -71,6 +71,8 @@ export function loadGame(fresh) {
     if (!data || typeof data.day !== 'number') return null;
     const state = { ...fresh };
     for (const f of CAREER_FIELDS) if (data[f] !== undefined) state[f] = data[f];
+    // Saves from before prices were multiplied by 100 keep their buying power
+    if (data.economy === undefined) state.money = Math.round((data.money || 0) * 100);
     state.usedStatements = new Set((data.usedStatements || []).map(statementByKey).filter(Boolean));
     return state;
 }
