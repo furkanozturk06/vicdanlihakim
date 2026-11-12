@@ -3027,9 +3027,17 @@ html.text-xlarge #directive-text { font-size: 0.92rem; }
 }
 
 .bubble-header {
-    padding: 3px 10px;
-    font-size: 0.62rem;
+    padding: 4px 10px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
     border-radius: 12px 12px 0 0;
+}
+
+/* "Suç:" at full strength: faded small text looked blurry on phones */
+.crime-label {
+    opacity: 1;
+    font-weight: 400;
 }
 
 .bubble-content {
