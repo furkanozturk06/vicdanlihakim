@@ -379,6 +379,7 @@ export function renderRulebook({ crimes, chapters, generalNotes, amendments, day
 function showBookPage(direction) {
     const page = book.pages[book.index];
     page.classList.remove('turn-next', 'turn-prev');
+    page.style.transition = page.style.transform = page.style.filter = page.style.transformOrigin = '';
     if (direction) {
         void page.offsetWidth; // restart the animation
         page.classList.add(direction === 1 ? 'turn-next' : 'turn-prev');
@@ -401,19 +402,59 @@ function turnTo(index) {
 document.getElementById('book-prev')?.addEventListener('click', () => turnTo(book.index - 1));
 document.getElementById('book-next')?.addEventListener('click', () => turnTo(book.index + 1));
 
-// Swipe left / right on the page to turn it
-let swipeStart = null;
+// Turning by finger: the page follows the finger like a real page (it lifts from the
+// outer edge and rotates around the spine); let go past a quarter of the width and
+// it turns, otherwise it falls back. Vertical scrolling is left to the browser.
 const rulebookPanel = document.querySelector('.rulebook-content');
+let drag = null;
+
+function dragTransform(page, dx, width) {
+    const progress = Math.min(1, Math.abs(dx) / width);
+    const forward = dx < 0;
+    page.style.transformOrigin = forward ? 'left center' : 'right center';
+    page.style.transform = `perspective(1400px) rotateY(${(forward ? -1 : 1) * progress * 95}deg)`;
+    page.style.filter = `brightness(${1 - progress * 0.4})`;
+}
+
 rulebookPanel?.addEventListener('touchstart', e => {
-    swipeStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    if (e.touches.length !== 1 || e.target.closest('.book-nav')) return;
+    drag = { x: e.touches[0].clientX, y: e.touches[0].clientY, dx: 0, active: false, done: false };
 }, { passive: true });
-rulebookPanel?.addEventListener('touchend', e => {
-    if (!swipeStart) return;
-    const dx = e.changedTouches[0].clientX - swipeStart.x;
-    const dy = e.changedTouches[0].clientY - swipeStart.y;
-    swipeStart = null;
-    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) turnTo(book.index + (dx < 0 ? 1 : -1));
-}, { passive: true });
+
+rulebookPanel?.addEventListener('touchmove', e => {
+    if (!drag || drag.done) return;
+    const dx = e.touches[0].clientX - drag.x;
+    const dy = e.touches[0].clientY - drag.y;
+    if (!drag.active) {
+        if (Math.abs(dy) > 12 && Math.abs(dy) > Math.abs(dx)) { drag.done = true; return; } // a scroll
+        if (Math.abs(dx) < 10) return;
+        drag.active = true;
+    }
+    const target = book.index + (dx < 0 ? 1 : -1);
+    if (target < 0 || target >= book.pages.length) return; // first or last page: nothing to turn
+    e.preventDefault();
+    drag.dx = dx;
+    const page = book.pages[book.index];
+    page.classList.remove('turn-next', 'turn-prev');
+    page.style.transition = 'none';
+    dragTransform(page, dx, rulebookPanel.clientWidth);
+}, { passive: false });
+
+rulebookPanel?.addEventListener('touchend', () => {
+    if (!drag || !drag.active) { drag = null; return; }
+    const { dx } = drag;
+    drag = null;
+    const page = book.pages[book.index];
+    const width = rulebookPanel.clientWidth;
+    page.style.transition = 'transform 0.22s ease-out, filter 0.22s ease-out';
+    if (Math.abs(dx) > width * 0.25) {
+        dragTransform(page, Math.sign(dx) * width, width);
+        setTimeout(() => turnTo(book.index + (dx < 0 ? 1 : -1)), 200);
+    } else {
+        page.style.transform = '';
+        page.style.filter = '';
+    }
+});
 
 // Step-by-step tutorial. Each step highlights `target` and waits for "İleri".
 // Resolves when finished or skipped.

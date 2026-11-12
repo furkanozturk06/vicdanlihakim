@@ -3410,3 +3410,8 @@ html.text-xlarge #directive-text { font-size: 0.92rem; }
     font-size: 0.8rem;
     letter-spacing: 1px;
 }
+
+/* A page being turned by finger must not make the book scroll sideways */
+.rulebook-content {
+    overflow-x: hidden;
+}
