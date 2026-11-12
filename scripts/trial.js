@@ -2,10 +2,11 @@
  * Act 1 (TURKISH): the Ayla Öğretmen trial
  *
  * A drunk driver kills the teacher Ayla Demirtaş at a crossing and flees; the car
- * belongs to the Minister of Justice and his son Kerem is the suspect. The trial
- * runs through the whole first act: three hearings (days 4, 9, 13), three cases
- * tied to it (days 3, 6, 12) and pressure on the judge's family. What the judge
- * secures along the way decides what is in the file on day 15:
+ * belongs to the Minister of Justice and his son Kerem is the suspect. The news
+ * breaks on day 2 and the trial runs through the rest of the first act: three
+ * hearings (days 4, 9, 13), three cases tied to it (days 3, 6, 12) and pressure
+ * on the judge's family. What the judge secures along the way decides what is in
+ * the file on day 15:
  *
  *   state.trial.arrested     day 4: Kerem held in custody (true) or released (false)
  *   state.trial.footageCopy  day 3: the police officer was questioned and gave up his copy
@@ -24,9 +25,9 @@ const proven = (t) => t.witness === 'kept' || t.footage === 'accepted';
 
 export const ACT1 = {
     beats: {
-        1: () => ({
+        2: () => ({
             icon: '📰', title: L('Yaya Geçidinde Ölüm'),
-            text: L('Sabah gazetesinin manşeti: "Öğretmen Ayla Demirtaş yaya geçidinde can verdi; sürücü kaçtı." Araç, Adalet Bakanı adına kayıtlı. Şüpheli, bakanın oğlu Kerem B.\n\nAdliyeye vardığında dosya masandaydı. Kâtip yavaşça söyledi: "Dava size verildi, hakim bey. İlk duruşma dört gün sonra."'),
+            text: L('Sabah gazetesinin manşeti: "Öğretmen Ayla Demirtaş yaya geçidinde can verdi; sürücü kaçtı." Araç, Adalet Bakanı adına kayıtlı. Şüpheli, bakanın oğlu Kerem B.\n\nAdliyeye vardığında dosya masandaydı. Kâtip yavaşça söyledi: "Dava size verildi, hakim bey. İlk duruşma iki gün sonra."'),
             choices: [{ label: L('Dosyayı aç'), value: true }],
         }),
         4: () => ({
