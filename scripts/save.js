@@ -54,7 +54,7 @@ const CAREER_FIELDS = [
     'day', 'totalCases', 'money', 'reputation', 'conscience',
     'correctTotal', 'deathSentences', 'bribesTaken', 'bribesExposed', 'threatsObeyed',
     'pendingRevenge', 'offenders', 'finale',
-    'appeals', 'postponed', 'family', 'flags', 'selin',
+    'appeals', 'postponed', 'family', 'flags', 'selin', 'trial',
     'branch', 'specials', 'bonusQuestions', 'scandal', 'mode',
 ];
 

@@ -117,22 +117,12 @@ export const ENDLESS_INTRO = {
     button: L('Kürsüye Çık'),
 };
 
-// Minister's son: the fixed last case of the last day
+// Minister's son: the last case of day 15; his statement comes from the trial (trial.js)
 export const FINALE = {
     crimeType: 'traffic',
     name: L('Kerem B.'),
     age: 24,
     gender: 'm',
-    statement: {
-        text: L('Babamın kim olduğunu biliyor musunuz? Bu dava burada kapanır.'), emotion: 'proud', sympathy: false, law: 'flee', tags: ['alcohol'],
-        detail: L('Bakanın oğlu'),
-        summary: L('Gece alkollü araç kullanırken yaya geçidinde bir öğretmene çarpıp kaçtı. Öğretmen hayatını kaybetti.'),
-        evidence: [
-            L('Kandaki alkol: 1,9 promil; araç olay yerinden 3 km ötede terk edilmiş bulundu.'),
-            L('Araç Adalet Bakanı adına kayıtlı; sürücünün bakanın oğlu olduğu kamera kaydıyla doğrulandı.'),
-        ],
-        question: L('Neden durmadın?'), answer: L('Durmama gerek yoktu. Babam halleder, siz de bilirsiniz.'),
-    },
     offer: {
         icon: '📞',
         title: L('Bakanlıktan bir telefon'),
@@ -218,9 +208,9 @@ export function selinAftermath(selin) {
 // Day 7 morning: Kaya, depending on how lawful you have been
 export function kayaVisit(accuracy) {
     if (accuracy >= 0.7) {
-        return { ally: true, icon: '🕵️', title: L('Müfettiş Kaya\'nın Uyarısı'), text: L('Kaya odanızın kapısını kapattı: "Son gün size bakanın oğlunun dosyası gelecek. Sarhoş araba kullanıp bir öğretmeni öldürdü. Bakanlık sizi deneyecek. Bilin ki ben kanunun yanındayım."') };
+        return { ally: true, icon: '🕵️', title: L('Müfettiş Kaya\'nın Uyarısı'), text: L('Kaya odanızın kapısını kapattı: "Ayla Öğretmen davası son günlerine giriyor. Bakanlık dosyadaki her delil için savaşacak. Bilin ki ben kanunun yanındayım."') };
     }
-    return { ally: false, icon: '🕵️', title: L('Müfettiş Kaya\'nın Tavsiyesi'), text: L('Kaya gülümsedi ama gözleri soğuktu: "Bakanlıkla iyi geçinin Hakim Bey. Son gün önemli bir dosya gelecek. Herkes için en iyisini yaparsınız, değil mi?"') };
+    return { ally: false, icon: '🕵️', title: L('Müfettiş Kaya\'nın Tavsiyesi'), text: L('Kaya gülümsedi ama gözleri soğuktu: "Bakanlıkla iyi geçinin Hakim Bey. Ayla Öğretmen davasını fazla uzatmayın. Herkes için en iyisini yaparsınız, değil mi?"') };
 }
 
 // Day 9 morning: the press before the finale

@@ -16,6 +16,7 @@ import * as ui from './ui.js';
 import { audio } from './audio.js';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { L, LANG, translatePage } from './i18n.js';
+import { ACT1, finaleStatement } from './trial.js';
 
 // Game configuration
 const CONFIG = {
@@ -70,6 +71,7 @@ function createInitialState() {
         family: createFamily(),
         flags: {},
         selin: null,       // 'death' | 'release' | 'correct' | 'harsh'
+        trial: {},         // act 1: the Ayla Öğretmen trial (see trial.js)
         branch: null,      // act 2: 'surgun' | 'borc'
         specials: {},      // outcomes of act-2 story cases, by key
         bonusQuestions: 0, // extra interrogations earned the evening before
@@ -570,21 +572,28 @@ function nextCase() {
         return buildCase(p.crimeType, statement, state.day, { name: p.name, age: p.age, appearance: p.appearance, revealed: true });
     }
     if (state.day === ACT_LENGTH && state.dayCases === casesToday() - 1) {
-        return buildCase(FINALE.crimeType, FINALE.statement, state.day, { name: FINALE.name, age: FINALE.age, gender: FINALE.gender, finale: true });
+        return buildCase(FINALE.crimeType, finaleStatement(state.trial), state.day, { name: FINALE.name, age: FINALE.age, gender: FINALE.gender, finale: true });
     }
     return generateCase(state.day, state.currentDirective, takeReturningOffender(), state.usedStatements, state.branch);
 }
 
-// Act-2 story case scheduled for this slot, if any
+// The story arc running now: the Ayla Öğretmen trial in act 1, the branch in act 2
+function currentArc() {
+    if (isEndless()) return null;
+    return isAct2() ? BRANCHES[state.branch] || null : ACT1;
+}
+
+// Story case scheduled for this slot, if any
 function specialCaseNow() {
-    if (!BRANCHES[state.branch]) return null;
+    const arc = currentArc();
+    if (!arc) return null;
     const last = state.dayCases === casesToday() - 1;
-    return BRANCHES[state.branch].specials.find(sp => sp.day === state.day && !state.specials[sp.key]
+    return arc.specials.find(sp => sp.day === state.day && !state.specials[sp.key]
         && ((sp.position === 'first' && state.dayCases === 0) || (sp.position === 'last' && last))) || null;
 }
 
 function specialDef(key) {
-    return state.branch ? BRANCHES[state.branch].specials.find(sp => sp.key === key) : null;
+    return [...ACT1.specials, ...(state.branch && BRANCHES[state.branch] ? BRANCHES[state.branch].specials : [])].find(sp => sp.key === key) || null;
 }
 
 // Today's directive: the ministry in act 1, the town or the party in act 2
@@ -818,7 +827,8 @@ async function processVerdict(sentenceKey, viaOffer = null) {
     state.dayCases++;
 
     if (c.finale) {
-        state.finale = viaOffer === 'finale' ? 'released'
+        // Any acquittal of the minister's son, lawful or bought, is what the ministry wanted
+        state.finale = viaOffer === 'finale' || sentenceKey === 'release' ? 'released'
             : result.correct ? 'correct'
                 : result.diff > 0 ? 'harsh' : 'wrong';
     }
@@ -835,6 +845,7 @@ async function processVerdict(sentenceKey, viaOffer = null) {
             || (def.wants === 'lighter' && result.diff < 0)
             || (def.wants === 'harsher' && result.diff > 0);
         state.specials[c.specialKey] = { verdict: sentenceKey, diff: result.diff, favored };
+        if (def.onVerdict) def.onVerdict(state, c);
     }
 
     // Some wrong verdicts are appealed and come back from the high court two days later
@@ -913,9 +924,10 @@ async function morningStory() {
         ui.updateStats(state);
     };
     const ok = (beat) => ui.showStory({ icon: beat.icon, title: beat.title, text: beat.text, choices: [{ label: L('Devam'), value: true }] });
-
-    if (isAct2()) {
-        const make = BRANCHES[state.branch].beats[state.day];
+    // A beat of the running story arc (act 1 trial or act 2 branch), with a choice
+    const arcBeat = async () => {
+        const arc = currentArc();
+        const make = arc && arc.beats[state.day];
         if (!make) return;
         const beat = make(state);
         const value = await ui.showStory({ icon: beat.icon, title: beat.title, text: beat.text, choices: beat.choices });
@@ -925,6 +937,10 @@ async function morningStory() {
             apply(beat.apply);
         }
         ui.updateStats(state);
+    };
+
+    if (isAct2()) {
+        await arcBeat();
         return;
     }
     if (state.day === 3) {
@@ -945,6 +961,7 @@ async function morningStory() {
         await ok(beat);
         apply(beat);
     }
+    await arcBeat();
 }
 
 // High court decisions on earlier verdicts

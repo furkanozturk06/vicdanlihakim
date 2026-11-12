@@ -79,7 +79,9 @@ for (let step = 0; step < 90000; step++) {
     if (vis('story-modal')) {
         const btns = [...document.querySelectorAll('#story-choices button')].filter(b => !b.disabled);
         out.stories.push(`g${g.getState().day}: ${document.getElementById('story-title').textContent}`);
-        btns[0].click(); continue;
+        // 'trialLost' gives way at every turn of the act-1 trial
+        const giveWay = policy === 'trialLost' && g.getState().day <= 15;
+        btns[giveWay ? btns.length - 1 : 0].click(); continue;
     }
     if (vis('evening-modal')) {
         const btns = [...document.querySelectorAll('#evening-choices button')].filter(b => !b.disabled);
@@ -122,6 +124,8 @@ for (let step = 0; step < 90000; step++) {
 }
 
 const s = g.getState();
+out.trial = s.trial;
+out.finale = s.finale;
 out.branch = s.branch;
 out.mode = s.mode;
 out.day = s.day;

@@ -16,6 +16,7 @@ const SCENARIOS = [
     { name: 'Ağaya boyun eğen', query: 'policy=surgunFavored&lang=tr', expect: { end: 'Emekli', branch: 'surgun' } },
     { name: 'Kıyak geçip dürüst kalan', query: 'policy=borcHonest&lang=tr', expect: { end: 'Emekli', branch: 'borc' } },
     { name: 'Vatana ihaneti örtbas eden', query: 'policy=borcCorrupt&lang=tr', expect: { end: 'İdam', branch: 'borc' } },
+    { name: 'Ayla Öğretmen davasında delilleri kaybeden', query: 'policy=trialLost&lang=tr', expect: { end: 'Emekli', branch: 'borc', trial: { witness: 'lost', footage: 'rejected' }, finale: 'released' } },
     { name: 'Sonsuz mod, 25 gün', query: 'policy=honest&endless=1&maxDays=25&lang=tr', expect: { mode: 'endless', stoppedAt: 26 } },
     { name: 'İngilizce, dürüst hakim', query: 'policy=honest&lang=en', expect: { end: EN['Kasabanın Hakimi'], branch: 'surgun', tutorial: 5, english: true } },
     { name: 'İngilizce, vatana ihaneti örtbas eden', query: 'policy=borcCorrupt&lang=en', expect: { end: EN['İdam'], branch: 'borc', english: true } },
@@ -97,6 +98,9 @@ function check(scenario, r) {
     if (e.branch && r.branch !== e.branch) problems.push(`kol "${r.branch}", beklenen "${e.branch}"`);
     if (e.mode && r.mode !== e.mode) problems.push(`mod "${r.mode}", beklenen "${e.mode}"`);
     if (e.stoppedAt && r.stoppedAt !== e.stoppedAt) problems.push(`${r.stoppedAt}. günde durdu, beklenen ${e.stoppedAt}`);
+    if (e.trial) for (const [k, v] of Object.entries(e.trial)) if (r.trial?.[k] !== v) problems.push(`dava: ${k} "${r.trial?.[k]}", beklenen "${v}"`);
+    if (e.finale && r.finale !== e.finale) problems.push(`final "${r.finale}", beklenen "${e.finale}"`);
+    if (e.end === 'Kasabanın Hakimi' && (r.trial?.witness !== 'kept' || r.trial?.footage !== 'accepted')) problems.push(`dürüst hakimin davası eksik: ${JSON.stringify(r.trial)}`);
     if (e.tutorial && r.tutorialSteps !== e.tutorial) problems.push(`öğretici ${r.tutorialSteps} adım, beklenen ${e.tutorial}`);
     if (e.english && r.missing.length) problems.push(`${r.missing.length} metin İngilizceye çevrilmemiş: ${r.missing.slice(0, 3).join(' | ')}`);
     if (r.repeats) problems.push(`${r.repeats} dava tekrar etti`);
