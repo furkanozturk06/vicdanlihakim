@@ -3016,3 +3016,511 @@ html.text-xlarge #directive-text { font-size: 0.92rem; }
     background: var(--gold-accent);
     color: #1a1613;
 }
+
+/* ========================================
+   Speech bubble beside the defendant's head (comic style) instead of above it:
+   it takes no height, so the case file keeps its room on every phone.
+   The defendant stands a little right of centre; the rail moves with them.
+======================================== */
+#defendant-stand {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    max-width: 440px;
+    margin: 0 auto;
+}
+
+#defendant-stand::after {
+    content: none;
+}
+
+#npc-container {
+    order: 2;
+    flex: 0 0 120px;
+}
+
+#npc-container::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    width: 170px;
+    height: 34px;
+    background:
+        linear-gradient(180deg, var(--wood-light) 0 7px, var(--wood-dark) 7px 10px, transparent 10px),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.35) 0 1px, var(--wood-light) 1px 9px, rgba(0, 0, 0, 0.35) 9px 10px) left top / 10px 100% no-repeat,
+        linear-gradient(90deg, rgba(0, 0, 0, 0.35) 0 1px, var(--wood-light) 1px 9px, rgba(0, 0, 0, 0.35) 9px 10px) right top / 10px 100% no-repeat,
+        linear-gradient(90deg, transparent 0 5px, rgba(0, 0, 0, 0.4) 5px 6px, var(--wood-medium) 6px 12px, rgba(0, 0, 0, 0.4) 12px 13px, transparent 13px) center 10px / 18px calc(100% - 10px) space no-repeat,
+        linear-gradient(180deg, transparent 0 10px, rgba(0, 0, 0, 0.25) 10px);
+    border-radius: 4px 4px 0 0;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.4);
+    pointer-events: none;
+}
+
+#speech-bubble {
+    order: 1;
+    flex: 1 1 auto;
+    width: auto;
+    max-width: 250px;
+    margin: 4px 0 0;
+}
+
+/* Keeps its place while hidden, so the defendant does not jump when it appears */
+#speech-bubble.hidden {
+    display: block;
+    visibility: hidden;
+}
+
+.bubble-header {
+    padding: 3px 8px;
+    font-size: 0.6rem;
+    letter-spacing: 0.5px;
+    border-radius: 12px 12px 0 0;
+}
+
+.bubble-content {
+    padding: 6px 10px 8px;
+    font-size: 0.8rem;
+    line-height: 1.38;
+    border-radius: 0 0 0 12px;
+}
+
+/* Tail on the right edge, pointing at the defendant's mouth */
+.bubble-tail {
+    top: 34px;
+    bottom: auto;
+    left: auto;
+    right: -11px;
+    transform: none;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-left: 12px solid var(--paper-aged);
+    border-right: none;
+}
+
+@media (max-height: 700px) {
+    .bubble-content {
+        font-size: 0.76rem;
+    }
+
+    .bubble-tail {
+        top: 28px;
+    }
+}
+
+/* ========================================
+   Courtroom entrance: framed doorway with a sign, wall lamps and the bailiff.
+   Shown with the door while the defendant walks in, covered by the case file after.
+======================================== */
+#speech-bubble.hidden {
+    display: block !important;
+    visibility: hidden;
+}
+
+#door-scene {
+    --door-h: 120px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: calc(var(--door-h) + 30px);
+    z-index: 0;
+    visibility: visible;
+    pointer-events: none;
+}
+
+#evidence-desk:not(.hidden) #door-scene {
+    visibility: hidden;
+}
+
+#evidence-desk #courtroom-door {
+    top: 20px;
+}
+
+/* Wooden frame; the doorway behind the door is a lit corridor */
+.door-frame {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 102px;
+    height: calc(var(--door-h) + 26px);
+    box-sizing: border-box;
+    border: 8px solid var(--wood-light);
+    border-top-width: 20px;
+    border-bottom: none;
+    border-radius: 3px 3px 0 0;
+    background:
+        radial-gradient(ellipse at 50% 110%, rgba(255, 210, 140, 0.55), transparent 70%),
+        linear-gradient(180deg, #4a3624, #1a120c);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(0, 0, 0, 0.45);
+}
+
+.door-sign {
+    position: absolute;
+    top: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 1px 5px;
+    border-radius: 2px;
+    background: linear-gradient(180deg, #e2c46a, #a8801f);
+    color: #2a1d10;
+    font-family: var(--font-typewriter);
+    font-size: 0.42rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    white-space: nowrap;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Brass wall lamps either side of the door */
+.door-lamp {
+    position: absolute;
+    top: 38px;
+    width: 12px;
+    height: 16px;
+    border-radius: 6px 6px 3px 3px;
+    background: linear-gradient(180deg, #fbe3a4, #b88a2e);
+    box-shadow: 0 0 22px 10px rgba(255, 190, 90, 0.28);
+}
+
+.door-lamp::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 8px;
+    background: #7a5a1c;
+}
+
+.door-lamp-left {
+    left: calc(50% - 84px);
+}
+
+.door-lamp-right {
+    left: calc(50% + 72px);
+}
+
+/* The bailiff stands behind a small desk to the left of the door */
+#bailiff {
+    position: absolute;
+    top: 24px;
+    right: calc(50% + 92px);
+    width: 84px;
+    height: 122px;
+}
+
+#bailiff-figure {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 84px;
+    height: 105px;
+}
+
+#bailiff-figure svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.bailiff-desk {
+    position: absolute;
+    bottom: 0;
+    left: -4px;
+    right: -4px;
+    height: 30px;
+    border-radius: 3px 3px 0 0;
+    background:
+        linear-gradient(180deg, var(--wood-light) 0 5px, var(--wood-dark) 5px 7px, transparent 7px),
+        linear-gradient(90deg, transparent 0 6px, rgba(0, 0, 0, 0.25) 6px 7px, transparent 7px calc(100% - 7px), rgba(0, 0, 0, 0.25) calc(100% - 7px) calc(100% - 6px), transparent calc(100% - 6px)) 0 7px / 100% calc(100% - 7px) no-repeat,
+        var(--wood-medium);
+    box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.4);
+}
+
+/* "Defendant X!" while the door opens */
+.bailiff-call {
+    position: absolute;
+    bottom: calc(100% - 6px);
+    left: -6px;
+    margin: 0;
+    padding: 3px 7px;
+    border-radius: 8px 8px 8px 2px;
+    background: var(--paper-aged);
+    color: var(--ink-black);
+    font-family: var(--font-typewriter);
+    font-size: 0.62rem;
+    font-weight: 700;
+    white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.bailiff-call.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+@media (max-height: 700px) {
+    #door-scene {
+        --door-h: 90px;
+    }
+
+    .door-lamp {
+        top: 30px;
+    }
+
+    #bailiff {
+        top: 14px;
+        transform: scale(0.8);
+        transform-origin: top right;
+    }
+}
+
+@media (max-width: 359px) {
+    #bailiff {
+        transform: scale(0.7);
+        transform-origin: top right;
+    }
+}
+
+/* ========================================
+   Courtroom: plaster wall with wooden pilasters above, panelled wainscot below,
+   pendant lamps, and the public gallery (benches with seated people) behind the
+   defendant. All drawn with gradients, so it scales to any phone.
+======================================== */
+.courtroom-bg {
+    background:
+        radial-gradient(ellipse 70% 55% at 50% 38%, transparent 0 55%, rgba(0, 0, 0, 0.5) 100%),
+        radial-gradient(ellipse 120px 90px at 18% 0, rgba(255, 205, 130, 0.13), transparent 70%),
+        radial-gradient(ellipse 120px 90px at 82% 0, rgba(255, 205, 130, 0.13), transparent 70%),
+        linear-gradient(180deg, #3b2a1c 0 5px, #120c08 5px 7px, transparent 7px) 0 0 / 100% 7px no-repeat,
+        linear-gradient(180deg, #5a3e28 0 4px, #24180f 4px 6px, transparent 6px) 0 58% / 100% 6px no-repeat,
+        repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.35) 0 2px, rgba(255, 225, 180, 0.04) 2px 4px, transparent 4px 78px) 0 100% / 100% 42% no-repeat,
+        linear-gradient(180deg, rgba(255, 225, 180, 0.04) 0 2px, transparent 2px calc(100% - 3px), rgba(0, 0, 0, 0.35) calc(100% - 3px)) 0 100% / 100% 42% no-repeat,
+        repeating-linear-gradient(90deg, transparent 0 96px, rgba(0, 0, 0, 0.3) 96px 98px, #3a291b 98px 112px, rgba(0, 0, 0, 0.3) 112px 114px) 0 0 / 100% 58% no-repeat,
+        linear-gradient(180deg, #2c2018 0%, #241a13 58%, #1b130d 58%, #120c08 100%);
+}
+
+/* Pendant lamps hanging from the ceiling */
+.courtroom-bg::before,
+.courtroom-bg::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    width: 18px;
+    height: 34px;
+    background:
+        radial-gradient(ellipse 9px 6px at 50% 30px, #fbe3a4 0 90%, transparent 100%),
+        linear-gradient(90deg, transparent 8px, #6b5222 8px 10px, transparent 10px) 0 0 / 100% 24px no-repeat;
+    filter: drop-shadow(0 0 10px rgba(255, 200, 110, 0.55));
+}
+
+.courtroom-bg::before {
+    left: calc(18% - 9px);
+}
+
+.courtroom-bg::after {
+    left: calc(82% - 9px);
+}
+
+/* Public gallery behind the defendant */
+#npc-stage::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 104px;
+    z-index: 0;
+    pointer-events: none;
+    background:
+        linear-gradient(180deg, #4a3220 0 4px, #2a1c12 4px 14px, transparent 14px) 0 90px / 100% 14px no-repeat,
+        radial-gradient(ellipse 11px 13px at 12% 64px, rgba(10, 7, 5, 0.7) 96%, transparent 100%),
+        radial-gradient(ellipse 22px 13px at 12% 84px, rgba(10, 7, 5, 0.7) 96%, transparent 100%),
+        radial-gradient(ellipse 11px 13px at 27% 64px, rgba(10, 7, 5, 0.7) 96%, transparent 100%),
+        radial-gradient(ellipse 22px 13px at 27% 84px, rgba(10, 7, 5, 0.7) 96%, transparent 100%),
+        radial-gradient(ellipse 11px 13px at 55% 64px, rgba(10, 7, 5, 0.7) 96%, transparent 100%),
+        radial-gradient(ellipse 22px 13px at 55% 84px, rgba(10, 7, 5, 0.7) 96%, transparent 100%),
+        radial-gradient(ellipse 11px 13px at 88% 64px, rgba(10, 7, 5, 0.7) 96%, transparent 100%),
+        radial-gradient(ellipse 22px 13px at 88% 84px, rgba(10, 7, 5, 0.7) 96%, transparent 100%),
+        linear-gradient(180deg, #3d2a1a 0 3px, #24180f 3px 10px, transparent 10px) 0 48px / 100% 10px no-repeat,
+        radial-gradient(ellipse 8px 10px at 6% 30px, rgba(10, 7, 5, 0.55) 96%, transparent 100%),
+        radial-gradient(ellipse 16px 10px at 6% 46px, rgba(10, 7, 5, 0.55) 96%, transparent 100%),
+        radial-gradient(ellipse 8px 10px at 19% 30px, rgba(10, 7, 5, 0.55) 96%, transparent 100%),
+        radial-gradient(ellipse 16px 10px at 19% 46px, rgba(10, 7, 5, 0.55) 96%, transparent 100%),
+        radial-gradient(ellipse 8px 10px at 31% 30px, rgba(10, 7, 5, 0.55) 96%, transparent 100%),
+        radial-gradient(ellipse 16px 10px at 31% 46px, rgba(10, 7, 5, 0.55) 96%, transparent 100%),
+        radial-gradient(ellipse 8px 10px at 47% 30px, rgba(10, 7, 5, 0.55) 96%, transparent 100%),
+        radial-gradient(ellipse 16px 10px at 47% 46px, rgba(10, 7, 5, 0.55) 96%, transparent 100%),
+        radial-gradient(ellipse 8px 10px at 63% 30px, rgba(10, 7, 5, 0.55) 96%, transparent 100%),
+        radial-gradient(ellipse 16px 10px at 63% 46px, rgba(10, 7, 5, 0.55) 96%, transparent 100%),
+        radial-gradient(ellipse 8px 10px at 81% 30px, rgba(10, 7, 5, 0.55) 96%, transparent 100%),
+        radial-gradient(ellipse 16px 10px at 81% 46px, rgba(10, 7, 5, 0.55) 96%, transparent 100%),
+        radial-gradient(ellipse 8px 10px at 94% 30px, rgba(10, 7, 5, 0.55) 96%, transparent 100%),
+        radial-gradient(ellipse 16px 10px at 94% 46px, rgba(10, 7, 5, 0.55) 96%, transparent 100%);
+}
+
+#defendant-stand {
+    position: relative;
+    z-index: 1;
+}
+
+/* Bailiff's call stays on screen at the left edge */
+.bailiff-call {
+    left: 2px;
+}
+
+/* ========================================
+   Law book: pages that turn, a contents page and one chapter per page
+======================================== */
+.rulebook-content {
+    padding-bottom: 0;
+    /* page edge and spine shadow, like the right-hand page of an open book */
+    background:
+        linear-gradient(90deg, rgba(60, 40, 20, 0.28) 0, rgba(60, 40, 20, 0.08) 10px, transparent 22px),
+        var(--paper-aged);
+    border-left: 3px solid #8a6d45;
+}
+
+.book-page {
+    transform-origin: left center;
+    backface-visibility: hidden;
+}
+
+.book-page.turn-next {
+    animation: page-turn-next 0.45s ease-out;
+}
+
+.book-page.turn-prev {
+    animation: page-turn-prev 0.45s ease-out;
+}
+
+@keyframes page-turn-next {
+    from {
+        transform: perspective(1400px) rotateY(-75deg);
+        opacity: 0.2;
+    }
+
+    to {
+        transform: none;
+        opacity: 1;
+    }
+}
+
+@keyframes page-turn-prev {
+    from {
+        transform: perspective(1400px) rotateY(75deg);
+        transform-origin: right center;
+        opacity: 0.2;
+    }
+
+    to {
+        transform: none;
+        opacity: 1;
+    }
+}
+
+.book-toc-title {
+    margin: var(--spacing-md) 0 var(--spacing-xs);
+    color: var(--red-stamp);
+    font-size: 0.95rem;
+    letter-spacing: 1px;
+    text-align: center;
+}
+
+.book-toc {
+    list-style: none;
+    margin: 0 0 var(--spacing-md);
+    padding: 0;
+}
+
+.book-toc-link {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    width: 100%;
+    padding: 7px 2px;
+    border: none;
+    border-bottom: 1px dotted rgba(26, 22, 19, 0.35);
+    background: none;
+    color: var(--ink-black);
+    font-family: var(--font-typewriter);
+    font-size: 0.82rem;
+    text-align: left;
+    cursor: pointer;
+}
+
+.book-toc-link:active {
+    background: rgba(139, 32, 32, 0.08);
+}
+
+.book-toc-name {
+    flex: 1;
+}
+
+.book-toc-page {
+    color: var(--red-stamp);
+    font-weight: 700;
+}
+
+.book-chapter-number {
+    margin: 0;
+    color: var(--red-stamp);
+    font-size: 0.72rem;
+    letter-spacing: 3px;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.book-chapter-title {
+    margin: 2px 0 var(--spacing-md);
+    padding-bottom: var(--spacing-xs);
+    border-bottom: 2px solid var(--ink-black);
+    font-size: 1.05rem;
+    text-align: center;
+}
+
+/* Page arrows and number stay at the bottom while the page scrolls */
+.book-nav {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: var(--spacing-sm) calc(-1 * var(--spacing-md)) 0;
+    padding: 6px var(--spacing-md) 10px;
+    background: linear-gradient(180deg, rgba(212, 197, 169, 0), var(--paper-aged) 35%);
+}
+
+.book-nav button {
+    width: 44px;
+    height: 36px;
+    border: 1px solid rgba(26, 22, 19, 0.4);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.25);
+    color: var(--ink-black);
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.book-nav button:disabled {
+    opacity: 0.25;
+    cursor: default;
+}
+
+#book-page-number {
+    font-family: var(--font-typewriter);
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+}

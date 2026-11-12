@@ -4,7 +4,7 @@
  */
 
 import { generateCase, buildCase, createNPCElement, evaluateVerdict, getRandomDirective, verdictFeedback, verdictLabel, activeAmendments } from './npc.js';
-import { CRIMES, GENERAL_NOTES, AMENDMENTS, VERDICT_LABELS, LADDER } from './cases.js';
+import { CRIMES, GENERAL_NOTES, AMENDMENTS, VERDICT_LABELS, LADDER, LAW_CHAPTERS } from './cases.js';
 import {
     OFFERS, buildNewspaper, FINALE, FINAL_DIRECTIVE, INTRO, TUTORIAL, ENDLESS_INTRO, HOW_TO_PLAY, inspectorReport,
     SELIN_NOTE, SELIN_DIRECTIVE, SELIN_CASE, selinAftermath, kayaVisit, finaleRumor, appealText,
@@ -426,6 +426,8 @@ function refreshRulebook() {
     const crimes = Object.fromEntries(Object.entries(CRIMES).filter(([, c]) => state.branch === 'all' || !c.branch || c.branch === state.branch));
     ui.renderRulebook({
         crimes,
+        chapters: LAW_CHAPTERS,
+        onTurn: () => audio.playPageTurn(),
         generalNotes: GENERAL_NOTES,
         amendments: activeAmendments(state.day),
         day: state.day,
@@ -504,6 +506,7 @@ async function presentNextCase() {
         && (isEndless() || (state.day !== ACT_LENGTH && state.day < TOTAL_DAYS));
     ui.updateCaseNumber(state.totalCases);
 
+    ui.bailiffCall(state.currentCase.name);
     audio.playDoor();
     await ui.openDoor();
     await ui.showNPC(createNPCElement(state.currentCase));

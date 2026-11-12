@@ -4,11 +4,19 @@
  */
 
 import { L } from './i18n.js';
+import { makePortrait } from './portrait.js';
+
+// The court bailiff by the door: always the same person
+const BAILIFF = {
+    gender: 'm', skin: '#e8beac', hair: '#2c1810', hairStyle: 'short', facialHair: 'mustache',
+    earrings: false, glasses: false, age: '', clothing: '#1f2d45', outfit: 'suit',
+};
 
 // DOM Elements cache
 let elements = {};
 
 export function initUI() {
+    document.getElementById('bailiff-figure').innerHTML = makePortrait(BAILIFF, 'neutral');
     elements = {
         // Main containers
         startScreen: document.getElementById('start-screen'),
@@ -143,6 +151,16 @@ export function hideDirective() {
 }
 
 // Animate door opening
+// The bailiff calls the next defendant in by name
+let bailiffTimer = null;
+export function bailiffCall(name) {
+    const call = document.getElementById('bailiff-call');
+    call.textContent = L('Sanık {0}!', name);
+    call.classList.add('visible');
+    clearTimeout(bailiffTimer);
+    bailiffTimer = setTimeout(() => call.classList.remove('visible'), 1700);
+}
+
 export function openDoor() {
     return new Promise(resolve => {
         elements.courtroomDoor.classList.add('open');
@@ -292,12 +310,21 @@ export function hideEvidence() {
 }
 
 // Render the rulebook from law data. Amendments introduced today are marked YENİ.
-export function renderRulebook({ crimes, generalNotes, amendments, day, labels }) {
-    const nodes = [];
+// The law book: a contents page (general rules, amendments, chapter list), then one
+// page per chapter. Pages turn with the arrows or a swipe; `onTurn` plays the sound.
+const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+const book = { pages: [], index: 0, onTurn: null, header: null };
 
+export function renderRulebook({ crimes, chapters, generalNotes, amendments, day, labels, onTurn }) {
+    book.onTurn = onTurn;
+
+    // Contents page: title and scale from the page, general rules, amendments, chapters
+    const contents = el('div', 'book-page book-contents');
+    if (!book.header) book.header = [document.querySelector('.rulebook-content h2'), document.querySelector('.rulebook-scale')];
+    contents.append(...book.header);
     const general = el('ul', 'law-general');
     generalNotes.forEach(n => general.appendChild(el('li', '', n)));
-    nodes.push(general);
+    contents.appendChild(general);
 
     if (amendments.length > 0) {
         const section = el('section', 'law law-amendments');
@@ -309,28 +336,91 @@ export function renderRulebook({ crimes, generalNotes, amendments, day, labels }
             ul.appendChild(li);
         });
         section.appendChild(ul);
-        nodes.push(section);
+        contents.appendChild(section);
     }
 
-    for (const crime of Object.values(crimes)) {
-        const section = el('section', 'law');
-        section.appendChild(el('h3', '', crime.name));
-        const base = crime.laws.base;
-        const baseCond = base.text ? ` (${base.text})` : '';
-        section.appendChild(el('p', 'law-base', L('Olağan ceza{0}: {1}', baseCond, labels[base.verdict])));
+    const toc = el('ol', 'book-toc');
+    contents.append(el('h3', 'book-toc-title', L('İçindekiler')), toc);
+    const pages = [contents];
 
-        const ul = el('ul');
-        for (const [key, law] of Object.entries(crime.laws)) {
-            if (key === 'base') continue;
-            ul.appendChild(el('li', '', `${law.text}: ${labels[law.verdict]}`));
+    chapters.forEach(chapter => {
+        const list = chapter.crimes.filter(key => crimes[key]);
+        if (!list.length) return;
+        const number = ROMAN[pages.length - 1];
+        const page = el('div', 'book-page');
+        page.append(el('p', 'book-chapter-number', L('Bölüm {0}', number)), el('h3', 'book-chapter-title', chapter.title));
+
+        for (const key of list) {
+            const crime = crimes[key];
+            const section = el('section', 'law');
+            section.appendChild(el('h3', '', crime.name));
+            const base = crime.laws.base;
+            const baseCond = base.text ? ` (${base.text})` : '';
+            section.appendChild(el('p', 'law-base', L('Olağan ceza{0}: {1}', baseCond, labels[base.verdict])));
+            const ul = el('ul');
+            for (const [lawKey, law] of Object.entries(crime.laws)) {
+                if (lawKey === 'base') continue;
+                ul.appendChild(el('li', '', `${law.text}: ${labels[law.verdict]}`));
+            }
+            (crime.notes || []).forEach(n => ul.appendChild(el('li', '', n)));
+            section.appendChild(ul);
+            page.appendChild(section);
         }
-        (crime.notes || []).forEach(n => ul.appendChild(el('li', '', n)));
-        section.appendChild(ul);
-        nodes.push(section);
-    }
 
-    elements.rulebookBody.replaceChildren(...nodes);
+        const target = pages.length;
+        const item = el('li');
+        const link = el('button', 'book-toc-link');
+        link.type = 'button';
+        link.append(el('span', 'book-toc-name', `${number}. ${chapter.title}`), el('span', 'book-toc-page', String(target + 1)));
+        link.addEventListener('click', () => turnTo(target));
+        item.appendChild(link);
+        toc.appendChild(item);
+        pages.push(page);
+    });
+
+    book.pages = pages;
+    book.index = Math.min(book.index, pages.length - 1);
+    showBookPage(null);
 }
+
+function showBookPage(direction) {
+    const page = book.pages[book.index];
+    page.classList.remove('turn-next', 'turn-prev');
+    if (direction) {
+        void page.offsetWidth; // restart the animation
+        page.classList.add(direction === 1 ? 'turn-next' : 'turn-prev');
+    }
+    elements.rulebookBody.replaceChildren(page);
+    document.getElementById('book-page-number').textContent = `${book.index + 1} / ${book.pages.length}`;
+    document.getElementById('book-prev').disabled = book.index === 0;
+    document.getElementById('book-next').disabled = book.index === book.pages.length - 1;
+    document.querySelector('.rulebook-content').scrollTop = 0;
+}
+
+function turnTo(index) {
+    if (index < 0 || index >= book.pages.length || index === book.index) return;
+    const direction = index > book.index ? 1 : -1;
+    book.index = index;
+    if (book.onTurn) book.onTurn();
+    showBookPage(direction);
+}
+
+document.getElementById('book-prev')?.addEventListener('click', () => turnTo(book.index - 1));
+document.getElementById('book-next')?.addEventListener('click', () => turnTo(book.index + 1));
+
+// Swipe left / right on the page to turn it
+let swipeStart = null;
+const rulebookPanel = document.querySelector('.rulebook-content');
+rulebookPanel?.addEventListener('touchstart', e => {
+    swipeStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+}, { passive: true });
+rulebookPanel?.addEventListener('touchend', e => {
+    if (!swipeStart) return;
+    const dx = e.changedTouches[0].clientX - swipeStart.x;
+    const dy = e.changedTouches[0].clientY - swipeStart.y;
+    swipeStart = null;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) turnTo(book.index + (dx < 0 ? 1 : -1));
+}, { passive: true });
 
 // Step-by-step tutorial. Each step highlights `target` and waits for "İleri".
 // Resolves when finished or skipped.

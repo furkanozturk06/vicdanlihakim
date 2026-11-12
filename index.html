@@ -75,6 +75,16 @@
             <!-- Evidence Desk -->
             <section id="evidence-desk" class="hidden">
                 <!-- The door the defendants come through; the case file covers it once it opens -->
+                <div id="door-scene" aria-hidden="true">
+                    <div class="door-frame"><span class="door-sign">DURUŞMA SALONU</span></div>
+                    <span class="door-lamp door-lamp-left"></span>
+                    <span class="door-lamp door-lamp-right"></span>
+                    <div id="bailiff">
+                        <div id="bailiff-figure"></div>
+                        <div class="bailiff-desk"></div>
+                        <p id="bailiff-call" class="bailiff-call"></p>
+                    </div>
+                </div>
                 <div id="courtroom-door" class="closed"></div>
                 <div class="case-file">
                     <h3 class="file-header">DAVA DOSYASI</h3>
@@ -283,6 +293,11 @@
                 <p class="rulebook-scale">Hafiften ağıra: Beraat · Para (Hafif, Orta, Ağır) · Ev hapsi · Hapis (Kısa, Orta, Uzun) · İdam</p>
 
                 <div id="rulebook-body"></div>
+                <nav class="book-nav">
+                    <button id="book-prev" type="button" aria-label="Önceki sayfa">‹</button>
+                    <span id="book-page-number"></span>
+                    <button id="book-next" type="button" aria-label="Sonraki sayfa">›</button>
+                </nav>
             </div>
         </div>
 

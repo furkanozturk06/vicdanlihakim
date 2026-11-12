@@ -84,6 +84,19 @@ export const AMENDMENTS = [
     },
 ];
 
+// Chapters of the law book; every crime is in exactly one (checked by npm run check)
+export const LAW_CHAPTERS = [
+    { title: 'Hayata Karşı Suçlar', crimes: ['murder', 'bloodFeud', 'traffic', 'malpractice', 'workSafety'] },
+    { title: 'Şiddet ve Hürriyete Karşı Suçlar', crimes: ['assault', 'domesticViolence', 'kidnapping', 'stalking'] },
+    { title: 'Cinsel Suçlar ve İnsan Ticareti', crimes: ['childAbuse', 'humanTrafficking', 'organTrafficking'] },
+    { title: 'Mala Karşı Suçlar', crimes: ['pettyTheft', 'burglary', 'robbery', 'vandalism', 'arson', 'landDispute'] },
+    { title: 'Mali Suçlar', crimes: ['fraud', 'cyberFraud', 'forgery', 'loanShark', 'gambling'] },
+    { title: 'Devlete ve Kamu Düzenine Karşı Suçlar', crimes: ['treason', 'terrorism', 'corruption', 'bidRigging', 'election', 'perjury', 'examLeak', 'organizedCrime'] },
+    { title: 'Kaçakçılık ve Uyuşturucu', crimes: ['drugs', 'smuggling', 'armsTrafficking'] },
+    { title: 'Sağlık, Çevre ve Hayvanlar', crimes: ['fakeMedicine', 'foodFraud', 'environment', 'illegalBuilding', 'poaching', 'animalCruelty'] },
+    { title: 'Şeref, Basın ve Özel Hayat', crimes: ['defamation', 'pressCrime', 'blackmail'] },
+];
+
 export const CRIMES = {
     pettyTheft: {
         name: 'Hırsızlık',
@@ -1686,7 +1699,7 @@ export const CRIMES = {
                 question: 'Çocuğa ne kadar ödüyordun?', answer: 'Haftalık ₺500. Ailesi muhtaçtı, yardım ediyordum.',
             },
             {
-                text: 'Işçilere baret dağıttım, makbuzu bile var!', emotion: 'panicked', sympathy: false, law: 'injury',
+                text: 'İşçilere baret dağıttım, makbuzu bile var!', emotion: 'panicked', sympathy: false, law: 'injury',
                 detail: 'Düşen kalas',
                 summary: 'İnşaat taşeronu. Yukarıdan düşen bir kalas, baretsiz çalışan bir işçinin kafasını yaraladı.',
                 evidence: ['Baretlerin dağıtıldığı makbuz tarihi kazadan sonraki gün.', 'İşçi hastanede 10 gün yattı, kalıcı hasar yok.'],
@@ -2135,4 +2148,4 @@ export const CRIMES = {
     },
 };
 
-[VERDICT_LABELS, GENERAL_NOTES, AMENDMENTS, CRIMES].forEach(translateTree);
+[VERDICT_LABELS, GENERAL_NOTES, AMENDMENTS, LAW_CHAPTERS, CRIMES].forEach(translateTree);

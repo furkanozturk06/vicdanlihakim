@@ -6,7 +6,7 @@
 import { parseAst } from 'rollup/parseAst';
 import { readFileSync, readdirSync } from 'node:fs';
 import EN from '../scripts/i18n/en.js';
-import { CRIMES, AMENDMENTS, GENERAL_NOTES, VERDICT_LABELS } from '../scripts/cases.js';
+import { CRIMES, AMENDMENTS, GENERAL_NOTES, VERDICT_LABELS, LAW_CHAPTERS } from '../scripts/cases.js';
 
 const texts = new Set();
 
@@ -27,7 +27,7 @@ for (const file of readdirSync('scripts').filter(f => f.endsWith('.js'))) {
 }
 
 // 2. Case data (codes such as law keys, tags and emotions are not texts)
-const CODE_FIELDS = new Set(['law', 'emotion', 'verdict', 'tag', 'tags', 'crime', 'wants', 'gender']);
+const CODE_FIELDS = new Set(['law', 'emotion', 'verdict', 'tag', 'tags', 'crime', 'wants', 'gender', 'crimes']);
 const collect = (node) => {
     for (const [key, value] of Object.entries(node)) {
         if (CODE_FIELDS.has(key)) continue;
@@ -35,7 +35,7 @@ const collect = (node) => {
         else if (value && typeof value === 'object') collect(value);
     }
 };
-[VERDICT_LABELS, GENERAL_NOTES, AMENDMENTS].forEach(collect);
+[VERDICT_LABELS, GENERAL_NOTES, AMENDMENTS, LAW_CHAPTERS].forEach(collect);
 for (const crime of Object.values(CRIMES)) {
     texts.add(crime.name);
     for (const law of Object.values(crime.laws)) if (law.text) texts.add(law.text);

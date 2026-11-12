@@ -1,6 +1,6 @@
 // Validates scripts/cases.js: every statement must point at an existing law,
 // carry all fields, and only use known amendment tags. Run: npm run check
-import { CRIMES, AMENDMENTS, LADDER } from '../scripts/cases.js';
+import { CRIMES, AMENDMENTS, LADDER, LAW_CHAPTERS } from '../scripts/cases.js';
 
 const REQUIRED = ['text', 'emotion', 'law', 'detail', 'summary', 'evidence', 'question', 'answer'];
 const EMOTIONS = ['remorseful', 'panicked', 'defiant', 'proud'];
@@ -9,6 +9,17 @@ const TAGS = AMENDMENTS.map(a => a.tag);
 const errors = [];
 const warnings = [];
 let count = 0;
+
+// Every crime sits in exactly one chapter of the law book
+const chapterOf = {};
+for (const chapter of LAW_CHAPTERS) {
+    for (const key of chapter.crimes) {
+        if (!CRIMES[key]) errors.push(`law book chapter "${chapter.title}": unknown crime ${key}`);
+        if (chapterOf[key]) errors.push(`${key}: in two law book chapters`);
+        chapterOf[key] = chapter.title;
+    }
+}
+for (const key of Object.keys(CRIMES)) if (!chapterOf[key]) errors.push(`${key}: in no law book chapter`);
 
 for (const [crimeKey, crime] of Object.entries(CRIMES)) {
     if (!crime.laws.base) errors.push(`${crimeKey}: no base law`);
