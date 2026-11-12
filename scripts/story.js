@@ -90,12 +90,12 @@ export const TUTORIAL = [
     {
         target: '#sentencing-panel',
         title: L('Karar'),
-        text: L('Kanuna uygun karar hazineye ve itibarına yarar. Fazla sert kararlar vicdanını, fazla hafif kararlar itibarını yer.'),
+        text: L('Kanuna uygun karar bakiyene ve itibarına yarar. Fazla sert kararlar vicdanını, fazla hafif kararlar itibarını yer.'),
     },
     {
         target: '#stats-bar',
         title: L('Görevin'),
-        text: L('Hazine ya da itibar sıfırlanırsa görevden alınırsın. On beş gün dayan; ardından hikâyen başka bir yerde sürecek. Rüşvet ve tehditlere dikkat et.'),
+        text: L('Bakiyen ya da itibarın sıfırlanırsa görevden alınırsın. On beş gün dayan; ardından hikâyen başka bir yerde sürecek. Rüşvet ve tehditlere dikkat et.'),
     },
 ];
 
@@ -103,7 +103,7 @@ export const TUTORIAL = [
 export const HOW_TO_PLAY = {
     icon: '📖',
     title: L('Nasıl Oynanır'),
-    text: L('Her gün sanıklar karşına gelir. Dava dosyasını oku, gerekirse sanığı sorgula (günlük sorgu hakkın sınırlı) ve KANUN kitabındaki maddelere göre kararını ver.\n\nKanuna uygun karar hazineye ve itibarına yarar. Fazla sert kararlar vicdanını, fazla hafif kararlar itibarını yer. Hazine ya da itibar sıfırlanırsa görevden alınırsın.\n\nRüşvet ve tehditler gelecek; kabul etmek kolaydır ama bedeli vardır. Akşamları ailenle geçen anlar da hikâyeyi değiştirir.\n\nHikâye 30 gün sürer. Bitirince Sonsuz Mod açılır.'),
+    text: L('Her gün sanıklar karşına gelir. Dava dosyasını oku, gerekirse sanığı sorgula (günlük sorgu hakkın sınırlı) ve KANUN kitabındaki maddelere göre kararını ver.\n\nKanuna uygun karar bakiyene ve itibarına yarar. Fazla sert kararlar vicdanını, fazla hafif kararlar itibarını yer. Bakiyen ya da itibarın sıfırlanırsa görevden alınırsın.\n\nRüşvet ve tehditler gelecek; kabul etmek kolaydır ama bedeli vardır. Akşamları ailenle geçen anlar da hikâyeyi değiştirir.\n\nHikâye 30 gün sürer. Bitirince Sonsuz Mod açılır.'),
     choices: [
         { label: L('Anladım'), value: 'ok' },
         { label: L('Öğreticiyi sonraki oyunda göster'), value: 'replay' },
@@ -113,7 +113,7 @@ export const HOW_TO_PLAY = {
 // Endless mode, unlocked by finishing the 30-day story
 export const ENDLESS_INTRO = {
     title: L('Sonsuz Mod'),
-    text: L('Hikâye bitti, ama mahkemenin kapısı hiç kapanmıyor.\n\nBu modda her gün yeni sanıklar gelir. Kanun, sorgu, temyiz ve teklifler aynen sürer; ama her on günde bir sorgu hakkın azalır ve rüşvet teklifleri sıklaşır.\n\nHazinen ya da itibarın sıfırlanana kadar ne kadar dayanabilirsin?'),
+    text: L('Hikâye bitti, ama mahkemenin kapısı hiç kapanmıyor.\n\nBu modda her gün yeni sanıklar gelir. Kanun, sorgu, temyiz ve teklifler aynen sürer; ama her on günde bir sorgu hakkın azalır ve rüşvet teklifleri sıklaşır.\n\nBakiyen ya da itibarın sıfırlanana kadar ne kadar dayanabilirsin?'),
     button: L('Kürsüye Çık'),
 };
 

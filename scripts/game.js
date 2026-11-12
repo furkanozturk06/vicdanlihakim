@@ -129,7 +129,7 @@ const EARLY_ENDINGS = [
     },
     {
         condition: (s) => s.money <= 0,
-        title: L('Hazine Boşaldı'),
+        title: L('İflas'),
         description: L('Kasanız tamtakır. Bakanlık sizi görev süreniz dolmadan görevden aldı; masanızdaki kanun kitabını bile geri istediler.'),
     },
     {
@@ -1020,6 +1020,7 @@ async function runEvening(day) {
         family: familyStatus(state.family),
         harmony: state.family.harmony,
         bills,
+        balance: state.money,
         text: scene.text,
         choices: scene.choices.map(c => ({
             label: c.label,
@@ -1028,7 +1029,7 @@ async function runEvening(day) {
     });
     const result = scene.choices[pick].apply(state);
     ui.updateStats(state);
-    await ui.showEveningResult(result, state.family.harmony);
+    await ui.showEveningResult(result, state.family.harmony, state.money);
 }
 
 // At most one random event per day so they stay meaningful
@@ -1097,7 +1098,7 @@ function endGame() {
         L('Görev Süresi: {0} gün', daysServed),
         L('Görülen Davalar: {0}', state.totalCases),
         L('Kanuna Uygun Kararlar: {0} (%{1})', state.correctTotal, Math.round(accuracy(state) * 100)),
-        L('Son Hazine: ₺{0}', formatMoney(state.money)),
+        L('Son Bakiye: ₺{0}', formatMoney(state.money)),
         L('Son İtibar: %{0}', state.reputation),
         L('Son Vicdan: %{0}', state.conscience),
     ].map(line => `<p>${line}</p>`).join('');

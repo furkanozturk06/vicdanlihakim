@@ -3494,3 +3494,19 @@ html.text-xlarge #directive-text { font-size: 0.92rem; }
     margin: 0;
     text-align: center;
 }
+
+/* Money left after the bills, on the evening screen */
+.evening-balance {
+    margin: calc(-1 * var(--spacing-sm)) 0 var(--spacing-md);
+    font-family: var(--font-typewriter);
+    font-size: 0.85rem;
+    color: var(--paper-dark);
+}
+
+#evening-balance {
+    color: var(--gold-accent);
+}
+
+#evening-balance.low {
+    color: #c0503a;
+}

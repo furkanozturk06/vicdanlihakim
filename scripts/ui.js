@@ -650,7 +650,7 @@ export function showStory({ icon, title, text, choices }) {
 }
 
 // Evening at home: family status, bills and a scene. Resolves to the chosen index.
-export function showEvening({ day, family, harmony, bills, text, choices }) {
+export function showEvening({ day, family, harmony, bills, balance, text, choices }) {
     const modal = document.getElementById('evening-modal');
     document.getElementById('evening-day').textContent = L('{0}. Gün · Akşam', day);
     document.getElementById('evening-family').replaceChildren(...family.map(m => {
@@ -662,6 +662,7 @@ export function showEvening({ day, family, harmony, bills, text, choices }) {
     }));
     setHarmony(harmony);
     document.getElementById('evening-bills').textContent = bills;
+    setBalance(balance);
     document.getElementById('evening-text').textContent = text;
     const box = document.getElementById('evening-choices');
 
@@ -677,6 +678,12 @@ export function showEvening({ day, family, harmony, bills, text, choices }) {
     });
 }
 
+function setBalance(money) {
+    const el = document.getElementById('evening-balance');
+    el.textContent = `₺${formatMoney(money)}`;
+    el.classList.toggle('low', money < 10000);
+}
+
 function setHarmony(value) {
     const bar = document.getElementById('evening-harmony-bar');
     bar.style.width = `${value}%`;
@@ -684,8 +691,9 @@ function setHarmony(value) {
 }
 
 // After the evening choice: show what happened, then wait for the next morning
-export function showEveningResult(text, harmony) {
+export function showEveningResult(text, harmony, balance) {
     setHarmony(harmony);
+    if (balance !== undefined) setBalance(balance);
     document.getElementById('evening-text').textContent = text;
     const box = document.getElementById('evening-choices');
     return new Promise(resolve => {
