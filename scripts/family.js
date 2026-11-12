@@ -8,7 +8,17 @@
 
 import { L } from './i18n.js';
 
-export const HOUSEHOLD_COST = 60;
+// The household bills of one evening. Living costs go up every five days (capped
+// after day 30 for endless mode); every fifth evening the rent is due as well, and
+// every seventh evening the mother's medicine.
+export const RENT = 250;
+export const MEDICINE = 100;
+export const DAILY_COOLING = 4; // family harmony lost each evening without attention
+
+export function householdBills(day) {
+    const living = 60 + 10 * Math.floor((Math.min(day, 30) - 1) / 5);
+    return { living, rent: day % 5 === 0 ? RENT : 0, medicine: day % 7 === 0 ? MEDICINE : 0 };
+}
 
 export function createFamily() {
     return { harmony: 70, motherHealth: 2, spouseLeft: false };

@@ -9,7 +9,7 @@ import {
     OFFERS, buildNewspaper, FINALE, FINAL_DIRECTIVE, INTRO, TUTORIAL, ENDLESS_INTRO, HOW_TO_PLAY, inspectorReport,
     SELIN_NOTE, SELIN_DIRECTIVE, SELIN_CASE, selinAftermath, kayaVisit, finaleRumor, appealText,
 } from './story.js';
-import { createFamily, familyStatus, eveningScene, familyEpilogue, HOUSEHOLD_COST } from './family.js';
+import { createFamily, familyStatus, eveningScene, familyEpilogue, householdBills, DAILY_COOLING } from './family.js';
 import { ACT_LENGTH, TOTAL_DAYS, ACT2_CASES_PER_DAY, BRANCHES, branchFor } from './acts.js';
 import { saveGame, loadGame, savedDay, savedMode, clearSave, loadSettings, saveSettings } from './save.js';
 import * as ui from './ui.js';
@@ -21,8 +21,8 @@ import { L, LANG, translatePage } from './i18n.js';
 const CONFIG = {
     casesPerDay: 5,
     questionsPerDay: 3,
-    baseReward: 50,
-    basePenalty: 30,
+    baseReward: 30,
+    basePenalty: 15,
     startingMoney: 500,
     startingReputation: 75,
     startingConscience: 100,
@@ -962,14 +962,28 @@ async function deliverAppeals() {
 
 // Evening at home after `day`: pay the bills, then one family scene
 async function runEvening(day) {
-    let bills;
-    if (state.money >= HOUSEHOLD_COST) {
-        state.money -= HOUSEHOLD_COST;
-        bills = L('Kira, faturalar ve mutfak: -₺{0}', HOUSEHOLD_COST);
-    } else {
-        state.family.harmony = Math.max(0, state.family.harmony - 10);
-        bills = L('Bu akşam kira ve faturalar ödenemedi. Aile huzuru -10.');
-    }
+    // Bills first: living costs, rent every fifth evening, medicine every seventh
+    const due = householdBills(day);
+    const lines = [];
+    const pay = (amount, paidText, unpaidText, unpaid) => {
+        if (!amount) return;
+        if (state.money >= amount) {
+            state.money -= amount;
+            lines.push(paidText);
+        } else {
+            unpaid();
+            lines.push(unpaidText);
+        }
+    };
+    pay(due.living, L('Faturalar ve mutfak: -₺{0}', due.living), L('Faturalar ödenemedi. Aile huzuru -10.'),
+        () => { state.family.harmony = Math.max(0, state.family.harmony - 10); });
+    pay(due.rent, L('Kira günü: -₺{0}', due.rent), L('Kira ödenemedi! Ev sahibi kapıya dayandı. Aile huzuru -15.'),
+        () => { state.family.harmony = Math.max(0, state.family.harmony - 15); });
+    pay(due.medicine, L('Annenin ilaçları: -₺{0}', due.medicine), L('Annenin ilaçları alınamadı; sağlığı kötüleşti.'),
+        () => { state.family.motherHealth = Math.max(0, state.family.motherHealth - 1); });
+    // Without attention the family drifts apart a little every evening
+    if (!state.family.spouseLeft) state.family.harmony = Math.max(0, state.family.harmony - DAILY_COOLING);
+    const bills = lines.join(' · ');
     ui.updateStats(state);
 
     let scene;
