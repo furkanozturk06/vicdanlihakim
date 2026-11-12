@@ -3,6 +3,7 @@
 // from the data in scripts/cases.js and from index.html.
 //   node tools/check-i18n.mjs            report missing and unused translations
 //   node tools/check-i18n.mjs --missing  print the missing texts as JSON
+//   node tools/check-i18n.mjs --unused   print translations no text uses any more
 import { parseAst } from 'rollup/parseAst';
 import { readFileSync, readdirSync } from 'node:fs';
 import EN from '../scripts/i18n/en.js';
@@ -56,6 +57,10 @@ if (process.argv.includes('--missing')) {
     process.exit(0);
 }
 const unused = Object.keys(EN).filter(k => !texts.has(k));
+if (process.argv.includes('--unused')) {
+    console.log(JSON.stringify(unused, null, 1));
+    process.exit(0);
+}
 const badSlots = Object.entries(EN).filter(([tr, en]) => {
     const slots = (s) => (s.match(/\{\d+\}/g) || []).sort().join();
     return slots(tr) !== slots(en);

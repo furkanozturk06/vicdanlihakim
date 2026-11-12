@@ -11,12 +11,12 @@ import { L } from './i18n.js';
 // The household bills of one evening. Living costs go up every five days (capped
 // after day 30 for endless mode); every fifth evening the rent is due as well, and
 // every seventh evening the mother's medicine.
-export const RENT = 250;
-export const MEDICINE = 100;
+export const RENT = 25000;
+export const MEDICINE = 10000;
 export const DAILY_COOLING = 4; // family harmony lost each evening without attention
 
 export function householdBills(day) {
-    const living = 60 + 10 * Math.floor((Math.min(day, 30) - 1) / 5);
+    const living = 6000 + 1000 * Math.floor((Math.min(day, 30) - 1) / 5);
     return { living, rent: day % 5 === 0 ? RENT : 0, medicine: day % 7 === 0 ? MEDICINE : 0 };
 }
 
@@ -67,18 +67,18 @@ export function eveningScene(state, day) {
 
         case 2:
             return {
-                text: L('Annenin kalp ilacı bitmiş. Eczane yeni kutuyu ₺120\'ye veriyor.'),
+                text: L('Annenin kalp ilacı bitmiş. Eczane yeni kutuyu ₺12.000\'e veriyor.'),
                 choices: [
-                    choice(L('İlacı al (₺120)'), s => { adjust(s, { money: -120, health: 1 }); return L('Annen ilacını aldı. Akşam yüzüne renk geldi.'); }, 120),
+                    choice(L('İlacı al (₺12.000)'), s => { adjust(s, { money: -12000, health: 1 }); return L('Annen ilacını aldı. Akşam yüzüne renk geldi.'); }, 12000),
                     choice(L('Bu hafta idare etsin'), s => { adjust(s, { health: -1, harmony: -5 }); return L('Annen "Önemli değil" dedi ama gece öksürüğünden kimse uyuyamadı.'); }),
                 ],
             };
 
         case 3:
             return {
-                text: L('Ece heyecanla koştu: "Sınıfça müzeye gidiyoruz! Gezi ücreti ₺60, yarına kadar vermem lazım."'),
+                text: L('Ece heyecanla koştu: "Sınıfça müzeye gidiyoruz! Gezi ücreti ₺6.000, yarına kadar vermem lazım."'),
                 choices: [
-                    choice(L('Parayı ver (₺60)'), s => { adjust(s, { money: -60, harmony: 5 }); return L('Ece boynuna sarıldı. Gece rüyasında müzeyi gördüğünü anlattı.'); }, 60),
+                    choice(L('Parayı ver (₺6.000)'), s => { adjust(s, { money: -6000, harmony: 5 }); return L('Ece boynuna sarıldı. Gece rüyasında müzeyi gördüğünü anlattı.'); }, 6000),
                     choice(L('"Bu sefer olmaz kızım."'), s => { adjust(s, { harmony: -10 }); return L('Ece bir şey demedi. Odasına kapandı ve kapıyı yavaşça kapattı.'); }),
                 ],
             };
@@ -130,9 +130,9 @@ export function eveningScene(state, day) {
         case 9:
             if (f.motherHealth <= 1) {
                 return {
-                    text: L('Annen gece fenalaştı, ambulansla hastaneye kaldırıldı. Özel hastane hemen müdahale için ₺250 istiyor.'),
+                    text: L('Annen gece fenalaştı, ambulansla hastaneye kaldırıldı. Özel hastane hemen müdahale için ₺25.000 istiyor.'),
                     choices: [
-                        choice(L('Öde (₺250)'), s => { adjust(s, { money: -250, health: 2 }); return L('Annen kurtuldu. Doktor ilaçlarını bir daha aksatmamanızı söyledi.'); }, 250),
+                        choice(L('Öde (₺25.000)'), s => { adjust(s, { money: -25000, health: 2 }); return L('Annen kurtuldu. Doktor ilaçlarını bir daha aksatmamanızı söyledi.'); }, 25000),
                         choice(L('Devlet hastanesinde sıra bekle'), s => { adjust(s, { health: -1, harmony: -15 }); return L('Annen koridorda sabahladı. Durumu ağır.'); }),
                     ],
                 };
@@ -146,9 +146,9 @@ export function eveningScene(state, day) {
 
         case 10:
             return {
-                text: L('Ev sahibi kapıya geldi: "Kirayı artırıyorum. Bu ay fazladan ₺100 istiyorum, yoksa evi boşaltın."'),
+                text: L('Ev sahibi kapıya geldi: "Kirayı artırıyorum. Bu ay fazladan ₺10.000 istiyorum, yoksa evi boşaltın."'),
                 choices: [
-                    choice(L('Farkı öde (₺100)'), s => { adjust(s, { money: -100 }); return L('Ev sahibi parayı sayıp gitti. Deniz derin bir nefes aldı.'); }, 100),
+                    choice(L('Farkı öde (₺10.000)'), s => { adjust(s, { money: -10000 }); return L('Ev sahibi parayı sayıp gitti. Deniz derin bir nefes aldı.'); }, 10000),
                     choice(L('Daha küçük bir eve taşınmayı konuş'), s => { adjust(s, { harmony: -10 }); return L('Ece arkadaşlarından ayrılmak istemiyor. Ev bir süre sessizliğe gömüldü.'); }),
                 ],
             };
@@ -181,9 +181,9 @@ export function eveningScene(state, day) {
 
         case 6:
             return {
-                text: L('Bugün Deniz\'in doğum günüymüş. Mahkemenin telaşında aklından çıkmış. Ece fısıldıyor: "Pastacı hâlâ açık, ₺80."'),
+                text: L('Bugün Deniz\'in doğum günüymüş. Mahkemenin telaşında aklından çıkmış. Ece fısıldıyor: "Pastacı hâlâ açık, ₺8.000."'),
                 choices: [
-                    choice(L('Pasta ve çiçek al (₺80)'), s => { adjust(s, { money: -80, harmony: 10 }); return L('Deniz mumu üflerken gözleri doldu: "Unuttuğunu sanmıştım."'); }, 80),
+                    choice(L('Pasta ve çiçek al (₺8.000)'), s => { adjust(s, { money: -8000, harmony: 10 }); return L('Deniz mumu üflerken gözleri doldu: "Unuttuğunu sanmıştım."'); }, 8000),
                     choice(L('Özür dile, yarın kutlarız de'), s => { adjust(s, { harmony: -10 }); return L('Deniz "Önemli değil" dedi. Önemliydi.'); }),
                 ],
             };

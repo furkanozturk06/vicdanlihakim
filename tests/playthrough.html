@@ -80,7 +80,8 @@ for (let step = 0; step < 90000; step++) {
         const btns = [...document.querySelectorAll('#story-choices button')].filter(b => !b.disabled);
         out.stories.push(`g${g.getState().day}: ${document.getElementById('story-title').textContent}`);
         // 'trialLost' gives way at every turn of the act-1 trial
-        const giveWay = policy === 'trialLost' && g.getState().day <= 15;
+        const giveWay = (policy === 'trialLost' && g.getState().day <= 15)
+            || (['surgunHearings', 'borcHearings'].includes(policy) && g.getState().day > 15);
         btns[giveWay ? btns.length - 1 : 0].click(); continue;
     }
     if (vis('evening-modal')) {
@@ -100,7 +101,7 @@ for (let step = 0; step < 90000; step++) {
         const title = document.getElementById('offer-title').textContent;
         const day = g.getState().day;
         const special = !ORDINARY_OFFERS.includes(title);
-        const accept = (policy === 'borcHonest' && day === 15)
+        const accept = (['borcHonest', 'borcHearings'].includes(policy) && day === 15)
             || (policy === 'borcCorrupt' && day >= 15 && special)
             || (policy === 'surgunFavored' && day > 15 && special);
         document.getElementById(accept ? 'offer-accept' : 'offer-decline').click(); continue;

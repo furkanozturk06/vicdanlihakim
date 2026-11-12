@@ -3,7 +3,7 @@
  * Handles animations, transitions, and visual feedback
  */
 
-import { L } from './i18n.js';
+import { L, formatMoney } from './i18n.js';
 
 
 // DOM Elements cache
@@ -111,7 +111,7 @@ export function hideStartScreen() {
 // Update stats display
 export function updateStats(gameState) {
     elements.dayValue.textContent = gameState.day;
-    elements.moneyValue.textContent = `₺${gameState.money}`;
+    elements.moneyValue.textContent = `₺${formatMoney(gameState.money)}`;
     elements.reputationBar.style.width = `${gameState.reputation}%`;
     elements.conscienceBar.style.width = `${gameState.conscience}%`;
 
@@ -806,7 +806,7 @@ export function showDailySummary(dayStats, paper) {
 
     elements.casesJudged.textContent = dayStats.casesJudged;
     elements.correctVerdicts.textContent = dayStats.correctVerdicts;
-    elements.dayEarnings.textContent = `₺${dayStats.earnings >= 0 ? '+' : ''}${dayStats.earnings}`;
+    elements.dayEarnings.textContent = `₺${dayStats.earnings >= 0 ? '+' : ''}${formatMoney(dayStats.earnings)}`;
     elements.dayEarnings.style.color = dayStats.earnings >= 0 ? '#4a9c6d' : '#8b2020';
 
     elements.summaryModal.classList.remove('hidden');

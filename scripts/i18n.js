@@ -58,6 +58,11 @@ export function withPronouns(text, gender) {
     return text.replace(/\{(he|He|him|his|His|himself)\}/g, (m, word) => set[word]);
 }
 
+// Money with thousands separators: ₺50.000 in Turkish, ₺50,000 in English
+export function formatMoney(n) {
+    return Number(n).toLocaleString(LANG === 'en' ? 'en-US' : 'tr-TR');
+}
+
 // Translates every text inside a data object (objects and arrays, in place)
 export function translateTree(node) {
     if (LANG === 'tr' || !node || typeof node !== 'object') return node;

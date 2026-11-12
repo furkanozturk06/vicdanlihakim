@@ -15,16 +15,16 @@ import { saveGame, loadGame, savedDay, savedMode, clearSave, loadSettings, saveS
 import * as ui from './ui.js';
 import { audio } from './audio.js';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
-import { L, LANG, translatePage } from './i18n.js';
+import { L, LANG, translatePage, formatMoney } from './i18n.js';
 import { ACT1, finaleStatement } from './trial.js';
 
 // Game configuration
 const CONFIG = {
     casesPerDay: 5,
     questionsPerDay: 3,
-    baseReward: 30,
-    basePenalty: 15,
-    startingMoney: 500,
+    baseReward: 3000,
+    basePenalty: 1500,
+    startingMoney: 50000,
     startingReputation: 75,
     startingConscience: 100,
     offerChance: 0.3,
@@ -105,8 +105,8 @@ const EVENTS = {
         check: (s) => s.reputation >= 95 && s.conscience >= 80,
         chance: 0.15,
         title: L('Resmi Takdir'),
-        description: L('Adalet Bakanı dengeli yaklaşımınızı övdü. ₺100 prim kazandınız.'),
-        apply: (s) => { s.money += 100; },
+        description: L('Adalet Bakanı dengeli yaklaşımınızı övdü. ₺10.000 prim kazandınız.'),
+        apply: (s) => { s.money += 10000; },
     },
     warning: {
         check: (s) => s.reputation <= 25,
@@ -457,8 +457,8 @@ async function startNewDay() {
     if (state.pendingRevenge) {
         state.pendingRevenge = false;
         if (Math.random() < CONFIG.threatRevengeChance) {
-            state.money = Math.max(0, state.money - 150);
-            await ui.showEvent('warning', L('Gece Yarısı Saldırı'), L('Tehdidi ciddiye almadınız. Arabanız kundaklandı: ₺150 zarar.'));
+            state.money = Math.max(0, state.money - 15000);
+            await ui.showEvent('warning', L('Gece Yarısı Saldırı'), L('Tehdidi ciddiye almadınız. Arabanız kundaklandı: ₺15.000 zarar.'));
             ui.updateStats(state);
         }
     }
@@ -558,7 +558,8 @@ function nextCase() {
     }
     const special = specialCaseNow();
     if (special) {
-        return buildCase(special.crimeType, special.statement, state.day, {
+        const statement = typeof special.statement === 'function' ? special.statement(state) : special.statement;
+        return buildCase(special.crimeType, statement, state.day, {
             name: special.name, age: special.age, gender: special.gender, specialKey: special.key,
         });
     }
@@ -699,11 +700,11 @@ function pickOffer(c) {
     const def = OFFERS[type];
 
     if (type === 'bribe') {
-        const amount = 300 + c.severity * 100;
+        const amount = 30000 + c.severity * 10000;
         return {
             type,
             forcedVerdict: def.forcedVerdict,
-            view: { ...def, text: def.text(amount) },
+            view: { ...def, text: def.text(formatMoney(amount)) },
             onAccept: () => {
                 state.money += amount;
                 state.conscience = Math.max(0, state.conscience - 15);
@@ -886,7 +887,7 @@ async function processVerdict(sentenceKey, viaOffer = null) {
     const statsHtml = `
         <div style="margin-top: 1rem;">
             <span style="color: ${moneyChange > 0 ? '#4a9c6d' : moneyChange === 0 ? '#d4a72c' : '#8b2020'}">
-                ${moneyChange >= 0 ? '+' : ''}₺${moneyChange}
+                ${moneyChange >= 0 ? '+' : ''}₺${formatMoney(moneyChange)}
             </span>
         </div>
     `;
@@ -992,11 +993,11 @@ async function runEvening(day) {
             lines.push(unpaidText);
         }
     };
-    pay(due.living, L('Faturalar ve mutfak: -₺{0}', due.living), L('Faturalar ödenemedi. Aile huzuru -10.'),
+    pay(due.living, L('Faturalar ve mutfak: -₺{0}', formatMoney(due.living)), L('Faturalar ödenemedi. Aile huzuru -10.'),
         () => { state.family.harmony = Math.max(0, state.family.harmony - 10); });
-    pay(due.rent, L('Kira günü: -₺{0}', due.rent), L('Kira ödenemedi! Ev sahibi kapıya dayandı. Aile huzuru -15.'),
+    pay(due.rent, L('Kira günü: -₺{0}', formatMoney(due.rent)), L('Kira ödenemedi! Ev sahibi kapıya dayandı. Aile huzuru -15.'),
         () => { state.family.harmony = Math.max(0, state.family.harmony - 15); });
-    pay(due.medicine, L('Annenin ilaçları: -₺{0}', due.medicine), L('Annenin ilaçları alınamadı; sağlığı kötüleşti.'),
+    pay(due.medicine, L('Annenin ilaçları: -₺{0}', formatMoney(due.medicine)), L('Annenin ilaçları alınamadı; sağlığı kötüleşti.'),
         () => { state.family.motherHealth = Math.max(0, state.family.motherHealth - 1); });
     // Without attention the family drifts apart a little every evening
     if (!state.family.spouseLeft) state.family.harmony = Math.max(0, state.family.harmony - DAILY_COOLING);
@@ -1095,7 +1096,7 @@ function endGame() {
         L('Görev Süresi: {0} gün', daysServed),
         L('Görülen Davalar: {0}', state.totalCases),
         L('Kanuna Uygun Kararlar: {0} (%{1})', state.correctTotal, Math.round(accuracy(state) * 100)),
-        L('Son Hazine: ₺{0}', state.money),
+        L('Son Hazine: ₺{0}', formatMoney(state.money)),
         L('Son İtibar: %{0}', state.reputation),
         L('Son Vicdan: %{0}', state.conscience),
     ].map(line => `<p>${line}</p>`).join('');

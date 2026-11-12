@@ -126,10 +126,10 @@ export const FINALE = {
     offer: {
         icon: '📞',
         title: L('Bakanlıktan bir telefon'),
-        text: L('Müsteşar arıyor: "Hakim Bey, bakanımızın oğlunun geleceği bir kaza yüzünden kararmamalı. Beraat verirseniz terfiniz ve ₺2000 ikramiye hazır."'),
+        text: L('Müsteşar arıyor: "Hakim Bey, bakanımızın oğlunun geleceği bir kaza yüzünden kararmamalı. Beraat verirseniz terfiniz ve ₺200.000 ikramiye hazır."'),
         accept: L('Beraat ver'),
         decline: L('Kanunu uygula'),
-        amount: 2000,
+        amount: 200000,
     },
 };
 
@@ -137,7 +137,7 @@ export const FINALE = {
 export function inspectorReport(accuracy) {
     const pct = Math.round(accuracy * 100);
     if (accuracy >= 0.75) {
-        return { title: L('Müfettiş Kaya\'nın Raporu'), text: L('Kararlarınızın %{0}\'i kanuna uygun. Bakanlık memnun: ₺150 ikramiye.', pct), money: 150, reputation: 5 };
+        return { title: L('Müfettiş Kaya\'nın Raporu'), text: L('Kararlarınızın %{0}\'i kanuna uygun. Bakanlık memnun: ₺15.000 ikramiye.', pct), money: 15000, reputation: 5 };
     }
     if (accuracy >= 0.5) {
         return { title: L('Müfettiş Kaya\'nın Raporu'), text: L('Kararlarınızın %{0}\'i kanuna uygun. "Fena değil, ama kanun kitabını daha sık açın."', pct), money: 0, reputation: 0 };
@@ -184,10 +184,10 @@ export const SELIN_CASE = {
     offer: {
         icon: '📞',
         title: L('Bakanlıktan bir telefon'),
-        text: L('Müsteşar arıyor: "Bu kadın devletin sırlarını sattı. İdam kararı verin. ₺1500 ikramiye ve terfi sizi bekliyor."'),
+        text: L('Müsteşar arıyor: "Bu kadın devletin sırlarını sattı. İdam kararı verin. ₺150.000 ikramiye ve terfi sizi bekliyor."'),
         accept: L('İdam ver'),
         decline: L('Kanunu uygula'),
-        amount: 1500,
+        amount: 150000,
     },
 };
 

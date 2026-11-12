@@ -30,6 +30,67 @@ const quiet = (state, options) => {
     return one(text, L('Dinlen'), s => { adjust(s, { harmony: 2 }); return result; });
 };
 
+// ---------- Act 2 hearings ----------
+// Each branch's last defendant is tried over three hearings before the verdict on
+// day 30. Giving way at a hearing counts as a favour (state.trial.gaveWay) just like
+// a favourable verdict in the branch's story cases.
+const gaveWay = (s) => { s.trial.gaveWay = (s.trial.gaveWay || 0) + 1; };
+
+function hearing(title, text, keepLabel, dropLabel, key, onKeep = {}, onDrop = {}) {
+    return {
+        icon: '⚖️', title, text,
+        choices: [{ label: keepLabel, value: 'keep' }, { label: dropLabel, value: 'drop' }],
+        onChoice: (s, v) => {
+            s.trial[key] = v === 'keep';
+            if (v === 'keep') adjust(s, { conscience: 3, ...onKeep });
+            else { gaveWay(s); adjust(s, { conscience: -5, ...onDrop }); }
+        },
+    };
+}
+
+// Branch favours: story cases that went the powerful man's way plus hearings given up
+const favours = (s, keys) => keys.filter(k => s.specials[k] && s.specials[k].favored).length + ((s.trial && s.trial.gaveWay) || 0);
+
+// Day 30, Karaçam: Hacı Rıza's file holds what the hearings kept
+function agaStatement(s) {
+    const t = s.trial || {};
+    const lines = [
+        t.books ? L('Vakfın gizli defterlerine el konuldu: haraç ve ihale payları Hacı Rıza\'nın imzasıyla onaylanmış.') : L('Arama izni verilmediği için vakfın defterleri dosyada yok.'),
+        t.insider ? L('Koruması Ali Demir itirafçı oldu: talimatların doğrudan Hacı Rıza\'dan geldiğini anlattı.') : L('İtirafçı olmak isteyen koruma ifadesini geri çekti.'),
+        t.doctor ? L('Doktor Leyla Tan\'ın raporu: yurtta ölen öğrenci aylarca ağır işte çalıştırılmış.') : L('Yurtta ölen öğrencinin raporu dosyaya alınmadı.'),
+    ];
+    const leader = t.books || t.insider;
+    return {
+        text: L('Bu kasabaya okul, cami, yol yaptım. Beni sen mi yargılayacaksın?'), emotion: 'proud', sympathy: false, law: leader ? 'leader' : 'base',
+        detail: L('Hacı Rıza Karaca'),
+        summary: L('Hikmet Vakfı\'nın lideri. Haraç, kayıt dışı çocuk işçiliği, ihale rüşveti ve tehdit çarkını yönettiği iddiasıyla yargılanıyor. Duruşmalarda: {0}', lines.join(' ')),
+        evidence: leader
+            ? [L('Delillere göre örgütü kuran ve yöneten kişi Hacı Rıza Karaca.'), L('Korumaların ve yurt müdürünün ifadeleri de aynı yönde.')]
+            : [L('Vakfın işlerine karıştığı belli, ama örgütü yönettiğini gösteren delil kalmadı.'), L('Kanuna göre liderlik kanıtlanamazsa yalnızca örgüt üyeliğinden ceza verilir.')],
+        question: L('Defterlerdeki imza kimin?'), answer: L('Benim. Ama o defterleri okuyacak cesaret kimde var, hakim bey?'),
+    };
+}
+
+// Day 30, high court: Selami Kuru's file holds what the hearings kept
+function selamiStatement(s) {
+    const t = s.trial || {};
+    const lines = [
+        t.elifFile ? L('Savcı Elif Demir\'in delil dosyası kabul edildi.') : L('Savcı Elif Demir\'in delil dosyası dosyada yok.'),
+        t.wiretap ? L('Selami Kuru\'nun telefon kayıtları delil sayıldı: şantaj talimatı onun telefonundan verilmiş.') : L('Telefon kayıtları hukuka aykırı bulunarak dosyadan çıkarıldı.'),
+        t.insider ? L('Yabancı şirketin eski çalışanı, gizli bilgilerin Selami Kuru üzerinden satıldığını anlattı.') : L('Yabancı şirketin eski çalışanı dinlenmedi.'),
+    ];
+    const proven = t.elifFile || t.wiretap || t.insider;
+    return {
+        text: L('Bu ülkeyi ben yönetiyorum hakim bey. Siz de bizim sayemizde o koltuktasınız.'), emotion: 'proud', sympathy: false, law: proven ? 'base' : 'innocent',
+        detail: L('Genel Sekreter Selami Kuru'),
+        summary: L('İktidar partisinin genel sekreteri. Savunma ihalesinin gizli bilgilerini yabancı silah şirketine satan çarkı yönettiği iddiasıyla yargılanıyor. Duruşmalarda: {0}', lines.join(' ')),
+        evidence: proven
+            ? [L('Yabancı şirketle imzalanmış gizli "danışmanlık" sözleşmesi: ₺200.000.000.'), L('Dosyadaki deliller, devlet sırlarının satışını Selami Kuru\'nun yönettiğini gösteriyor.')]
+            : [L('Sözleşmenin Selami Kuru\'ya ait olduğunu gösteren delil kalmadı.'), L('Kanuna göre suçu kanıtlanamayan sanık beraat eder.')],
+        question: L('Sözleşmedeki imza sizin mi?'), answer: L('İmza benim. Ama o sözleşmeyi bu salonda kimse yüksek sesle okuyamaz.'),
+    };
+}
+
 // Branch from the day-15 verdict on the minister\'s son
 export function branchFor(finale) {
     return finale === 'correct' || finale === 'harsh' ? 'surgun' : 'borc';
@@ -72,14 +133,23 @@ export const BRANCHES = {
                 text: L('Yerel gazetenin sahibi ve tek muhabiri Hasan Ulu adliye çıkışında yanına yaklaştı: "Vakfın yurtlarında çocuklar çalıştırılıyor, belediyenin ihaleleri vakfa gidiyor. Hepsini yazıyorum. Bir gün beni de önünüze getirecekler."'),
                 choices: [{ label: L('Devam'), value: true }],
             }),
+            20: () => hearing(L('Birinci Duruşma: Vakfın Defterleri'),
+                L('Hacı Rıza Karaca hakkındaki iddianame kabul edildi. Savcı, Hikmet Vakfı binasında arama yapılmasını ve gizli defterlere el konulmasını istiyor.\n\nVakfın avukatı ayağa kalktı: "Burası hayır kurumu, hakim bey. Bir ibadet yerinin kapısını polise mi açacaksınız? Kasaba bunu affetmez."'),
+                L('Arama kararı ver'), L('Talebi reddet'), 'books'),
             21: (s) => (s.specials.imar && s.specials.imar.favored
                 ? { icon: '🧺', title: L('Vakıftan Bir Sepet'), text: L('Kapına vakıftan bir erzak sepeti bırakılmış: yağ, şeker, bir de Ece için oyuncak. Kartta "Hacı Rıza Bey\'in selamıyla" yazıyor.'), choices: [{ label: L('Devam'), value: true }], apply: { conscience: -4 } }
                 : { icon: '🚰', title: L('Suyunuz Kesildi'), text: L('Sabah musluklardan su akmadı. Belediyeden gelen görevli omuz silkti: "Arıza var, hakim bey. Ne zaman düzelir, Hacı Rıza Bey bilir."'), choices: [{ label: L('Devam'), value: true }], apply: { harmony: -8 } }),
+            24: () => hearing(L('İkinci Duruşma: İtirafçı'),
+                L('Hacı Rıza\'nın on yıllık koruması Ali Demir, avukatı aracılığıyla itirafçı olmak istediğini bildirdi. Karşılığında kendisi ve ailesi için koruma istiyor.\n\nO gece senin evinin önünden de vakfın arabası yavaşça geçti.'),
+                L('Tanık koruma kararı ver'), L('Talebi reddet'), 'insider', { harmony: -5 }),
             23: () => ({
                 icon: '🩺', title: L('Doktor Leyla Tan'),
                 text: L('Sağlık ocağının genç doktoru Leyla Tan annenin kontrolünden sonra seni kenara çekti: "Vakfın yurdunda geçen ay bir öğrenci öldü. Rapora \'kaza\' yazmamı istediler, yazmadım. Dosya size gelecek. Ben gerçeği söyleyeceğim."'),
                 choices: [{ label: L('Devam'), value: true }],
             }),
+            26: () => hearing(L('Üçüncü Duruşma: Yurttaki Ölüm'),
+                L('Doktor Leyla Tan kürsüde: "Yurtta ölen on dört yaşındaki çocuğun ellerinde nasır, sırtında taşıma izleri vardı. Aylarca inşaatta çalıştırılmış."\n\nVakfın avukatı: "Doktor hanım kasabaya geldiği günden beri vakfa düşman. Raporunun dosyadan çıkarılmasını talep ediyoruz."'),
+                L('Raporu dosyaya al'), L('Raporu dışarıda bırak'), 'doctor'),
             27: (s) => {
                 const h = s.specials.hasan;
                 if (h && h.verdict === 'release') return { icon: '📰', title: L('Karaçam Postası Yeniden Çıktı'), text: L('Hasan\'ın gazetesinin manşeti: "Vakfın yurtlarında neler oluyor?" Kasaba gazeteyi elden ele dolaştırıyor. Hasan sana bir not bırakmış: "Teşekkürler. Korkmadığınız için."'), choices: [{ label: L('Devam'), value: true }], apply: { reputation: 6 } };
@@ -105,7 +175,7 @@ export const BRANCHES = {
                     evidence: [L('Hesabına vakıftan "danışmanlık ücreti" adıyla ₺1.800.000 yatırılmış.'), L('Binaların hiçbirinin deprem raporu yok.')],
                     question: L('Vakıftan para aldın mı?'), answer: L('Danışmanlık yaptım. Hacı Rıza Bey cömert biridir.'),
                 },
-                offer: { icon: '🧔', title: L('Hacı Rıza\'dan Haber'), text: L('Kâtip kapıyı kapatıp fısıldadı: "Hacı Rıza Bey selam söyledi. Kenan Bey\'e beraat verirseniz kasabada her kapı size açılır. Bir de şu zarf..."'), accept: L('Beraat ver'), decline: L('Kanunu uygula'), amount: 1500, forcedVerdict: 'release' },
+                offer: { icon: '🧔', title: L('Hacı Rıza\'dan Haber'), text: L('Kâtip kapıyı kapatıp fısıldadı: "Hacı Rıza Bey selam söyledi. Kenan Bey\'e beraat verirseniz kasabada her kapı size açılır. Bir de şu zarf..."'), accept: L('Beraat ver'), decline: L('Kanunu uygula'), amount: 150000, forcedVerdict: 'release' },
             },
             {
                 day: 22, position: 'first', key: 'hasan', crimeType: 'defamation', name: L('Hasan Ulu'), age: 46, gender: 'm', wants: 'harsher',
@@ -116,7 +186,7 @@ export const BRANCHES = {
                     evidence: [L('Haberdeki çocukların bordrosuz çalıştırıldığı iş müfettişi raporuyla doğrulandı.'), L('Haberde adı geçen üç çocuk mahkemede ifade vermeye hazır.')],
                     question: L('Belgelerini nereden aldın?'), answer: L('Çocukların kendisinden. Bir de vicdanı olan bir yurt aşçısından.'),
                 },
-                offer: { icon: '🧔', title: L('Vakıftan Telefon'), text: L('Hacı Rıza bizzat aradı, sesi yumuşak: "Hasan kasabanın huzurunu bozuyor hakim bey. Ona ağır bir ceza verin ki herkes haddini bilsin. Karşılığını görürsünüz."'), accept: L('Hapis ver'), decline: L('Kanunu uygula'), amount: 1500, forcedVerdict: 'jail-medium' },
+                offer: { icon: '🧔', title: L('Vakıftan Telefon'), text: L('Hacı Rıza bizzat aradı, sesi yumuşak: "Hasan kasabanın huzurunu bozuyor hakim bey. Ona ağır bir ceza verin ki herkes haddini bilsin. Karşılığını görürsünüz."'), accept: L('Hapis ver'), decline: L('Kanunu uygula'), amount: 150000, forcedVerdict: 'jail-medium' },
             },
             {
                 day: 25, position: 'first', key: 'yurt', crimeType: 'murder', name: L('Necmi Aksoy'), age: 58, gender: 'm', wants: 'lighter',
@@ -127,7 +197,7 @@ export const BRANCHES = {
                     evidence: [L('Doktor Leyla Tan\'ın raporu: öğrenci dumandan, kilitli kapının önünde öldü.'), L('Kapıları kilitleme talimatının müdürün imzasıyla asıldığı tespit edildi.')],
                     question: L('Kapıları neden kilitlediniz?'), answer: L('Çocuklar geceleri kaçıyordu. Vakıf "Bir tane daha kaçarsa sen sorumlusun" dedi.'),
                 },
-                offer: { icon: '🧔', title: L('Vakfın Avukatı'), text: L('Vakfın avukatı masana bir dosya bıraktı: "Kaza, hakim bey. Müdür beraat ederse vakıf kasabaya yeni bir okul yaptıracak. Adınızı da koyarız."'), accept: L('Beraat ver'), decline: L('Kanunu uygula'), amount: 1500, forcedVerdict: 'release' },
+                offer: { icon: '🧔', title: L('Vakfın Avukatı'), text: L('Vakfın avukatı masana bir dosya bıraktı: "Kaza, hakim bey. Müdür beraat ederse vakıf kasabaya yeni bir okul yaptıracak. Adınızı da koyarız."'), accept: L('Beraat ver'), decline: L('Kanunu uygula'), amount: 150000, forcedVerdict: 'release' },
             },
             {
                 day: 28, position: 'first', key: 'saldiri', crimeType: 'assault', name: L('Rüstem Kaya'), age: 34, gender: 'm', wants: 'lighter',
@@ -138,18 +208,12 @@ export const BRANCHES = {
                     evidence: [L('Hemşirenin kolu ve iki kaburgası kırıldı.'), L('Sağlık ocağının kamerasında yüzü açıkça görülüyor; telefonunda "Doktora ders verin" mesajı var.')],
                     question: L('Bu mesajı kim gönderdi?'), answer: L('Vakıfta emir yukarıdan gelir. Ben aşağıdayım.'),
                 },
-                offer: { icon: '🧔', title: L('Hacı Rıza\'dan Haber'), text: L('Kâtip yine fısıldıyor: "Rüstem, Hacı Rıza Bey\'in yeğeni. Beraat ederse siz de bir şey kaybetmezsiniz."'), accept: L('Beraat ver'), decline: L('Kanunu uygula'), amount: 1500, forcedVerdict: 'release' },
+                offer: { icon: '🧔', title: L('Hacı Rıza\'dan Haber'), text: L('Kâtip yine fısıldıyor: "Rüstem, Hacı Rıza Bey\'in yeğeni. Beraat ederse siz de bir şey kaybetmezsiniz."'), accept: L('Beraat ver'), decline: L('Kanunu uygula'), amount: 150000, forcedVerdict: 'release' },
             },
             {
                 day: 30, position: 'last', key: 'aga', crimeType: 'organizedCrime', name: L('Hacı Rıza Karaca'), age: 67, gender: 'm', wants: 'lighter', finalCase: true,
-                statement: {
-                    text: L('Bu kasabaya okul, cami, yol yaptım. Beni sen mi yargılayacaksın?'), emotion: 'proud', sympathy: false, law: 'leader',
-                    detail: L('Hacı Rıza Karaca'),
-                    summary: L('Hikmet Vakfı\'nın lideri. Vakıf aracılığıyla haraç, kayıt dışı çocuk işçiliği, ihale rüşveti ve tehdit çarkını yönettiği iddiasıyla yargılanıyor.'),
-                    evidence: [L('Vakfın gizli defterleri: esnaftan haraç, belediyeden ihale payı ve korumalara ödemeler Hacı Rıza\'nın imzasıyla onaylanmış.'), L('Korumaların ve yurt müdürünün ifadeleri talimatların doğrudan ondan geldiğini söylüyor.')],
-                    question: L('Defterlerdeki imza kimin?'), answer: L('Benim. Ama o defterleri okuyacak cesaret kimde var, hakim bey?'),
-                },
-                offer: { icon: '📞', title: L('Ankara\'dan Telefon'), text: L('Bakanlıktan aynı tanıdık ses: "Hacı Rıza Bey devletimizin dostudur. Beraat verin; Ankara\'ya tayininiz ve ₺5000 hazır. Karaçam\'ı unutursunuz."'), accept: L('Beraat ver'), decline: L('Kanunu uygula'), amount: 5000, forcedVerdict: 'release' },
+                statement: agaStatement,
+                offer: { icon: '📞', title: L('Ankara\'dan Telefon'), text: L('Bakanlıktan aynı tanıdık ses: "Hacı Rıza Bey devletimizin dostudur. Beraat verin; Ankara\'ya tayininiz ve ₺500.000 hazır. Karaçam\'ı unutursunuz."'), accept: L('Beraat ver'), decline: L('Kanunu uygula'), amount: 500000, forcedVerdict: 'release' },
             },
         ],
 
@@ -179,7 +243,7 @@ export const BRANCHES = {
             24: () => ({
                 text: L('Sağlık ocağında annenin ilacı "bitmiş". Vakfın eczanesinde var, ama eczacı "Hacı Rıza Bey\'in misafirlerine ücretsiz" diyor.'),
                 choices: [
-                    choice(L('Şehre gidip parayla al (₺150)'), s => { adjust(s, { money: -150, health: 1 }); return L('Dört saat yol gittin. Annen ilacını aldı; borç kimseye değil, yola.'); }, 150),
+                    choice(L('Şehre gidip parayla al (₺15.000)'), s => { adjust(s, { money: -15000, health: 1 }); return L('Dört saat yol gittin. Annen ilacını aldı; borç kimseye değil, yola.'); }, 15000),
                     choice(L('Vakfın ilacını kabul et'), s => { adjust(s, { conscience: -6, health: 1 }); s.flags.vakifIlac = true; return L('Annen iyileşti. Kutunun üstünde vakfın mührü vardı.'); }),
                 ],
             }),
@@ -204,7 +268,7 @@ export const BRANCHES = {
         favored(state) {
             const sp = state.specials;
             if (sp.aga && sp.aga.favored) return true;
-            return ['imar', 'hasan', 'yurt', 'saldiri'].filter(k => sp[k] && sp[k].favored).length >= 2;
+            return favours(state, ['imar', 'hasan', 'yurt', 'saldiri']) >= 2;
         },
         endings: {
             honest: {
@@ -259,17 +323,33 @@ export const BRANCHES = {
                 choices: [{ label: L('Sepeti geri gönder'), value: 'return' }, { label: L('Sepeti tut'), value: 'keep' }],
                 onChoice: (st, v) => { if (v === 'keep') adjust(st, { conscience: -5, harmony: 3 }); else adjust(st, { conscience: 3 }); },
             }),
+            22: (s) => (s.flags.elif === 'take'
+                ? hearing(L('Birinci Duruşma: Elif\'in Dosyası'),
+                    L('Selami Kuru hakkındaki iddianame Daire\'ye geldi. Savcı Elif Demir\'in sana verdiği dosya masanda: banka dekontları, e-postalar, ihale belgeleri.\n\nSelami\'nin avukatı: "Bu bir savcının kişisel arşivi, sayın hakim. Usulsüz toplanmış belgeler delil olamaz."'),
+                    L('Dosyayı delil olarak kabul et'), L('Dosyayı reddet'), 'elifFile')
+                : {
+                    icon: '⚖️', title: L('Birinci Duruşma: Elif\'in Dosyası'),
+                    text: L('Selami Kuru hakkındaki iddianame Daire\'ye geldi. Savcı Elif Demir\'in topladığı delil dosyası ortada yok; Elif sana vermek istemişti ama sen almamıştın.'),
+                    choices: [{ label: L('Devam'), value: true }],
+                    onChoice: (st) => { st.trial.elifFile = false; },
+                }),
             24: (s) => {
                 const e = s.specials.elif;
                 if (e && e.verdict === 'death') return { icon: '🕯️', title: L('Sessizlik'), text: L('Savcı Elif Demir\'in idamı haberlerde birkaç saniye geçti. Adliyede kimse onun adını anmıyor. Nazım Bey o gün odasından hiç çıkmadı.'), choices: [{ label: L('Devam'), value: true }], apply: { conscience: -12 } };
                 if (e && e.favored) return { icon: '🔒', title: L('Ağır Ceza'), text: L('Elif Demir cezaevine götürülürken kameralara döndü: "Delillerim mahkemede. Birileri onları okuyacak." Savcılar arasında sessiz bir öfke dolaşıyor.'), choices: [{ label: L('Devam'), value: true }], apply: { conscience: -6 } };
                 return { icon: '📄', title: L('Elif\'in Mektubu'), text: L('Elif Demir\'den kısa bir not: "Kanunun öngördüğü cezayı verdiniz, fazlasını değil. Delillerim artık savcılıkta. Gerisi sizin vicdanınıza kalmış."'), choices: [{ label: L('Devam'), value: true }], apply: { conscience: 4 } };
             },
+            25: () => hearing(L('İkinci Duruşma: Telefon Kayıtları'),
+                L('Savcılık, Selami Kuru\'nun telefonunun mahkeme kararıyla dinlendiği kayıtları sundu: Cahit Ural\'a şantaj talimatı açıkça duyuluyor.\n\nAvukat: "Dinleme kararının süresi kayıttan iki gün önce dolmuştu. Hukuka aykırı delil!" Dinleme kararını veren hakimin imzası ise tarihsiz.'),
+                L('Kayıtları delil say'), L('Kayıtları dosyadan çıkar'), 'wiretap'),
             27: () => ({
                 icon: '⚖️', title: L('Nazım Bey\'in Uyarısı'),
                 text: L('Nazım Bey çayını karıştırırken alçak sesle: "Başsavcılıkta bir ekip kurulmuş. Son yıllarda verilen kararları tek tek inceliyorlar. Kimin kime borcu olduğunu biliyorlar hakim bey."'),
                 choices: [{ label: L('Devam'), value: true }],
             }),
+            28: () => hearing(L('Üçüncü Duruşma: Yabancı Tanık'),
+                L('Yabancı silah şirketinin eski çalışanı görüntülü bağlantıyla ifade vermek istiyor: "Gizli teknik bilgileri bize Selami Kuru\'nun adamları sattı; parayı da onun hesabına yatırdık."\n\nParti sözcüsü salonun önünde kameralara konuştu: "Dış güçlerin oyunu! Yabancı bir şirketin ifadesiyle bu ülkenin partisi yargılanamaz."'),
+                L('Tanığı dinle'), L('Tanığı dinlemeyi reddet'), 'insider'),
             29: () => ({
                 icon: '📞', title: L('Gece Yarısı Telefonu'),
                 text: L('Telefondaki ses tanıdık: "Yarın Selami Bey\'in davası. Bakanın oğlunu hatırlıyor musunuz hakim bey? Biz hatırlıyoruz. Borç ödenir."'),
@@ -287,7 +367,7 @@ export const BRANCHES = {
                     evidence: [L('Yabancı şirketin hesabından vekilin kayınbiraderine ₺30.000.000 aktarılmış.'), L('Gizli şartname vekilin e-postasından şirketin yöneticisine gönderilmiş.')],
                     question: L('Şartname neden sizin e-postanızdan gitti?'), answer: L('Hesabım ele geçirilmiş olmalı. Kayınbiraderimin işleri beni ilgilendirmez.'),
                 },
-                offer: { icon: '📞', title: L('Parti Genel Merkezi'), text: L('Telefondaki ses: "Ferit Bey partimizin değerli bir üyesidir. Beraat verin. Bakanın oğlunu nasıl anladıysanız, bunu da öyle anlayın."'), accept: L('Beraat ver'), decline: L('Kanunu uygula'), amount: 3000, forcedVerdict: 'release' },
+                offer: { icon: '📞', title: L('Parti Genel Merkezi'), text: L('Telefondaki ses: "Ferit Bey partimizin değerli bir üyesidir. Beraat verin. Bakanın oğlunu nasıl anladıysanız, bunu da öyle anlayın."'), accept: L('Beraat ver'), decline: L('Kanunu uygula'), amount: 300000, forcedVerdict: 'release' },
             },
             {
                 day: 23, position: 'first', key: 'elif', crimeType: 'treason', name: L('Elif Demir'), age: 31, gender: 'f', wants: 'harsher',
@@ -298,7 +378,7 @@ export const BRANCHES = {
                     evidence: [L('Belgeler yalnızca bir gazeteye verilmiş; hiçbir yabancı devlete ulaştırılmamış.'), L('Yayımlanan belgelerin gerçek olduğu teknik incelemeyle doğrulandı.')],
                     question: L('Belgeleri neden basına verdiniz?'), answer: L('Çünkü savcılıkta dosyayı üç kez rafa kaldırdılar. Başka kapı kalmadı.'),
                 },
-                offer: { icon: '📞', title: L('Parti Genel Merkezi'), text: L('"Bu kadın devletin sırlarını sattı hakim bey. Örnek olsun diye idam verin. Karşılığında daire başkanlığı sizin."'), accept: L('İdam ver'), decline: L('Kanunu uygula'), amount: 3000, forcedVerdict: 'death' },
+                offer: { icon: '📞', title: L('Parti Genel Merkezi'), text: L('"Bu kadın devletin sırlarını sattı hakim bey. Örnek olsun diye idam verin. Karşılığında daire başkanlığı sizin."'), accept: L('İdam ver'), decline: L('Kanunu uygula'), amount: 300000, forcedVerdict: 'death' },
             },
             {
                 day: 26, position: 'first', key: 'nermin', crimeType: 'treason', name: L('Nermin Saygın'), age: 48, gender: 'f', wants: 'lighter',
@@ -309,7 +389,7 @@ export const BRANCHES = {
                     evidence: [L('Gizli tutanakların fotoğrafları şirketin sunucusunda bulundu; fotoğraflar vekilin telefonuyla çekilmiş.'), L('Vekilin yurt dışındaki hesabına şirketten düzenli ödeme yapılmış.')],
                     question: L('Tutanakların fotoğrafını neden çektiniz?'), answer: L('Not almak için... Telefonum çalındı, biri göndermiş olmalı.'),
                 },
-                offer: { icon: '📞', title: L('Parti Genel Merkezi'), text: L('"Nermin Hanım\'ın beraati partimiz için hayati. Bir de şunu bilin: Bakanın oğlunun dosyası hâlâ bizim çekmecemizde."'), accept: L('Beraat ver'), decline: L('Kanunu uygula'), amount: 3000, forcedVerdict: 'release' },
+                offer: { icon: '📞', title: L('Parti Genel Merkezi'), text: L('"Nermin Hanım\'ın beraati partimiz için hayati. Bir de şunu bilin: Bakanın oğlunun dosyası hâlâ bizim çekmecemizde."'), accept: L('Beraat ver'), decline: L('Kanunu uygula'), amount: 300000, forcedVerdict: 'release' },
             },
             {
                 day: 28, position: 'first', key: 'cahit', crimeType: 'treason', name: L('Cahit Ural'), age: 61, gender: 'm', wants: 'lighter',
@@ -320,18 +400,12 @@ export const BRANCHES = {
                     evidence: [L('Kızına ait özel görüntülerle yapılan şantaj mesajları telefonunda kayıtlı.'), L('Hiçbir ödeme almadığı banka kayıtlarıyla doğrulandı.')],
                     question: L('Neden polise gitmediniz?'), answer: L('Şantajı yapan partinin genel sekreterinin adamlarıydı. Kime gidecektim?'),
                 },
-                offer: { icon: '📞', title: L('Parti Genel Merkezi'), text: L('"Cahit Bey\'i beraat ettirin; şantaj meselesi de kapansın. Kimse kimseyi suçlamasın, değil mi?"'), accept: L('Beraat ver'), decline: L('Kanunu uygula'), amount: 3000, forcedVerdict: 'release' },
+                offer: { icon: '📞', title: L('Parti Genel Merkezi'), text: L('"Cahit Bey\'i beraat ettirin; şantaj meselesi de kapansın. Kimse kimseyi suçlamasın, değil mi?"'), accept: L('Beraat ver'), decline: L('Kanunu uygula'), amount: 300000, forcedVerdict: 'release' },
             },
             {
                 day: 30, position: 'last', key: 'selami', crimeType: 'treason', name: L('Selami Kuru'), age: 63, gender: 'm', wants: 'lighter', finalCase: true,
-                statement: {
-                    text: L('Bu ülkeyi ben yönetiyorum hakim bey. Siz de bizim sayemizde o koltuktasınız.'), emotion: 'proud', sympathy: false, law: 'base',
-                    detail: L('Genel Sekreter Selami Kuru'),
-                    summary: L('İktidar partisinin genel sekreteri. Savunma ihalesinin gizli bilgilerini yabancı silah şirketine satan çarkı kurup yönettiği, vekillere şantaj yaptırdığı iddiasıyla yargılanıyor.'),
-                    evidence: [L('Yabancı şirketle imzalanmış gizli "danışmanlık" sözleşmesi: ₺200.000.000.'), L('Cahit Ural\'a yapılan şantajın talimatının Selami Kuru\'nun telefonundan verildiği tespit edildi.')],
-                    question: L('Sözleşmedeki imza sizin mi?'), answer: L('İmza benim. Ama o sözleşmeyi bu salonda kimse yüksek sesle okuyamaz.'),
-                },
-                offer: { icon: '📞', title: L('Başbakanlıktan Telefon'), text: L('Bu kez ses çok daha yukarıdan geliyor: "Selami Bey beraat ederse Anayasa Mahkemesi üyeliğiniz hazır. Etmezse... bakanın oğlunun dosyasını savcılara biz veririz."'), accept: L('Beraat ver'), decline: L('Kanunu uygula'), amount: 10000, forcedVerdict: 'release' },
+                statement: selamiStatement,
+                offer: { icon: '📞', title: L('Başbakanlıktan Telefon'), text: L('Bu kez ses çok daha yukarıdan geliyor: "Selami Bey beraat ederse Anayasa Mahkemesi üyeliğiniz hazır. Etmezse... bakanın oğlunun dosyasını savcılara biz veririz."'), accept: L('Beraat ver'), decline: L('Kanunu uygula'), amount: 1000000, forcedVerdict: 'release' },
             },
         ],
 
@@ -339,7 +413,7 @@ export const BRANCHES = {
             16: () => ({
                 text: L('Yeni ev büyük ve soğuk. Ece kendi odasını beğendi ama "Burada kimse birbirini tanımıyor" dedi. Annen salondaki pahalı halıya basmaya çekiniyor.'),
                 choices: [
-                    choice(L('Ailece yemeğe çık'), s => { adjust(s, { harmony: 8, money: -100 }); return L('Lokantada herkes sana "Sayın Hakim" diye eğildi. Ece bundan hoşlanmadı.'); }, 100),
+                    choice(L('Ailece yemeğe çık'), s => { adjust(s, { harmony: 8, money: -10000 }); return L('Lokantada herkes sana "Sayın Hakim" diye eğildi. Ece bundan hoşlanmadı.'); }, 10000),
                     choice(L('Evde makarna yap'), s => { adjust(s, { harmony: 5 }); return L('Mutfakta eski evdeki gibi güldünüz. Bir an her şey yerindeydi.'); }),
                 ],
             }),
@@ -363,7 +437,7 @@ export const BRANCHES = {
             25: () => ({
                 text: L('Annen gece fenalaştı. Devlet hastanesinde yer yok; partinin tanıdığı özel hastane "ücretsiz" kabul edebileceğini söylüyor.'),
                 choices: [
-                    choice(L('Parasını öde (₺300)'), s => { adjust(s, { money: -300, health: 2 }); return L('Annen kurtuldu. Faturayı kendi cebinden ödedin.'); }, 300),
+                    choice(L('Parasını öde (₺30.000)'), s => { adjust(s, { money: -30000, health: 2 }); return L('Annen kurtuldu. Faturayı kendi cebinden ödedin.'); }, 30000),
                     choice(L('Partinin teklifini kabul et'), s => { adjust(s, { health: 2, conscience: -8 }); s.flags.partyHospital = true; return L('Annen kurtuldu. Hastane müdürü "Genel Merkez geçmiş olsun diyor" dedi.'); }),
                 ],
             }),
@@ -388,7 +462,7 @@ export const BRANCHES = {
         favored(state) {
             const sp = state.specials;
             if (sp.selami && sp.selami.favored) return true;
-            return ['ferit', 'elif', 'nermin', 'cahit'].filter(k => sp[k] && sp[k].favored).length >= 2;
+            return favours(state, ['ferit', 'elif', 'nermin', 'cahit']) >= 2;
         },
         endings: {
             honest: {

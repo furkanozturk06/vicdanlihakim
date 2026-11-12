@@ -17,6 +17,8 @@ const SCENARIOS = [
     { name: 'Kıyak geçip dürüst kalan', query: 'policy=borcHonest&lang=tr', expect: { end: 'Emekli', branch: 'borc' } },
     { name: 'Vatana ihaneti örtbas eden', query: 'policy=borcCorrupt&lang=tr', expect: { end: 'İdam', branch: 'borc' } },
     { name: 'Ayla Öğretmen davasında delilleri kaybeden', query: 'policy=trialLost&lang=tr', expect: { end: 'Emekli', branch: 'borc', trial: { witness: 'lost', footage: 'rejected' }, finale: 'released' } },
+    { name: 'Sürgünde duruşmalarda geri adım atan', query: 'policy=surgunHearings&lang=tr', expect: { end: 'Emekli', branch: 'surgun' } },
+    { name: 'Borçta duruşmalarda geri adım atan', query: 'policy=borcHearings&lang=tr', expect: { end: 'İdam', branch: 'borc' } },
     { name: 'Sonsuz mod, 25 gün', query: 'policy=honest&endless=1&maxDays=25&lang=tr', expect: { mode: 'endless', stoppedAt: 26 } },
     { name: 'İngilizce, dürüst hakim', query: 'policy=honest&lang=en', expect: { end: EN['Kasabanın Hakimi'], branch: 'surgun', tutorial: 5, english: true } },
     { name: 'İngilizce, vatana ihaneti örtbas eden', query: 'policy=borcCorrupt&lang=en', expect: { end: EN['İdam'], branch: 'borc', english: true } },
