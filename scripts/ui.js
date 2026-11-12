@@ -772,31 +772,28 @@ export function closeRulebook() {
 }
 
 // Show feedback overlay
-export function showFeedback(isCorrect, title, message, stats, stampLabel = '') {
+// outcome: true (lawful, green), 'partial' (close to the law, yellow) or false (red)
+export function showFeedback(outcome, title, message, stats, stampLabel = '') {
+    const tone = outcome === 'partial' ? 'partial' : outcome ? 'justice' : 'negative';
     elements.feedbackTitle.textContent = title;
-    elements.feedbackTitle.className = isCorrect ? '' : 'negative';
+    elements.feedbackTitle.className = tone === 'justice' ? '' : tone;
     elements.feedbackMessage.textContent = message;
     elements.feedbackStats.innerHTML = stats;
 
-    elements.stampEffect.className = isCorrect ? 'justice' : '';
+    elements.stampEffect.className = tone === 'negative' ? '' : tone;
     elements.stampEffect.textContent = stampLabel;
     elements.feedbackOverlay.classList.remove('hidden');
 
-    // Closes by itself, or on a tap once it has been up long enough to be seen
-    const shownAt = Date.now();
+    // Stays until the player taps anywhere (not in the first moment, so a stray
+    // second tap on the verdict button does not skip it unread)
     return new Promise(resolve => {
-        let done = false;
-        const close = () => {
-            if (done) return;
-            done = true;
-            clearTimeout(timer);
+        let ready = false;
+        setTimeout(() => { ready = true; }, 400);
+        elements.feedbackOverlay.onclick = () => {
+            if (!ready) return;
             elements.feedbackOverlay.onclick = null;
             elements.feedbackOverlay.classList.add('hidden');
             resolve();
-        };
-        const timer = setTimeout(close, 2600);
-        elements.feedbackOverlay.onclick = () => {
-            if (Date.now() - shownAt > 400) close();
         };
     });
 }

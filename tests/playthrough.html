@@ -88,6 +88,7 @@ for (let step = 0; step < 90000; step++) {
     }
     if (vis('tutorial')) { out.tutorialSteps++; document.getElementById('tutorial-next').click(); continue; }
     if (vis('event-overlay')) continue;
+    if (vis('feedback-overlay')) { await wait(500); document.getElementById('feedback-overlay').click(); continue; }
     if (vis('offer-modal')) {
         const caseNo = g.getState().totalCases;
         if (vis('offer-defer') && !deferredCases.has(caseNo)) {

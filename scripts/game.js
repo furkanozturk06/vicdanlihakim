@@ -785,7 +785,7 @@ async function processVerdict(sentenceKey, viaOffer = null) {
         if (state.currentDirective && state.currentDirective.bonus === sentenceBase) {
             moneyChange = Math.floor(moneyChange * state.currentDirective.bonusAmount);
         }
-        if (result.partial) moneyChange = Math.floor(moneyChange * 0.7);
+        if (result.partial) moneyChange = 0; // close to the law earns nothing
         reputationChange = 2;
         audio.playSuccess();
     } else {
@@ -874,13 +874,13 @@ async function processVerdict(sentenceKey, viaOffer = null) {
 
     const statsHtml = `
         <div style="margin-top: 1rem;">
-            <span style="color: ${moneyChange >= 0 ? '#4a9c6d' : '#8b2020'}">
+            <span style="color: ${moneyChange > 0 ? '#4a9c6d' : moneyChange === 0 ? '#d4a72c' : '#8b2020'}">
                 ${moneyChange >= 0 ? '+' : ''}₺${moneyChange}
             </span>
         </div>
     `;
 
-    await ui.showFeedback(result.correct, title, message, statsHtml, verdictLabel(sentenceKey));
+    await ui.showFeedback(result.partial ? 'partial' : result.correct, title, message, statsHtml, verdictLabel(sentenceKey));
     ui.updateStats(state);
 
     await checkForEvents();

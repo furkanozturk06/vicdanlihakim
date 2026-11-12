@@ -2309,7 +2309,7 @@ export default {
     "Ana Menü": "Main Menu",
     "CEZA KANUNU": "PENAL CODE",
     "Hafiften ağıra: Beraat · Para (Hafif, Orta, Ağır) · Ev hapsi · Hapis (Kısa, Orta, Uzun) · İdam": "From lightest to heaviest: Acquittal · Fine (Minor, Moderate, Heavy) · House arrest · Prison (Short, Medium, Long) · Death penalty",
-    "Geçmek için dokun": "Tap to skip",
+    "Geçmek için dokun": "Tap to continue",
     "Bir Mahkeme Oyunu": "A Courtroom Game",
     "Adalet ve Vicdan": "Justice and Conscience",
     "Hakim Koltuğu": "The Judge's Seat",

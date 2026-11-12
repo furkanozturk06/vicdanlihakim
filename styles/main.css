@@ -3469,3 +3469,28 @@ html.text-xlarge #directive-text { font-size: 0.92rem; }
 #book-home.floating .book-home-label {
     display: none;
 }
+
+/* Verdict screen: close to the law (partly right) shows yellow; it waits for a tap */
+#stamp-effect.partial {
+    border-color: #d4a72c;
+    color: #d4a72c;
+}
+
+#feedback-title.partial {
+    color: #d4a72c;
+    text-shadow: 0 0 30px rgba(212, 167, 44, 0.45);
+}
+
+#feedback-overlay {
+    flex-direction: column;
+    cursor: pointer;
+}
+
+#feedback-overlay .tap-hint {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: calc(var(--spacing-xl) + env(safe-area-inset-bottom, 0px));
+    margin: 0;
+    text-align: center;
+}
