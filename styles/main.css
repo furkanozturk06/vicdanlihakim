@@ -3291,37 +3291,22 @@ html.text-xlarge #directive-text { font-size: 0.92rem; }
     backface-visibility: hidden;
 }
 
-.book-page.turn-next {
-    animation: page-turn-next 0.45s ease-out;
+/* While a page turns, both pages sit in the same place; the moving one is on top */
+#rulebook-body.turning {
+    display: grid;
+    perspective: 1600px;
 }
 
-.book-page.turn-prev {
-    animation: page-turn-prev 0.45s ease-out;
+#rulebook-body.turning > .book-page {
+    grid-area: 1 / 1;
+    background: var(--paper-aged);
+    box-shadow: 0 0 0 var(--spacing-md) var(--paper-aged);
+    will-change: transform;
 }
 
-@keyframes page-turn-next {
-    from {
-        transform: perspective(1400px) rotateY(-75deg);
-        opacity: 0.2;
-    }
-
-    to {
-        transform: none;
-        opacity: 1;
-    }
-}
-
-@keyframes page-turn-prev {
-    from {
-        transform: perspective(1400px) rotateY(75deg);
-        transform-origin: right center;
-        opacity: 0.2;
-    }
-
-    to {
-        transform: none;
-        opacity: 1;
-    }
+#rulebook-body.turning > .book-page:last-child {
+    z-index: 1;
+    box-shadow: 0 0 0 var(--spacing-md) var(--paper-aged), 12px 0 28px rgba(0, 0, 0, 0.35);
 }
 
 .book-toc-title {

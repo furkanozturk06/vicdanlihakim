@@ -373,17 +373,13 @@ export function renderRulebook({ crimes, chapters, generalNotes, amendments, day
 
     book.pages = pages;
     book.index = Math.min(book.index, pages.length - 1);
-    showBookPage(null);
+    showBookPage();
 }
 
-function showBookPage(direction) {
+function showBookPage() {
     const page = book.pages[book.index];
-    page.classList.remove('turn-next', 'turn-prev');
-    page.style.transition = page.style.transform = page.style.filter = page.style.transformOrigin = '';
-    if (direction) {
-        void page.offsetWidth; // restart the animation
-        page.classList.add(direction === 1 ? 'turn-next' : 'turn-prev');
-    }
+    clearTurnStyles(page);
+    elements.rulebookBody.classList.remove('turning');
     elements.rulebookBody.replaceChildren(page);
     document.getElementById('book-page-number').textContent = `${book.index + 1} / ${book.pages.length}`;
     document.getElementById('book-prev').disabled = book.index === 0;
@@ -391,34 +387,89 @@ function showBookPage(direction) {
     document.querySelector('.rulebook-content').scrollTop = 0;
 }
 
+function clearTurnStyles(page) {
+    page.style.transition = page.style.transform = page.style.filter = '';
+}
+
+// Turning a page, as in a real book. Forward: the current page lifts at its outer
+// edge and swings over the spine (left edge) to the left, uncovering the next page
+// underneath. Backward: the previous page swings back from the left and lands on
+// top of the current one. Both pages share one grid cell; `turn.progress` 0..1.
+let turn = null;
+const rulebookPanel = document.querySelector('.rulebook-content');
+
+function startTurn(target) {
+    if (turn || target < 0 || target >= book.pages.length || target === book.index) return null;
+    const forward = target > book.index;
+    const current = book.pages[book.index];
+    const other = book.pages[target];
+    const scroll = rulebookPanel.scrollTop;
+    [current, other].forEach(clearTurnStyles);
+    // The page coming into view starts at its top, level with what is on screen now
+    other.style.transform = `translateY(${scroll}px)`;
+    const body = elements.rulebookBody;
+    body.style.perspectiveOrigin = `50% ${scroll + rulebookPanel.clientHeight / 2}px`;
+    body.classList.add('turning');
+    // Forward: next page below, current on top. Backward: current below, previous on top.
+    body.replaceChildren(...(forward ? [other, current] : [current, other]));
+    turn = { target, forward, current, other, scroll, progress: 0 };
+    setTurnProgress(0);
+    return turn;
+}
+
+function setTurnProgress(p) {
+    turn.progress = p;
+    const { forward, current, other, scroll } = turn;
+    if (forward) {
+        current.style.transform = `rotateY(${-180 * p}deg)`;
+        current.style.filter = `brightness(${1 - 0.55 * p})`;
+        other.style.filter = `brightness(${0.6 + 0.4 * p})`;
+    } else {
+        other.style.transform = `translateY(${scroll}px) rotateY(${-180 * (1 - p)}deg)`;
+        other.style.filter = `brightness(${0.45 + 0.55 * p})`;
+        current.style.filter = `brightness(${1 - 0.4 * p})`;
+    }
+}
+
+function finishTurn(commit) {
+    const t = turn;
+    const ms = Math.round(380 * (commit ? 1 - t.progress : t.progress)) + 60;
+    [t.current, t.other].forEach(page => {
+        page.style.transition = `transform ${ms}ms ease-out, filter ${ms}ms ease-out`;
+    });
+    if (commit && book.onTurn) book.onTurn();
+    setTurnProgress(commit ? 1 : 0);
+    setTimeout(() => {
+        turn = null;
+        if (commit) {
+            book.index = t.target;
+            showBookPage();
+        } else {
+            [t.current, t.other].forEach(clearTurnStyles);
+            elements.rulebookBody.classList.remove('turning');
+            elements.rulebookBody.replaceChildren(t.current);
+        }
+    }, ms + 20);
+}
+
+// Arrows and the contents page turn the page by themselves
 function turnTo(index) {
-    if (index < 0 || index >= book.pages.length || index === book.index) return;
-    const direction = index > book.index ? 1 : -1;
-    book.index = index;
-    if (book.onTurn) book.onTurn();
-    showBookPage(direction);
+    if (!startTurn(index)) return;
+    void elements.rulebookBody.offsetWidth; // start from the resting position
+    finishTurn(true);
 }
 
 document.getElementById('book-prev')?.addEventListener('click', () => turnTo(book.index - 1));
 document.getElementById('book-next')?.addEventListener('click', () => turnTo(book.index + 1));
 
-// Turning by finger: the page follows the finger like a real page (it lifts from the
-// outer edge and rotates around the spine); let go past a quarter of the width and
-// it turns, otherwise it falls back. Vertical scrolling is left to the browser.
-const rulebookPanel = document.querySelector('.rulebook-content');
+// Turning by finger: the page follows the finger; let go past a quarter of the width
+// (or with a quick flick) and it turns, otherwise it falls back. Vertical scrolling
+// is left to the browser.
 let drag = null;
 
-function dragTransform(page, dx, width) {
-    const progress = Math.min(1, Math.abs(dx) / width);
-    const forward = dx < 0;
-    page.style.transformOrigin = forward ? 'left center' : 'right center';
-    page.style.transform = `perspective(1400px) rotateY(${(forward ? -1 : 1) * progress * 95}deg)`;
-    page.style.filter = `brightness(${1 - progress * 0.4})`;
-}
-
 rulebookPanel?.addEventListener('touchstart', e => {
-    if (e.touches.length !== 1 || e.target.closest('.book-nav')) return;
-    drag = { x: e.touches[0].clientX, y: e.touches[0].clientY, dx: 0, active: false, done: false };
+    if (turn || e.touches.length !== 1 || e.target.closest('.book-nav')) return;
+    drag = { x: e.touches[0].clientX, y: e.touches[0].clientY, time: Date.now(), active: false, done: false };
 }, { passive: true });
 
 rulebookPanel?.addEventListener('touchmove', e => {
@@ -428,32 +479,21 @@ rulebookPanel?.addEventListener('touchmove', e => {
     if (!drag.active) {
         if (Math.abs(dy) > 12 && Math.abs(dy) > Math.abs(dx)) { drag.done = true; return; } // a scroll
         if (Math.abs(dx) < 10) return;
+        if (!startTurn(book.index + (dx < 0 ? 1 : -1))) { drag.done = true; return; } // first or last page
         drag.active = true;
+        drag.forward = dx < 0;
     }
-    const target = book.index + (dx < 0 ? 1 : -1);
-    if (target < 0 || target >= book.pages.length) return; // first or last page: nothing to turn
     e.preventDefault();
+    const along = drag.forward ? -dx : dx;
     drag.dx = dx;
-    const page = book.pages[book.index];
-    page.classList.remove('turn-next', 'turn-prev');
-    page.style.transition = 'none';
-    dragTransform(page, dx, rulebookPanel.clientWidth);
+    setTurnProgress(Math.max(0, Math.min(1, along / rulebookPanel.clientWidth)));
 }, { passive: false });
 
 rulebookPanel?.addEventListener('touchend', () => {
     if (!drag || !drag.active) { drag = null; return; }
-    const { dx } = drag;
+    const quickFlick = Date.now() - drag.time < 250 && Math.abs(drag.dx || 0) > 30;
     drag = null;
-    const page = book.pages[book.index];
-    const width = rulebookPanel.clientWidth;
-    page.style.transition = 'transform 0.22s ease-out, filter 0.22s ease-out';
-    if (Math.abs(dx) > width * 0.25) {
-        dragTransform(page, Math.sign(dx) * width, width);
-        setTimeout(() => turnTo(book.index + (dx < 0 ? 1 : -1)), 200);
-    } else {
-        page.style.transform = '';
-        page.style.filter = '';
-    }
+    finishTurn(turn.progress > 0.25 || quickFlick);
 });
 
 // Step-by-step tutorial. Each step highlights `target` and waits for "İleri".
