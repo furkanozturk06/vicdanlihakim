@@ -4,19 +4,12 @@
  */
 
 import { L } from './i18n.js';
-import { makePortrait } from './portrait.js';
 
-// The court bailiff by the door: always the same person
-const BAILIFF = {
-    gender: 'm', skin: '#e8beac', hair: '#2c1810', hairStyle: 'short', facialHair: 'mustache',
-    earrings: false, glasses: false, age: '', clothing: '#1f2d45', outfit: 'suit',
-};
 
 // DOM Elements cache
 let elements = {};
 
 export function initUI() {
-    document.getElementById('bailiff-figure').innerHTML = makePortrait(BAILIFF, 'neutral');
     elements = {
         // Main containers
         startScreen: document.getElementById('start-screen'),
@@ -151,7 +144,7 @@ export function hideDirective() {
 }
 
 // Animate door opening
-// The bailiff calls the next defendant in by name
+// The (unseen) bailiff calls the next defendant in by name
 let bailiffTimer = null;
 export function bailiffCall(name) {
     const call = document.getElementById('bailiff-call');
