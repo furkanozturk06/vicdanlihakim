@@ -2337,4 +2337,5 @@ export default {
     "DURUŞMA SALONU": "COURTROOM",
     "Önceki sayfa": "Previous page",
     "Sonraki sayfa": "Next page",
+    "☰ İçindekiler": "☰ Contents",
 };

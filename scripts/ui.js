@@ -257,7 +257,14 @@ const el = (tag, className, text) => {
 };
 
 // Show the case file. The second evidence item stays hidden until the defendant is questioned.
+// A new case opens its file at the top; redrawing the same case (after a question)
+// keeps the reader where they were
+let shownCase = null;
 export function showEvidence(caseData, questionsLeft) {
+    if (caseData !== shownCase) {
+        shownCase = caseData;
+        document.querySelector('.case-file').scrollTop = 0;
+    }
     const header = el('p', 'case-defendant', L('Sanık: {0}, {1} yaşında', caseData.name, caseData.age));
     const summary = el('p', 'case-summary', caseData.summary);
 
@@ -384,6 +391,7 @@ function showBookPage() {
     document.getElementById('book-page-number').textContent = `${book.index + 1} / ${book.pages.length}`;
     document.getElementById('book-prev').disabled = book.index === 0;
     document.getElementById('book-next').disabled = book.index === book.pages.length - 1;
+    document.getElementById('book-home').classList.toggle('away', book.index === 0);
     document.querySelector('.rulebook-content').scrollTop = 0;
 }
 
@@ -460,6 +468,7 @@ function turnTo(index) {
 }
 
 document.getElementById('book-prev')?.addEventListener('click', () => turnTo(book.index - 1));
+document.getElementById('book-home')?.addEventListener('click', () => turnTo(0));
 document.getElementById('book-next')?.addEventListener('click', () => turnTo(book.index + 1));
 
 // Turning by finger: the page follows the finger; let go past a quarter of the width
@@ -753,7 +762,9 @@ export function openRulebook() {
 // The close button fades into a floating corner button once the book is scrolled
 const rulebookContent = document.querySelector('.rulebook-content');
 rulebookContent?.addEventListener('scroll', () => {
-    document.getElementById('rulebook-close').classList.toggle('floating', rulebookContent.scrollTop > 8);
+    const floating = rulebookContent.scrollTop > 8;
+    document.getElementById('rulebook-close').classList.toggle('floating', floating);
+    document.getElementById('book-home').classList.toggle('floating', floating);
 }, { passive: true });
 
 export function closeRulebook() {

@@ -3409,3 +3409,38 @@ html.text-xlarge #directive-text { font-size: 0.92rem; }
 .rulebook-content {
     overflow-x: hidden;
 }
+
+/* Back to the contents page: top-left corner of the law book, like the close button
+   on the right. Hidden on the contents page itself. */
+#book-home {
+    position: sticky;
+    top: calc(var(--spacing-sm) - var(--spacing-lg));
+    z-index: 2;
+    float: left;
+    height: 32px;
+    margin: calc(var(--spacing-sm) - var(--spacing-lg)) 0 -32px calc(var(--spacing-sm) - var(--spacing-md));
+    padding: 0 10px;
+    border: 1px solid rgba(26, 22, 19, 0.35);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--ink-black);
+    font-family: var(--font-typewriter);
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+#book-home.away {
+    visibility: hidden;
+}
+
+#book-home.floating {
+    background: rgba(212, 197, 169, 0.45);
+    border-color: rgba(26, 22, 19, 0.2);
+    opacity: 0.6;
+}
+
+#book-home.floating:hover,
+#book-home.floating:active {
+    opacity: 1;
+}
