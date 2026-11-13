@@ -9,7 +9,7 @@ import {
     OFFERS, buildNewspaper, FINALE, FINAL_DIRECTIVE, INTRO, TUTORIAL, ENDLESS_INTRO, HOW_TO_PLAY, inspectorReport,
     SELIN_NOTE, SELIN_DIRECTIVE, SELIN_CASE, selinAftermath, kayaVisit, finaleRumor, appealText,
 } from './story.js';
-import { createFamily, familyStatus, eveningScene, familyEpilogue, householdBills, DAILY_COOLING } from './family.js';
+import { createFamily, familyStatus, eveningScene, familyEpilogue, householdBills, DAILY_COOLING, conscienceFamilyChange } from './family.js';
 import { ACT_LENGTH, TOTAL_DAYS, ACT2_CASES_PER_DAY, BRANCHES, branchFor } from './acts.js';
 import { saveGame, loadGame, savedDay, savedMode, clearSave, loadSettings, saveSettings } from './save.js';
 import * as ui from './ui.js';
@@ -464,6 +464,12 @@ async function startNewDay() {
         }
     }
 
+    // No conscience left: nightmares cost a question every morning
+    if (state.conscience <= 0) {
+        state.questionsLeft = Math.max(0, state.questionsLeft - 1);
+        await ui.showEvent('warning', L('Uykusuz Bir Gece'), L('Bütün gece aldığın zarfları, verdiğin kararları, susup geçtiğin dosyaları gördün. Sabah gözlerin kan çanağı. Bugün bir sorgu hakkın eksik.'));
+    }
+
     // New amendments
     for (const a of AMENDMENTS.filter(a => a.day === state.day)) {
         await ui.showEvent('law', L('Kanunda Değişiklik: {0}', a.title), L('{0} Ayrıntılar kanun kitabında.', a.text));
@@ -793,6 +799,8 @@ async function processVerdict(sentenceKey, viaOffer = null) {
         state.dayCorrect++;
         state.correctTotal++;
         moneyChange = CONFIG.baseReward;
+        // A troubled conscience slowly mends with every lawful verdict
+        if (!result.partial && !viaOffer && state.conscience < 50) conscienceChange += 1;
         if (state.currentDirective && state.currentDirective.bonus === sentenceBase) {
             moneyChange = Math.floor(moneyChange * state.currentDirective.bonusAmount);
         }
@@ -981,6 +989,8 @@ async function deliverAppeals() {
 
 // Evening at home after `day`: pay the bills, then one family scene
 async function runEvening(day) {
+    await conscienceAtHome();
+
     // Bills first: living costs, rent every fifth evening, medicine every seventh
     const due = householdBills(day);
     const lines = [];
@@ -1030,6 +1040,26 @@ async function runEvening(day) {
     const result = scene.choices[pick].apply(state);
     ui.updateStats(state);
     await ui.showEveningResult(result, state.family.harmony, state.money);
+}
+
+// With no conscience left Deniz takes Ece and leaves; they come back once the judge
+// finds their conscience again (see family.js)
+async function conscienceAtHome() {
+    const change = conscienceFamilyChange(state);
+    if (change === 'leave') {
+        await ui.showStory({
+            icon: '🧳', title: L('Deniz Gidiyor'),
+            text: L('Eve döndüğünde bavullar kapının önündeydi. Deniz gözlerinin içine baktı: "Haberleri izliyorum, zarfları görüyorum. Seni artık tanımıyorum." Ece\'nin elinden tutup annesinin evine gitti.'),
+            choices: [{ label: L('Arkalarından bak'), value: true }],
+        });
+    } else if (change === 'return') {
+        await ui.showStory({
+            icon: '🚪', title: L('Kapıda Deniz'),
+            text: L('Akşam kapı çaldı. Deniz ve Ece eşikte duruyordu. "Son kararlarını gazetede okudum," dedi Deniz. "Tanıdığım insan geri dönmüş gibi." Ece koşup boynuna sarıldı.'),
+            choices: [{ label: L('İçeri al'), value: true }],
+        });
+    }
+    ui.updateStats(state);
 }
 
 // At most one random event per day so they stay meaningful

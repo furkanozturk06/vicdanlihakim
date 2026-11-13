@@ -3,7 +3,8 @@
  * Every evening at home: fixed household costs, then one scene with a choice.
  * Scenes react to what happened in court (death sentences, bribes, ignored threats).
  *
- * state.family = { harmony: 0-100, motherHealth: 0-3, spouseLeft: bool }
+ * state.family = { harmony: 0-100, motherHealth: 0-3, spouseLeft: bool,
+ *                  leftOverConscience: bool (left because the judge's conscience hit 0) }
  */
 
 import { L } from './i18n.js';
@@ -47,6 +48,28 @@ export function adjust(state, { harmony = 0, conscience = 0, money = 0, health =
     state.conscience = clamp(state.conscience + conscience, 0, 100);
     state.money = Math.max(0, state.money + money);
     state.family.motherHealth = clamp(state.family.motherHealth + health, 0, 3);
+}
+
+// Deniz takes Ece and leaves when the judge's conscience hits 0, and comes back
+// once it is 30 or more again. Leaving for other reasons (a family scene) is not
+// undone here. Changes state.family; returns 'leave', 'return' or null.
+export const CONSCIENCE_RETURN = 30;
+
+export function conscienceFamilyChange(state) {
+    const f = state.family;
+    if (state.conscience <= 0 && !f.spouseLeft) {
+        f.spouseLeft = true;
+        f.leftOverConscience = true;
+        f.harmony = clamp(f.harmony - 20, 0, 100);
+        return 'leave';
+    }
+    if (f.spouseLeft && f.leftOverConscience && state.conscience >= CONSCIENCE_RETURN) {
+        f.spouseLeft = false;
+        f.leftOverConscience = false;
+        f.harmony = clamp(f.harmony + 15, 0, 100);
+        return 'return';
+    }
+    return null;
 }
 
 /**
