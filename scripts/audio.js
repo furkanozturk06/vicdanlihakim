@@ -10,12 +10,9 @@ const VOWEL_FORMANTS = {
 };
 const VOICE_LEVEL = 0.35;
 
-// Recorded sounds and music in public/audio (licences in AUDIO_CREDITS.md)
-const SAMPLE_FILES = ['gavel', 'page', 'door', 'chime', 'sting', 'gasp', 'murmur', 'music-1', 'music-2'];
-const MUSIC_FILES = ['music-1', 'music-2'];
+// Recorded sounds in public/audio (licences in AUDIO_CREDITS.md)
+const SAMPLE_FILES = ['gavel', 'page', 'door', 'chime', 'sting', 'gasp', 'murmur'];
 const AMBIENT_LEVEL = 0.9;   // the murmur file is very quiet
-const MUSIC_LEVEL = 0.35;    // under the voices and effects
-const MUSIC_FADE = 3;        // seconds of crossfade between tracks
 
 class AudioManager {
     constructor() {
@@ -23,9 +20,6 @@ class AudioManager {
         this.enabled = true;
         this.volume = 0.5;
         this.samples = {};
-        this.musicOn = true;
-        this.musicVolume = 0.5;
-        this.music = null;
     }
 
     init() {
@@ -39,7 +33,7 @@ class AudioManager {
         this.loadSamples();
     }
 
-    // Recorded sounds and music in /audio (see AUDIO_CREDITS.md). Until they are
+    // Recorded sounds in /audio (see AUDIO_CREDITS.md). Until they are
     // loaded, or if one fails, the synthesized sounds below are used instead.
     async loadSamples() {
         await Promise.all(SAMPLE_FILES.map(async (name) => {
@@ -51,7 +45,7 @@ class AudioManager {
                 // keep the synthesized fallback
             }
         }));
-        // The murmur replaces the drone and the music starts if the courtroom is already open
+        // The recorded murmur replaces the drone if the courtroom is already open
         if (this.ambientOscillator) {
             this.stopAmbient();
             this.startAmbient();
@@ -278,7 +272,6 @@ class AudioManager {
 
     startAmbient() {
         if (!this.enabled || !this.audioContext || this.ambientOscillator) return;
-        this.startMusic();
 
         // Recorded murmur of the gallery, looped (the file is recorded very quietly)
         if (this.samples.murmur) {
@@ -318,7 +311,6 @@ class AudioManager {
             this.ambientOscillator.stop();
             this.ambientOscillator = null;
         }
-        this.stopMusic();
     }
 
     setVolume(vol) {
@@ -326,56 +318,6 @@ class AudioManager {
         if (this.ambientGain && this.ambientOscillator) {
             this.ambientGain.gain.value = this.volume * (this.ambientOscillator.droneOnly ? 0.02 : AMBIENT_LEVEL);
         }
-    }
-
-    // ---- Music: the tracks play one after another with a slow crossfade ----
-    setMusic(on, volume) {
-        this.musicOn = Boolean(on);
-        this.musicVolume = Math.max(0, Math.min(1, volume));
-        if (this.music) this.music.gain.gain.value = this.musicVolume * MUSIC_LEVEL;
-        if (!this.musicOn) this.stopMusic();
-        else if (this.ambientOscillator) this.startMusic();
-    }
-
-    startMusic() {
-        if (!this.enabled || !this.musicOn || !this.audioContext || this.music) return;
-        const tracks = MUSIC_FILES.filter(n => this.samples[n]);
-        if (!tracks.length) return;
-        const ctx = this.audioContext;
-        const gain = ctx.createGain();
-        gain.gain.value = this.musicVolume * MUSIC_LEVEL;
-        gain.connect(ctx.destination);
-        this.music = { gain, index: Math.floor(Math.random() * tracks.length), timer: null, sources: [] };
-        const play = () => {
-            if (!this.music) return;
-            const buffer = this.samples[tracks[this.music.index % tracks.length]];
-            this.music.index++;
-            const source = ctx.createBufferSource();
-            source.buffer = buffer;
-            const fade = ctx.createGain();
-            const now = ctx.currentTime;
-            fade.gain.setValueAtTime(0.0001, now);
-            fade.gain.linearRampToValueAtTime(1, now + MUSIC_FADE);
-            fade.gain.setValueAtTime(1, now + buffer.duration - MUSIC_FADE);
-            fade.gain.linearRampToValueAtTime(0.0001, now + buffer.duration);
-            source.connect(fade);
-            fade.connect(gain);
-            source.start(now);
-            this.music.sources = [...this.music.sources.slice(-1), source];
-            this.music.timer = setTimeout(play, (buffer.duration - MUSIC_FADE) * 1000);
-        };
-        play();
-    }
-
-    stopMusic() {
-        if (!this.music) return;
-        clearTimeout(this.music.timer);
-        const { gain, sources } = this.music;
-        const now = this.audioContext.currentTime;
-        gain.gain.setValueAtTime(gain.gain.value, now);
-        gain.gain.linearRampToValueAtTime(0.0001, now + 0.6);
-        sources.forEach(s => { try { s.stop(now + 0.7); } catch { /* already stopped */ } });
-        this.music = null;
     }
 
     // Defendant's murmur: called for every letter as the statement is typed (30 ms

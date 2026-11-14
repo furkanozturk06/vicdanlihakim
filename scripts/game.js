@@ -381,7 +381,6 @@ function setupEventListeners() {
 function applySettings() {
     audio.setEnabled(settings.sound);
     audio.setVolume(settings.volume ?? 0.5);
-    audio.setMusic(settings.music ?? true, settings.musicVolume ?? 0.5);
     ui.setSoundIcon(settings.sound);
     const root = document.documentElement;
     root.classList.toggle('text-large', settings.textSize === 'large');
