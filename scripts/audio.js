@@ -11,8 +11,16 @@ const VOWEL_FORMANTS = {
 const VOICE_LEVEL = 0.35;
 
 // Recorded sounds in public/audio (licences in AUDIO_CREDITS.md)
-const SAMPLE_FILES = ['gavel', 'page', 'door', 'chime', 'sting', 'gasp', 'murmur'];
-const AMBIENT_LEVEL = 0.9;   // the murmur file is very quiet
+const SAMPLE_FILES = ['gavel', 'page', 'door', 'chime', 'sting', 'gasp', 'hall', 'court'];
+const AMBIENT_LEVEL = 1;
+// The courtroom murmur is two recordings looped together: a seated crowd waiting in
+// a large hall (3 minutes; the door closing at its end is left out of the loop) and,
+// much quieter underneath, the movement of a courtroom. Their lengths differ, so the
+// mix rarely repeats.
+const AMBIENT_LAYERS = [
+    { name: 'hall', level: 0.3, loopStart: 2, loopEnd: 168 },
+    { name: 'court', level: 0.1, loopStart: 0.5, loopEnd: 78.5 },
+];
 
 class AudioManager {
     constructor() {
@@ -280,17 +288,29 @@ class AudioManager {
         this.ambienceWanted = true;
         if (!this.enabled || !this.ambienceOn || !this.audioContext || this.ambientOscillator) return;
 
-        // Recorded murmur of the gallery, looped (the file is recorded very quietly)
-        if (this.samples.murmur) {
-            const source = this.audioContext.createBufferSource();
-            source.buffer = this.samples.murmur;
-            source.loop = true;
-            const gainNode = this.audioContext.createGain();
-            gainNode.gain.value = this.ambienceVolume * AMBIENT_LEVEL;
-            source.connect(gainNode);
-            gainNode.connect(this.audioContext.destination);
-            source.start();
-            this.ambientOscillator = source;
+        // Recorded courtroom murmur: the layers loop together and fade in
+        const layers = AMBIENT_LAYERS.filter(l => this.samples[l.name]);
+        if (layers.length) {
+            const ctx = this.audioContext;
+            const gainNode = ctx.createGain();
+            gainNode.gain.setValueAtTime(0.0001, ctx.currentTime);
+            gainNode.gain.linearRampToValueAtTime(this.ambienceVolume * AMBIENT_LEVEL, ctx.currentTime + 2);
+            gainNode.connect(ctx.destination);
+            const sources = layers.map(l => {
+                const source = ctx.createBufferSource();
+                source.buffer = this.samples[l.name];
+                source.loop = true;
+                source.loopStart = l.loopStart;
+                source.loopEnd = Math.min(l.loopEnd, source.buffer.duration);
+                const level = ctx.createGain();
+                level.gain.value = l.level;
+                source.connect(level);
+                level.connect(gainNode);
+                // start somewhere inside the loop, so it does not always begin the same way
+                source.start(0, l.loopStart + Math.random() * (source.loopEnd - l.loopStart));
+                return source;
+            });
+            this.ambientOscillator = { stop: () => sources.forEach(s => s.stop()) };
             this.ambientGain = gainNode;
             return;
         }
