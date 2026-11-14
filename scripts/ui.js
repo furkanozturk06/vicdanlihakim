@@ -146,9 +146,37 @@ export function hideDirective() {
 // Animate door opening
 // The (unseen) bailiff calls the next defendant in by name
 let bailiffTimer = null;
+
+// The call never covers the door sign: a long name gets smaller letters, and if
+// even the smallest readable size is too wide, the name moves whole to a second line
+const MIN_CALL_FONT = 7.5;
+function fitBailiffCall(call, name) {
+    const sign = document.querySelector('.door-sign').getBoundingClientRect();
+    if (!sign.width) return;
+    const limit = sign.left - 4;
+    const box = call.getBoundingClientRect();
+    const over = box.right - limit;
+    if (over <= 0) return;
+    const style = getComputedStyle(call);
+    const padding = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+    const text = box.width - padding;
+    const fitted = parseFloat(style.fontSize) * (text - over) / text;
+    if (fitted >= MIN_CALL_FONT) {
+        call.style.fontSize = `${Math.floor(fitted * 10) / 10}px`;
+        return;
+    }
+    call.textContent = L('Sanık {0}!', name.replace(/ /g, ' '));
+    call.style.whiteSpace = 'normal';
+    call.style.maxWidth = `${limit - box.left}px`;
+}
+
 export function bailiffCall(name) {
     const call = document.getElementById('bailiff-call');
+    call.style.fontSize = '';
+    call.style.whiteSpace = '';
+    call.style.maxWidth = '';
     call.textContent = L('Sanık {0}!', name);
+    fitBailiffCall(call, name);
     call.classList.add('visible');
     clearTimeout(bailiffTimer);
     bailiffTimer = setTimeout(() => call.classList.remove('visible'), 1700);
