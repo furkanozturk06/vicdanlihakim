@@ -3773,3 +3773,16 @@ html.text-xlarge #directive-text { font-size: 0.92rem; }
 @media (prefers-reduced-motion: reduce) {
     #courtroom-door, #courtroom-door.closing { transition-duration: 0.01s; animation-duration: 0.01s; }
 }
+
+/* The bailiff's call stays on screen: it fills the space left of the door and
+   wraps onto two lines when the name is long */
+.bailiff-call {
+    left: 6px;
+    right: calc(50% + 56px);
+    width: auto;
+    max-width: max-content;
+    margin-left: auto;
+    white-space: normal;
+    text-align: right;
+    line-height: 1.25;
+}
