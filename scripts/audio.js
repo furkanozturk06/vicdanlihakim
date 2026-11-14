@@ -194,7 +194,7 @@ class AudioManager {
     // Opening the law book: a heavy cover opens and the pages settle. The recording
     // opens and closes a large book several times; this is one opening (14.1 s).
     playBookOpen() {
-        if (this.playSample('book', { offset: 13.85, duration: 1.1, gain: 0.8 })) return;
+        if (this.playSample('book', { offset: 13.85, duration: 1.1, gain: 1.4 })) return;
         this.playPageTurn();
     }
 
