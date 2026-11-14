@@ -3,7 +3,7 @@
  * Core game loop, state management, and decision processing
  */
 
-import { generateCase, buildCase, createNPCElement, evaluateVerdict, getRandomDirective, verdictFeedback, verdictLabel, activeAmendments, verdictReaction } from './npc.js';
+import { generateCase, buildCase, createNPCElement, evaluateVerdict, getRandomDirective, verdictFeedback, verdictLabel, activeAmendments, verdictReaction, pickObjection } from './npc.js';
 import { CRIMES, GENERAL_NOTES, AMENDMENTS, VERDICT_LABELS, LADDER, LAW_CHAPTERS } from './cases.js';
 import {
     OFFERS, buildNewspaper, FINALE, FINAL_DIRECTIVE, INTRO, TUTORIAL, ENDLESS_INTRO, HOW_TO_PLAY, inspectorReport,
@@ -786,6 +786,21 @@ async function processVerdict(sentenceKey, viaOffer = null) {
     state.isProcessing = true;
     ui.setSentencingEnabled(false);
     if (!viaOffer) settlePendingOffer();
+
+    // An objection may come before the gavel falls
+    const objection = viaOffer ? null : pickObjection(c, sentenceKey);
+    if (objection) {
+        const answer = await ui.showStory({
+            icon: objection.side === 'defence' ? '🧑‍💼' : '⚖️',
+            title: L('İtiraz!'),
+            text: objection.text,
+            choices: [
+                { label: L('Kararımda ısrar ediyorum'), value: 'keep' },
+                { label: L('Kararı değiştir: {0}', verdictLabel(objection.verdict)), value: 'change' },
+            ],
+        });
+        if (answer === 'change') sentenceKey = objection.verdict;
+    }
 
     audio.playGavel();
     vibrate();

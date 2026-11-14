@@ -2941,4 +2941,11 @@ export default {
     "\"{0}\" davasının mağdurları adliyeye bir teşekkür mektubu bıraktı: \"Sesimizi duydunuz.\"": "The victims in the \"{0}\" case left a thank-you letter at the courthouse: \"You heard us.\"",
     "{0} kanunun istediğinden ağır bir ceza aldı. Ailesi adliye önünde bekliyor; fotoğrafları gazetelerde.": "{0} received a harsher sentence than the law required. The family is waiting outside the courthouse; their photos are in the papers.",
     "Kararlarının Ardından": "After Your Rulings",
+    "sanığın suçu işlemediği kanıtlandı": "the defendant's innocence has been proven",
+    "olağan ceza uygulanmalı": "the standard sentence applies",
+    "Avukat ayağa kalktı: \"İtiraz ediyorum, sayın hakim! Kanuna göre: {0}. Müvekkilime {1} verilmeli.\"": "The defense lawyer rose: \"Objection, Your Honor! Under the law: {0}. My client should receive: {1}.\"",
+    "Savcı ayağa kalktı: \"İtiraz ediyorum, sayın hakim! Kanuna göre: {0}. Sanığa {1} verilmeli.\"": "The prosecutor rose: \"Objection, Your Honor! Under the law: {0}. The defendant should receive: {1}.\"",
+    "İtiraz!": "Objection!",
+    "Kararımda ısrar ediyorum": "I stand by my verdict",
+    "Kararı değiştir: {0}": "Change the verdict: {0}",
 };

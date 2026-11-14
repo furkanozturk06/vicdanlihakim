@@ -76,6 +76,13 @@ for (let step = 0; step < 90000; step++) {
         break;
     }
     if (vis('intro-modal')) { document.getElementById('intro-btn').click(); continue; }
+    if (vis('story-modal') && document.getElementById('story-title').textContent === L('İtiraz!')) {
+        const c = g.getState().currentCase;
+        const btns = [...document.querySelectorAll('#story-choices button')];
+        out.objections = (out.objections || 0) + 1;
+        const right = btns[1].textContent.endsWith(c ? (await import('/scripts/npc.js')).verdictLabel(c.correctVerdict) : '\u0000');
+        btns[right ? 1 : 0].click(); continue;
+    }
     if (vis('story-modal')) {
         const btns = [...document.querySelectorAll('#story-choices button')].filter(b => !b.disabled);
         out.stories.push(`g${g.getState().day}: ${document.getElementById('story-title').textContent}`);

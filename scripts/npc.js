@@ -245,6 +245,45 @@ function verdictWeight(verdict) {
     return 'light';
 }
 
+// An objection after the judge picks a verdict, before the gavel falls. When the
+// verdict is wrong it often points at the right one; when it is right it sometimes
+// tries to lead the judge astray with another law of the same crime. The defence
+// asks for lighter sentences, the prosecution for harsher ones. Story cases and
+// cases still waiting for a report never get one (it would give the answer away).
+// -> { side: 'defence'|'prosecution', verdict, text } or null
+export function pickObjection(c, verdict) {
+    if (c.finale || c.selinCase || c.specialKey || !c.statementRef) return null;
+    if (c.delayed && !c.revealed) return null;
+    const crime = CRIMES[c.crimeType];
+    const reasonFor = (lawKey) => (lawKey === 'innocent' ? L('sanığın suçu işlemediği kanıtlandı')
+        : lawKey === 'base' ? L('olağan ceza uygulanmalı')
+            : crime.laws[lawKey].text);
+
+    let proposed;
+    let reason;
+    if (verdict !== c.correctVerdict) {
+        if (Math.random() >= 0.35) return null;
+        proposed = c.correctVerdict;
+        reason = reasonFor(c.statementRef.law);
+    } else {
+        if (Math.random() >= 0.12) return null;
+        const others = Object.entries(crime.laws).filter(([key, law]) => key !== c.statementRef.law && law.verdict !== verdict && law.verdict !== 'death');
+        if (!others.length) return null;
+        const [key, law] = pick(others);
+        proposed = law.verdict;
+        reason = reasonFor(key);
+    }
+    const lighter = LADDER.indexOf(proposed) < LADDER.indexOf(verdict);
+    const label = verdictLabel(proposed);
+    return {
+        side: lighter ? 'defence' : 'prosecution',
+        verdict: proposed,
+        text: lighter
+            ? L('Avukat ayağa kalktı: "İtiraz ediyorum, sayın hakim! Kanuna göre: {0}. Müvekkilime {1} verilmeli."', reason, label)
+            : L('Savcı ayağa kalktı: "İtiraz ediyorum, sayın hakim! Kanuna göre: {0}. Sanığa {1} verilmeli."', reason, label),
+    };
+}
+
 // Face, movement and way out after the verdict (what happened to them, not
 // whether it was lawful). exit: 'free' walks out, 'taken' is led down, 'quiet' steps back.
 const VISIBLE_REACTIONS = {

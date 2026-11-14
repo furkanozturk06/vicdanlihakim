@@ -131,7 +131,7 @@ for (const scenario of SCENARIOS) {
             failed++;
             console.log(`✗ ${scenario.name} (${secs} sn) – ${problems.join('; ')}`);
         } else {
-            console.log(`✓ ${scenario.name} (${secs} sn) – ${summary}, ${r.cases.length} dava, ${r.deferred} teklif masadan karara bağlandı`);
+            console.log(`✓ ${scenario.name} (${secs} sn) – ${summary}, ${r.cases.length} dava, ${r.deferred} teklif masadan karara bağlandı, ${r.objections || 0} itiraz`);
         }
     } catch (err) {
         failed++;
