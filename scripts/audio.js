@@ -242,7 +242,9 @@ class AudioManager {
 
     // Door closing: the soft wooden thud, a low tone dropping in pitch plus muffled noise
     playDoorClose() {
-        if (this.playSample('door', { offset: 3.2, duration: 3.1, gain: 0.7 })) return; // swing shut, slam at 0.6 s, latch
+        // The recording slams shut at 3.82 s (0.62 s in, with the animation's hit) and
+        // bangs again at 5.7 s; it is cut before that second bang
+        if (this.playSample('door', { offset: 3.2, duration: 1.2, gain: 0.7 })) return;
         if (!this.enabled || !this.audioContext) return;
 
         const ctx = this.audioContext;
