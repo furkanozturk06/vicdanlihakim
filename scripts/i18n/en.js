@@ -2934,4 +2934,11 @@ export default {
     "Kapıda Deniz": "Deniz at the Door",
     "Akşam kapı çaldı. Deniz ve Ece eşikte duruyordu. \"Son kararlarını gazetede okudum,\" dedi Deniz. \"Tanıdığım insan geri dönmüş gibi.\" Ece koşup boynuna sarıldı.": "In the evening the doorbell rang. Deniz and Ece were standing on the doorstep. \"I read your latest rulings in the paper,\" Deniz said. \"It's as if the person I knew has come back.\" Ece ran to hug you.",
     "İçeri al": "Let them in",
+    "Avukatlar yeni bir delil sundu: idam edilen {0} masum olabilir. Gazeteler adınızı manşete taşıdı.": "Lawyers have presented new evidence: {0}, whom you sent to execution, may have been innocent. Your name is in the headlines.",
+    "{0} için verdiğiniz idam kararı infaz edildi. Ailesi cenazeyi sessizce kaldırdı.": "The death sentence you passed on {0} has been carried out. The family buried them quietly.",
+    "Beraat ettirdiğiniz sanıktan bir mektup var. {0} yazmış: \"Bana inandınız. Hayatımı yeniden kuruyorum.\"": "A letter from someone you acquitted. {0} writes: \"You believed me. I'm rebuilding my life.\"",
+    "\"{0}\" davasının sanığı {1} ailesine kavuştu. Mahallede kararınız konuşuluyor.": "{1}, the defendant in the \"{0}\" case, is back with their family. The neighborhood is talking about your ruling.",
+    "\"{0}\" davasının mağdurları adliyeye bir teşekkür mektubu bıraktı: \"Sesimizi duydunuz.\"": "The victims in the \"{0}\" case left a thank-you letter at the courthouse: \"You heard us.\"",
+    "{0} kanunun istediğinden ağır bir ceza aldı. Ailesi adliye önünde bekliyor; fotoğrafları gazetelerde.": "{0} received a harsher sentence than the law required. The family is waiting outside the courthouse; their photos are in the papers.",
+    "Kararlarının Ardından": "After Your Rulings",
 };

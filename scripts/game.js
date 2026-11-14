@@ -17,6 +17,7 @@ import { audio } from './audio.js';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { L, LANG, translatePage, formatMoney } from './i18n.js';
 import { ACT1, finaleStatement } from './trial.js';
+import { aftermathFor } from './aftermath.js';
 
 // Game configuration
 const CONFIG = {
@@ -73,6 +74,7 @@ function createInitialState() {
         selin: null,       // 'death' | 'release' | 'correct' | 'harsh'
         trial: {},         // act 1: the Ayla Öğretmen trial (see trial.js)
         economy: 100,      // price scale of this save (older saves were 1)
+        aftermath: [],     // notes about earlier verdicts, due on a later morning (aftermath.js)
         branch: null,      // act 2: 'surgun' | 'borc'
         specials: {},      // outcomes of act-2 story cases, by key
         bonusQuestions: 0, // extra interrogations earned the evening before
@@ -485,6 +487,7 @@ async function startNewDay() {
     }
     if (!isEndless()) await morningStory();
     await deliverAppeals();
+    await deliverAftermath();
 
     await presentNextCase();
 }
@@ -858,6 +861,10 @@ async function processVerdict(sentenceKey, viaOffer = null) {
         if (def.onVerdict) def.onVerdict(state, c);
     }
 
+    // What became of the defendant, told on a later morning
+    const note = aftermathFor(c, sentenceKey, result, state.day);
+    if (note && !viaOffer) state.aftermath.push(note);
+
     // Some wrong verdicts are appealed and come back from the high court two days later
     if (!result.correct && !viaOffer && !c.finale && !c.selinCase && !c.specialKey && Math.random() < CONFIG.appealChance) {
         state.appeals.push({
@@ -979,6 +986,19 @@ async function morningStory() {
         apply(beat);
     }
     await arcBeat();
+}
+
+// Notes about earlier verdicts that are due this morning (at most two)
+async function deliverAftermath() {
+    const due = state.aftermath.filter(a => a.day <= state.day).slice(0, 2);
+    state.aftermath = state.aftermath.filter(a => a.day > state.day);
+    if (!due.length) return;
+    for (const a of due) {
+        state.conscience = Math.max(0, Math.min(100, state.conscience + a.conscience));
+        state.reputation = Math.max(0, Math.min(100, state.reputation + a.reputation));
+    }
+    await ui.showStory({ icon: '🗞️', title: L('Kararlarının Ardından'), text: due.map(a => a.text).join('\n\n'), choices: [{ label: L('Devam'), value: true }] });
+    ui.updateStats(state);
 }
 
 // High court decisions on earlier verdicts
