@@ -148,9 +148,7 @@ export function hideDirective() {
 let bailiffTimer = null;
 export function bailiffCall(name) {
     const call = document.getElementById('bailiff-call');
-    // The surname initial stays with the name: a non-breaking space before it,
-    // so a narrow bubble wraps after "Sanık" instead of leaving "Y.!" alone below
-    call.textContent = L('Sanık {0}!', name.replace(/ (?=\S+$)/, ' '));
+    call.textContent = L('Sanık {0}!', name);
     call.classList.add('visible');
     clearTimeout(bailiffTimer);
     bailiffTimer = setTimeout(() => call.classList.remove('visible'), 1700);
