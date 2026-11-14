@@ -234,7 +234,7 @@ class AudioManager {
 
     // Door opening: a metal latch click
     playDoor() {
-        if (this.playSample('door', { duration: 1.5, gain: 0.7 })) return; // latch and creak
+        if (this.playSample('door', { duration: 1.6, gain: 0.7 })) return; // latch and creak
         if (!this.enabled || !this.audioContext) return;
 
         const now = this.audioContext.currentTime;
@@ -244,7 +244,7 @@ class AudioManager {
 
     // Door closing: the soft wooden thud, a low tone dropping in pitch plus muffled noise
     playDoorClose() {
-        if (this.playSample('door', { offset: 3.6, duration: 2.7, gain: 0.7 })) return; // swing shut and latch
+        if (this.playSample('door', { offset: 3.2, duration: 3.1, gain: 0.7 })) return; // swing shut, slam at 0.6 s, latch
         if (!this.enabled || !this.audioContext) return;
 
         const ctx = this.audioContext;

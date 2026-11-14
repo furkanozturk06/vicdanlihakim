@@ -154,18 +154,28 @@ export function bailiffCall(name) {
     bailiffTimer = setTimeout(() => call.classList.remove('visible'), 1700);
 }
 
+// The door swings open slowly into the room and light from the corridor falls in
 export function openDoor() {
     return new Promise(resolve => {
+        elements.courtroomDoor.classList.remove('closing');
         elements.courtroomDoor.classList.add('open');
-        setTimeout(resolve, 500);
+        document.getElementById('door-scene').classList.add('lit');
+        setTimeout(resolve, 950);
     });
 }
 
 // Animate door closing
+// It swings shut, hits the frame, bounces a little and settles
 export function closeDoor() {
     return new Promise(resolve => {
-        elements.courtroomDoor.classList.remove('open');
-        setTimeout(resolve, 300);
+        const door = elements.courtroomDoor;
+        door.classList.remove('open');
+        door.classList.add('closing');
+        document.getElementById('door-scene').classList.remove('lit');
+        setTimeout(() => {
+            door.classList.remove('closing');
+            resolve();
+        }, 800);
     });
 }
 
