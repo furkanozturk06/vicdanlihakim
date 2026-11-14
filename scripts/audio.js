@@ -10,11 +10,22 @@ const VOWEL_FORMANTS = {
 };
 const VOICE_LEVEL = 0.35;
 
+// Recorded sounds and music in public/audio (licences in AUDIO_CREDITS.md)
+const SAMPLE_FILES = ['gavel', 'page', 'door', 'chime', 'sting', 'gasp', 'murmur', 'music-1', 'music-2'];
+const MUSIC_FILES = ['music-1', 'music-2'];
+const AMBIENT_LEVEL = 0.9;   // the murmur file is very quiet
+const MUSIC_LEVEL = 0.35;    // under the voices and effects
+const MUSIC_FADE = 3;        // seconds of crossfade between tracks
+
 class AudioManager {
     constructor() {
         this.audioContext = null;
         this.enabled = true;
         this.volume = 0.5;
+        this.samples = {};
+        this.musicOn = true;
+        this.musicVolume = 0.5;
+        this.music = null;
     }
 
     init() {
@@ -23,7 +34,48 @@ class AudioManager {
         } catch (e) {
             console.warn('Web Audio API not supported');
             this.enabled = false;
+            return;
         }
+        this.loadSamples();
+    }
+
+    // Recorded sounds and music in /audio (see AUDIO_CREDITS.md). Until they are
+    // loaded, or if one fails, the synthesized sounds below are used instead.
+    async loadSamples() {
+        await Promise.all(SAMPLE_FILES.map(async (name) => {
+            try {
+                const response = await fetch(new URL(`audio/${name}.mp3`, document.baseURI));
+                if (!response.ok) return;
+                this.samples[name] = await this.audioContext.decodeAudioData(await response.arrayBuffer());
+            } catch {
+                // keep the synthesized fallback
+            }
+        }));
+        // The murmur replaces the drone and the music starts if the courtroom is already open
+        if (this.ambientOscillator) {
+            this.stopAmbient();
+            this.startAmbient();
+        }
+    }
+
+    // Plays part of a recorded sound; false when it is not loaded (use the fallback)
+    playSample(name, { offset = 0, duration, gain = 1 } = {}) {
+        const buffer = this.samples[name];
+        if (!buffer) return false;
+        if (!this.enabled || !this.audioContext) return true; // sound is off: nothing to play
+        const ctx = this.audioContext;
+        const source = ctx.createBufferSource();
+        source.buffer = buffer;
+        const level = ctx.createGain();
+        const length = duration ?? buffer.duration - offset;
+        const now = ctx.currentTime;
+        level.gain.setValueAtTime(this.volume * gain, now);
+        level.gain.setValueAtTime(this.volume * gain, now + Math.max(0, length - 0.08));
+        level.gain.linearRampToValueAtTime(0.0001, now + length);
+        source.connect(level);
+        level.connect(ctx.destination);
+        source.start(now, offset, length);
+        return true;
     }
 
     // Resume audio context (needed after user interaction)
@@ -56,6 +108,7 @@ class AudioManager {
     // Gavel strike sound
     playGavel() {
         if (!this.enabled || !this.audioContext) return;
+        if (this.playSample('gavel', { duration: 0.9, gain: 0.9 })) return; // first of the two strikes
 
         // Create noise for impact
         const bufferSize = this.audioContext.sampleRate * 0.1;
@@ -90,6 +143,7 @@ class AudioManager {
     // Positive feedback sound
     playSuccess() {
         if (!this.enabled) return;
+        if (this.playSample('chime', { gain: 1.4 })) return;
 
         setTimeout(() => this.playTone(523.25, 0.1, 'sine'), 0);    // C5
         setTimeout(() => this.playTone(659.25, 0.1, 'sine'), 100);  // E5
@@ -99,6 +153,7 @@ class AudioManager {
     // Negative feedback sound
     playFailure() {
         if (!this.enabled) return;
+        if (this.playSample('sting', { gain: 0.6 })) return;
 
         setTimeout(() => this.playTone(311.13, 0.15, 'sine'), 0);   // Eb4
         setTimeout(() => this.playTone(233.08, 0.2, 'sine'), 150);  // Bb3
@@ -131,6 +186,7 @@ class AudioManager {
     // Page turn: the crinkle of paper lifting, a short swoosh through the air,
     // and the soft flap of the page landing
     playPageTurn() {
+        if (this.playSample('page', { gain: 0.7 })) return;
         if (!this.enabled || !this.audioContext) return;
 
         const ctx = this.audioContext;
@@ -178,6 +234,7 @@ class AudioManager {
 
     // Door opening: a metal latch click
     playDoor() {
+        if (this.playSample('door', { duration: 1.5, gain: 0.7 })) return; // latch and creak
         if (!this.enabled || !this.audioContext) return;
 
         const now = this.audioContext.currentTime;
@@ -187,6 +244,7 @@ class AudioManager {
 
     // Door closing: the soft wooden thud, a low tone dropping in pitch plus muffled noise
     playDoorClose() {
+        if (this.playSample('door', { offset: 3.6, duration: 2.7, gain: 0.7 })) return; // swing shut and latch
         if (!this.enabled || !this.audioContext) return;
 
         const ctx = this.audioContext;
@@ -213,8 +271,29 @@ class AudioManager {
     }
 
     // Ambient courtroom (low drone)
+    // A gasp from the gallery (death sentences)
+    playGasp() {
+        this.playSample('gasp', { gain: 0.5 });
+    }
+
     startAmbient() {
         if (!this.enabled || !this.audioContext || this.ambientOscillator) return;
+        this.startMusic();
+
+        // Recorded murmur of the gallery, looped (the file is recorded very quietly)
+        if (this.samples.murmur) {
+            const source = this.audioContext.createBufferSource();
+            source.buffer = this.samples.murmur;
+            source.loop = true;
+            const gainNode = this.audioContext.createGain();
+            gainNode.gain.value = this.volume * AMBIENT_LEVEL;
+            source.connect(gainNode);
+            gainNode.connect(this.audioContext.destination);
+            source.start();
+            this.ambientOscillator = source;
+            this.ambientGain = gainNode;
+            return;
+        }
 
         // Very subtle ambient drone
         const oscillator = this.audioContext.createOscillator();
@@ -226,6 +305,7 @@ class AudioManager {
         oscillator.type = 'sine';
         oscillator.frequency.value = 60;
         gainNode.gain.value = this.volume * 0.02;
+        oscillator.droneOnly = true;
 
         oscillator.start();
 
@@ -238,13 +318,64 @@ class AudioManager {
             this.ambientOscillator.stop();
             this.ambientOscillator = null;
         }
+        this.stopMusic();
     }
 
     setVolume(vol) {
         this.volume = Math.max(0, Math.min(1, vol));
-        if (this.ambientGain) {
-            this.ambientGain.gain.value = this.volume * 0.02;
+        if (this.ambientGain && this.ambientOscillator) {
+            this.ambientGain.gain.value = this.volume * (this.ambientOscillator.droneOnly ? 0.02 : AMBIENT_LEVEL);
         }
+    }
+
+    // ---- Music: the tracks play one after another with a slow crossfade ----
+    setMusic(on, volume) {
+        this.musicOn = Boolean(on);
+        this.musicVolume = Math.max(0, Math.min(1, volume));
+        if (this.music) this.music.gain.gain.value = this.musicVolume * MUSIC_LEVEL;
+        if (!this.musicOn) this.stopMusic();
+        else if (this.ambientOscillator) this.startMusic();
+    }
+
+    startMusic() {
+        if (!this.enabled || !this.musicOn || !this.audioContext || this.music) return;
+        const tracks = MUSIC_FILES.filter(n => this.samples[n]);
+        if (!tracks.length) return;
+        const ctx = this.audioContext;
+        const gain = ctx.createGain();
+        gain.gain.value = this.musicVolume * MUSIC_LEVEL;
+        gain.connect(ctx.destination);
+        this.music = { gain, index: Math.floor(Math.random() * tracks.length), timer: null, sources: [] };
+        const play = () => {
+            if (!this.music) return;
+            const buffer = this.samples[tracks[this.music.index % tracks.length]];
+            this.music.index++;
+            const source = ctx.createBufferSource();
+            source.buffer = buffer;
+            const fade = ctx.createGain();
+            const now = ctx.currentTime;
+            fade.gain.setValueAtTime(0.0001, now);
+            fade.gain.linearRampToValueAtTime(1, now + MUSIC_FADE);
+            fade.gain.setValueAtTime(1, now + buffer.duration - MUSIC_FADE);
+            fade.gain.linearRampToValueAtTime(0.0001, now + buffer.duration);
+            source.connect(fade);
+            fade.connect(gain);
+            source.start(now);
+            this.music.sources = [...this.music.sources.slice(-1), source];
+            this.music.timer = setTimeout(play, (buffer.duration - MUSIC_FADE) * 1000);
+        };
+        play();
+    }
+
+    stopMusic() {
+        if (!this.music) return;
+        clearTimeout(this.music.timer);
+        const { gain, sources } = this.music;
+        const now = this.audioContext.currentTime;
+        gain.gain.setValueAtTime(gain.gain.value, now);
+        gain.gain.linearRampToValueAtTime(0.0001, now + 0.6);
+        sources.forEach(s => { try { s.stop(now + 0.7); } catch { /* already stopped */ } });
+        this.music = null;
     }
 
     // Defendant's murmur: called for every letter as the statement is typed (30 ms

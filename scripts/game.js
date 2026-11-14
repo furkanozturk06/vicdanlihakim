@@ -381,6 +381,7 @@ function setupEventListeners() {
 function applySettings() {
     audio.setEnabled(settings.sound);
     audio.setVolume(settings.volume ?? 0.5);
+    audio.setMusic(settings.music ?? true, settings.musicVolume ?? 0.5);
     ui.setSoundIcon(settings.sound);
     const root = document.documentElement;
     root.classList.toggle('text-large', settings.textSize === 'large');
@@ -985,7 +986,10 @@ async function processVerdict(sentenceKey, viaOffer = null) {
     // The defendant takes the verdict before the verdict screen comes up
     const reaction = verdictReaction(sentenceKey, c.emotion);
     state.lastExit = reaction.exit;
-    if (reaction.death) audio.playToll();
+    if (reaction.death) {
+        audio.playToll();
+        audio.playGasp();
+    }
     await ui.npcReact(createNPCElement({ ...c, emotion: reaction.face }), reaction);
 
     await ui.showFeedback(result.partial ? 'partial' : result.correct, title, message, statsHtml, verdictLabel(sentenceKey));
