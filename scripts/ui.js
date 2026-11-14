@@ -423,13 +423,12 @@ function showBookPage() {
 }
 
 function clearTurnStyles(page) {
-    page.style.transition = page.style.transform = page.style.filter = '';
+    page.style.transition = page.style.transform = page.style.filter = page.style.transformOrigin = '';
 }
 
-// Turning a page, as in a real book. Forward: the current page lifts at its outer
-// edge and swings over the spine (left edge) to the left, uncovering the next page
-// underneath. Backward: the previous page swings back from the left and lands on
-// top of the current one. Both pages share one grid cell; `turn.progress` 0..1.
+// Turning a page. The page you are going to swings in over the current one and lands
+// on top of it: going back it comes from the left edge, going forward from the right
+// edge (mirror images). Both pages share one grid cell; `turn.progress` 0..1.
 let turn = null;
 const rulebookPanel = document.querySelector('.rulebook-content');
 
@@ -445,8 +444,8 @@ function startTurn(target) {
     const body = elements.rulebookBody;
     body.style.perspectiveOrigin = `50% ${scroll + rulebookPanel.clientHeight / 2}px`;
     body.classList.add('turning');
-    // Forward: next page below, current on top. Backward: current below, previous on top.
-    body.replaceChildren(...(forward ? [other, current] : [current, other]));
+    // The current page stays below; the page coming into view is on top
+    body.replaceChildren(current, other);
     turn = { target, forward, current, other, scroll, progress: 0 };
     setTurnProgress(0);
     return turn;
@@ -455,15 +454,10 @@ function startTurn(target) {
 function setTurnProgress(p) {
     turn.progress = p;
     const { forward, current, other, scroll } = turn;
-    if (forward) {
-        current.style.transform = `rotateY(${-180 * p}deg)`;
-        current.style.filter = `brightness(${1 - 0.55 * p})`;
-        other.style.filter = `brightness(${0.6 + 0.4 * p})`;
-    } else {
-        other.style.transform = `translateY(${scroll}px) rotateY(${-180 * (1 - p)}deg)`;
-        other.style.filter = `brightness(${0.45 + 0.55 * p})`;
-        current.style.filter = `brightness(${1 - 0.4 * p})`;
-    }
+    other.style.transformOrigin = forward ? 'right center' : 'left center';
+    other.style.transform = `translateY(${scroll}px) rotateY(${(forward ? 180 : -180) * (1 - p)}deg)`;
+    other.style.filter = `brightness(${0.45 + 0.55 * p})`;
+    current.style.filter = `brightness(${1 - 0.4 * p})`;
 }
 
 function finishTurn(commit) {
