@@ -435,6 +435,7 @@ async function confirmOverwrite() {
 async function startGame() {
     clearSave();
     state = createInitialState();
+    ui.clearCourtroom();
     ui.hideStartScreen();
     audio.startAmbient();
     await ui.showIntro(INTRO);
@@ -447,6 +448,7 @@ async function startEndless() {
     state = createInitialState();
     state.mode = 'endless';
     state.branch = 'all';
+    ui.clearCourtroom();
     ui.hideStartScreen();
     audio.startAmbient();
     ui.updateStats(state);
@@ -462,6 +464,7 @@ function continueGame() {
         return;
     }
     state = loaded;
+    ui.clearCourtroom();
     ui.hideStartScreen();
     audio.startAmbient();
     ui.updateStats(state);
@@ -476,6 +479,7 @@ async function restartGame() {
     }
     clearSave();
     state = createInitialState();
+    ui.clearCourtroom();
     document.getElementById('game-over-screen').classList.add('hidden');
     audio.startAmbient();
     ui.updateStats(state);
@@ -991,7 +995,8 @@ async function processVerdict(sentenceKey, viaOffer = null) {
     await ui.npcReact(createNPCElement({ ...c, emotion: reaction.face }), reaction);
 
     // The verdict sound plays as the verdict screen appears
-    if (result.correct) audio.playSuccess();
+    if (result.partial) audio.playPartial();
+    else if (result.correct) audio.playSuccess();
     else audio.playFailure();
     await ui.showFeedback(result.partial ? 'partial' : result.correct, title, message, statsHtml, verdictLabel(sentenceKey));
     ui.updateStats(state);

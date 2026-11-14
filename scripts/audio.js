@@ -65,7 +65,7 @@ class AudioManager {
     }
 
     // Plays part of a recorded sound; false when it is not loaded (use the fallback)
-    playSample(name, { offset = 0, duration, gain = 1 } = {}) {
+    playSample(name, { offset = 0, duration, gain = 1, rate = 1 } = {}) {
         const buffer = this.samples[name];
         if (!buffer) return false;
         if (!this.enabled || !this.audioContext) return true; // sound is off: nothing to play
@@ -73,14 +73,16 @@ class AudioManager {
         const source = ctx.createBufferSource();
         source.buffer = buffer;
         const level = ctx.createGain();
-        const length = duration ?? buffer.duration - offset;
+        source.playbackRate.value = rate;
+        // length in real time: a slower rate makes the same part of the file last longer
+        const length = (duration ?? buffer.duration - offset) / rate;
         const now = ctx.currentTime;
         level.gain.setValueAtTime(this.volume * gain, now);
         level.gain.setValueAtTime(this.volume * gain, now + Math.max(0, length - 0.08));
         level.gain.linearRampToValueAtTime(0.0001, now + length);
         source.connect(level);
         level.connect(ctx.destination);
-        source.start(now, offset, length);
+        source.start(now, offset, length * rate);
         return true;
     }
 
@@ -154,6 +156,14 @@ class AudioManager {
         setTimeout(() => this.playTone(523.25, 0.1, 'sine'), 0);    // C5
         setTimeout(() => this.playTone(659.25, 0.1, 'sine'), 100);  // E5
         setTimeout(() => this.playTone(783.99, 0.15, 'sine'), 200); // G5
+    }
+
+    // Close to the law but not quite: the same chime, lower and slower, so it sounds unfinished
+    playPartial() {
+        if (!this.enabled) return;
+        if (this.playSample('chime', { gain: 1.1, rate: 0.72 })) return;
+        setTimeout(() => this.playTone(523.25, 0.12, 'sine'), 0);   // C5
+        setTimeout(() => this.playTone(493.88, 0.2, 'sine'), 120);  // B4
     }
 
     // Negative feedback sound

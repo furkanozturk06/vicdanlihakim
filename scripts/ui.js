@@ -214,6 +214,17 @@ export function npcReact(npcElement, { motion, death }) {
 
 // Hide NPC with exit animation: 'free' walks out to the side, 'taken' is led down
 // behind the rail, anything else steps back
+// A new game starts with an empty courtroom: nothing left over from the last one
+export function clearCourtroom() {
+    elements.npcContainer.innerHTML = '';
+    hideSpeechBubble();
+    hideEvidence();
+    hidePendingOffer();
+    updateCaseNumber(0);
+    elements.courtroomDoor.className = 'closed';
+    document.getElementById('door-scene').classList.remove('lit');
+}
+
 export function hideNPC(exit = 'quiet') {
     const npc = elements.npcContainer.querySelector('.npc');
     if (npc) {
