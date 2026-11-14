@@ -3,7 +3,7 @@
  * Core game loop, state management, and decision processing
  */
 
-import { generateCase, buildCase, createNPCElement, evaluateVerdict, getRandomDirective, verdictFeedback, verdictLabel, activeAmendments } from './npc.js';
+import { generateCase, buildCase, createNPCElement, evaluateVerdict, getRandomDirective, verdictFeedback, verdictLabel, activeAmendments, verdictReaction } from './npc.js';
 import { CRIMES, GENERAL_NOTES, AMENDMENTS, VERDICT_LABELS, LADDER, LAW_CHAPTERS } from './cases.js';
 import {
     OFFERS, buildNewspaper, FINALE, FINAL_DIRECTIVE, INTRO, TUTORIAL, ENDLESS_INTRO, HOW_TO_PLAY, inspectorReport,
@@ -901,6 +901,12 @@ async function processVerdict(sentenceKey, viaOffer = null) {
         </div>
     `;
 
+    // The defendant takes the verdict before the verdict screen comes up
+    const reaction = verdictReaction(sentenceKey, c.emotion);
+    state.lastExit = reaction.exit;
+    if (reaction.death) audio.playToll();
+    await ui.npcReact(createNPCElement({ ...c, emotion: reaction.face }), reaction);
+
     await ui.showFeedback(result.partial ? 'partial' : result.correct, title, message, statsHtml, verdictLabel(sentenceKey));
     ui.updateStats(state);
 
@@ -917,7 +923,8 @@ async function processVerdict(sentenceKey, viaOffer = null) {
 
 // Clear the courtroom and call the next defendant
 async function finishCase() {
-    ui.hideNPC();
+    ui.hideNPC(state.lastExit);
+    state.lastExit = null;
     ui.hideSpeechBubble();
     ui.hideEvidence();
     state.currentCase = null;

@@ -317,6 +317,26 @@ class AudioManager {
         osc.stop(now + length + 0.02);
     }
 
+    // A slow, low bell for a death sentence
+    playToll() {
+        if (!this.enabled || !this.audioContext) return;
+        const ctx = this.audioContext;
+        const now = ctx.currentTime;
+        [[98, 1], [196, 0.45], [293.7, 0.25], [415, 0.12]].forEach(([freq, level]) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0.0001, now);
+            gain.gain.exponentialRampToValueAtTime(this.volume * 0.35 * level, now + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 3.2);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + 3.3);
+        });
+    }
+
     // Turn all sound on or off (the setting the player chose)
     setEnabled(on) {
         this.enabled = Boolean(on) && Boolean(this.audioContext);

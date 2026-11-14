@@ -77,20 +77,30 @@ export function makePortrait(a, emotion) {
         panicked: ['M41 47 Q46 44 52 46', 'M68 46 Q74 44 79 47'],
         defiant: ['M41 48 L52 52', 'M68 52 L79 48'],
         proud: ['M41 50 Q46 48 52 50', 'M68 47 Q74 44 79 47'],
+        relieved: ['M41 48 Q46 45 52 48', 'M68 48 Q74 45 79 48'],
+        crying: ['M41 53 L52 48', 'M68 48 L79 53'],
+        angry: ['M40 47 L53 54', 'M67 54 L80 47'],
     }[emotion] || ['M41 50 L52 50', 'M68 50 L79 50'];
     const browColor = old ? '#e6e6e6' : shade(a.hair, -0.25);
 
-    const eyeOpen = emotion === 'panicked' ? 5 : emotion === 'proud' ? 2.2 : 3.8;
-    const eyes = [46.5, 73.5].map(x => `
+    const eyeOpen = emotion === 'panicked' ? 5 : emotion === 'proud' ? 2.2 : emotion === 'crying' ? 2.4 : emotion === 'angry' ? 3 : 3.8;
+    // Relieved: eyes shut in a smile. Crying: tears run down from both eyes.
+    const eyes = [46.5, 73.5].map(x => (emotion === 'relieved'
+        ? `<path d="M${x - 5.5} 61 Q${x} 55 ${x + 5.5} 61" stroke="#2a1d14" stroke-width="2.2" fill="none" stroke-linecap="round"/>`
+        : `
         <ellipse cx="${x}" cy="60" rx="5.5" ry="${eyeOpen}" fill="#fbf8f2"/>
         <circle cx="${x}" cy="60.5" r="${Math.min(2.6, eyeOpen)}" fill="#2a1d14"/>
-        ${emotion === 'remorseful' ? `<path d="M${x - 6} 57 Q${x} 55 ${x + 6} 57" stroke="${skinDark}" stroke-width="1.5" fill="none"/>` : ''}`).join('');
+        ${emotion === 'remorseful' || emotion === 'crying' ? `<path d="M${x - 6} 57 Q${x} 55 ${x + 6} 57" stroke="${skinDark}" stroke-width="1.5" fill="none"/>` : ''}
+        ${emotion === 'crying' ? `<path d="M${x + 2} 64 Q${x + 4.5} 70 ${x + 2.5} 74 Q${x} 70 ${x + 2} 64 Z" fill="#9fd3f0" opacity="0.9"/>` : ''}`)).join('');
 
     const mouth = {
         remorseful: '<path d="M52 84 Q60 79 68 84" stroke="#5a2a20" stroke-width="2" fill="none" stroke-linecap="round"/>',
         panicked: '<ellipse cx="60" cy="83" rx="4" ry="5" fill="#5a2a20"/>',
         defiant: '<path d="M52 82 L68 82" stroke="#5a2a20" stroke-width="2.2" stroke-linecap="round"/>',
         proud: '<path d="M52 81 Q61 87 70 79" stroke="#5a2a20" stroke-width="2" fill="none" stroke-linecap="round"/>',
+        relieved: '<path d="M50 79 Q60 92 70 79 Z" fill="#5a2a20"/><path d="M53 80 Q60 83 67 80" stroke="#f4efe6" stroke-width="2" fill="none"/>',
+        crying: '<path d="M51 87 Q55 81 60 84 Q65 81 69 87" stroke="#5a2a20" stroke-width="2.2" fill="none" stroke-linecap="round"/>',
+        angry: '<path d="M50 85 Q60 78 70 85 Z" fill="#5a2a20"/><path d="M53 83 L67 83" stroke="#f4efe6" stroke-width="1.6"/>',
     }[emotion] || '<path d="M53 81 Q60 86 67 81" stroke="#5a2a20" stroke-width="2" fill="none" stroke-linecap="round"/>';
 
     const nose = `<path d="M60 62 Q57 72 60 74 Q62 75 64 73" stroke="${skinDark}" stroke-width="1.6" fill="none" stroke-linecap="round"/>`;

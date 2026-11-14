@@ -245,6 +245,22 @@ function verdictWeight(verdict) {
     return 'light';
 }
 
+// Face, movement and way out after the verdict (what happened to them, not
+// whether it was lawful). exit: 'free' walks out, 'taken' is led down, 'quiet' steps back.
+const VISIBLE_REACTIONS = {
+    release: { remorseful: 'relieved', panicked: 'relieved', defiant: 'proud', proud: 'proud' },
+    light: { remorseful: 'remorseful', panicked: 'relieved', defiant: 'defiant', proud: 'proud' },
+    heavy: { remorseful: 'crying', panicked: 'panicked', defiant: 'angry', proud: 'remorseful' },
+    death: { remorseful: 'crying', panicked: 'panicked', defiant: 'angry', proud: 'remorseful' },
+};
+const MOTION = { relieved: 'react-hop', proud: 'react-nod', crying: 'react-sink', panicked: 'react-shock', angry: 'react-shake', remorseful: 'react-sink', defiant: 'react-shake' };
+
+export function verdictReaction(verdict, emotion) {
+    const weight = verdictWeight(verdict);
+    const face = VISIBLE_REACTIONS[weight][emotion] || emotion;
+    return { face, motion: MOTION[face] || 'react-nod', exit: weight === 'release' ? 'free' : weight === 'light' ? 'quiet' : 'taken', death: weight === 'death' };
+}
+
 // The defendant reacts to what happened to them, not to whether the judge was right
 const DEFENDANT_REACTIONS = {
     release: {

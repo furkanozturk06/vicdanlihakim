@@ -186,15 +186,31 @@ export function showNPC(npcElement) {
     return new Promise(resolve => setTimeout(resolve, 600));
 }
 
-// Hide NPC with exit animation
-export function hideNPC() {
+// The verdict lands: the defendant's face changes and they move (hop, sink, shake...).
+// A death sentence darkens the courtroom for a moment.
+export function npcReact(npcElement, { motion, death }) {
+    npcElement.classList.add(motion);
+    elements.npcContainer.replaceChildren(npcElement);
+    if (death) {
+        const room = document.getElementById('courtroom');
+        room.classList.remove('verdict-death');
+        void room.offsetWidth;
+        room.classList.add('verdict-death');
+        setTimeout(() => room.classList.remove('verdict-death'), 3200);
+    }
+    return new Promise(resolve => setTimeout(resolve, 1100));
+}
+
+// Hide NPC with exit animation: 'free' walks out to the side, 'taken' is led down
+// behind the rail, anything else steps back
+export function hideNPC(exit = 'quiet') {
     const npc = elements.npcContainer.querySelector('.npc');
     if (npc) {
-        npc.style.opacity = '0';
-        npc.style.transform = 'translateY(-30px)';
+        npc.className = `npc exit-${exit}`;
+        npc.style.transition = '';
         setTimeout(() => {
             elements.npcContainer.innerHTML = '';
-        }, 300);
+        }, 700);
     }
 }
 
