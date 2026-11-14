@@ -6,6 +6,7 @@ All files are free for commercial use without attribution. Downloaded 14 Novembe
 |---|---|---|---|---|
 | gavel.mp3 | Gavel on wooden desk (HQ preview) | Aerny | https://freesound.org/people/Aerny/sounds/618138/ | CC0 1.0 |
 | page.mp3 | Turn a Page | CreatorsHome | https://pixabay.com/sound-effects/film-special-effects-turn-a-page-336933/ | Pixabay Content License |
+| book.mp3 | book_open_close.wav (HQ preview) | j1987 | https://freesound.org/people/j1987/sounds/573069/ | CC0 1.0 |
 | hall.mp3 | Crowd in the church.wav (HQ preview) | Sindbad13 | https://freesound.org/people/Sindbad13/sounds/654533/ | CC0 1.0 |
 | court.mp3 | Courtroom Background (HQ preview) | craigsmith | https://freesound.org/people/craigsmith/sounds/817130/ | CC0 1.0 |
 | door.mp3 | Old wooden door with a latch, Opening and closing | STRACHszydło | https://pixabay.com/sound-effects/film-special-effects-old-wooden-door-with-a-latch-opening-and-closing-544539/ | Pixabay Content License |

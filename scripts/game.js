@@ -346,7 +346,7 @@ function setupEventListeners() {
 
     elements.rulebookBtn.addEventListener('click', () => {
         audio.resume();
-        audio.playPageTurn();
+        audio.playBookOpen();
         ui.openRulebook();
     });
     elements.rulebookClose.addEventListener('click', () => ui.closeRulebook());

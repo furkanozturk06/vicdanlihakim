@@ -11,7 +11,7 @@ const VOWEL_FORMANTS = {
 const VOICE_LEVEL = 0.35;
 
 // Recorded sounds in public/audio (licences in AUDIO_CREDITS.md)
-const SAMPLE_FILES = ['gavel', 'page', 'door', 'chime', 'sting', 'gasp', 'hall', 'court'];
+const SAMPLE_FILES = ['gavel', 'page', 'book', 'door', 'chime', 'sting', 'gasp', 'hall', 'court'];
 const AMBIENT_LEVEL = 1;
 // The courtroom murmur is two recordings looped together: a seated crowd waiting in
 // a large hall (3 minutes; the door closing at its end is left out of the loop) and,
@@ -191,6 +191,13 @@ class AudioManager {
 
     // Page turn: the crinkle of paper lifting, a short swoosh through the air,
     // and the soft flap of the page landing
+    // Opening the law book: a heavy cover opens and the pages settle. The recording
+    // opens and closes a large book several times; this is one opening (14.1 s).
+    playBookOpen() {
+        if (this.playSample('book', { offset: 13.85, duration: 1.1, gain: 0.8 })) return;
+        this.playPageTurn();
+    }
+
     playPageTurn() {
         if (this.playSample('page', { gain: 0.7 })) return;
         if (!this.enabled || !this.audioContext) return;
