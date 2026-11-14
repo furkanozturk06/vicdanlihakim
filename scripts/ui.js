@@ -615,6 +615,7 @@ export function showSettings(settings, { onChange, onReset }) {
             btn.classList.toggle('on', on);
         });
         document.getElementById('setting-volume').value = Math.round((settings.volume ?? 0.5) * 100);
+        document.getElementById('setting-ambience-volume').value = Math.round((settings.ambienceVolume ?? 0.5) * 100);
         document.querySelectorAll('#setting-textsize button').forEach(b => {
             b.classList.toggle('selected', b.dataset.size === (settings.textSize || 'normal'));
         });
@@ -624,6 +625,7 @@ export function showSettings(settings, { onChange, onReset }) {
         btn.onclick = () => { onChange(btn.dataset.setting, !settings[btn.dataset.setting]); render(); };
     });
     document.getElementById('setting-volume').oninput = (e) => onChange('volume', Number(e.target.value) / 100);
+    document.getElementById('setting-ambience-volume').oninput = (e) => onChange('ambienceVolume', Number(e.target.value) / 100);
     document.querySelectorAll('#setting-textsize button').forEach(b => {
         b.onclick = () => { onChange('textSize', b.dataset.size); render(); };
     });

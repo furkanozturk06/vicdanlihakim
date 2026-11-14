@@ -20,6 +20,10 @@ class AudioManager {
         this.enabled = true;
         this.volume = 0.5;
         this.samples = {};
+        // The courtroom murmur has its own switch and level, apart from the effects
+        this.ambienceOn = true;
+        this.ambienceVolume = 0.5;
+        this.ambienceWanted = false; // the courtroom is open, so the murmur should play
     }
 
     init() {
@@ -47,7 +51,7 @@ class AudioManager {
         }));
         // The recorded murmur replaces the drone if the courtroom is already open
         if (this.ambientOscillator) {
-            this.stopAmbient();
+            this.stopAmbientSound();
             this.startAmbient();
         }
     }
@@ -271,7 +275,8 @@ class AudioManager {
     }
 
     startAmbient() {
-        if (!this.enabled || !this.audioContext || this.ambientOscillator) return;
+        this.ambienceWanted = true;
+        if (!this.enabled || !this.ambienceOn || !this.audioContext || this.ambientOscillator) return;
 
         // Recorded murmur of the gallery, looped (the file is recorded very quietly)
         if (this.samples.murmur) {
@@ -279,7 +284,7 @@ class AudioManager {
             source.buffer = this.samples.murmur;
             source.loop = true;
             const gainNode = this.audioContext.createGain();
-            gainNode.gain.value = this.volume * AMBIENT_LEVEL;
+            gainNode.gain.value = this.ambienceVolume * AMBIENT_LEVEL;
             source.connect(gainNode);
             gainNode.connect(this.audioContext.destination);
             source.start();
@@ -297,7 +302,7 @@ class AudioManager {
 
         oscillator.type = 'sine';
         oscillator.frequency.value = 60;
-        gainNode.gain.value = this.volume * 0.02;
+        gainNode.gain.value = this.ambienceVolume * 0.02;
         oscillator.droneOnly = true;
 
         oscillator.start();
@@ -307,17 +312,30 @@ class AudioManager {
     }
 
     stopAmbient() {
+        this.ambienceWanted = false;
+        this.stopAmbientSound();
+    }
+
+    stopAmbientSound() {
         if (this.ambientOscillator) {
             this.ambientOscillator.stop();
             this.ambientOscillator = null;
         }
     }
 
+    // Courtroom murmur switch and level (Settings)
+    setAmbience(on, volume) {
+        this.ambienceOn = Boolean(on);
+        this.ambienceVolume = Math.max(0, Math.min(1, volume));
+        if (this.ambientGain && this.ambientOscillator) {
+            this.ambientGain.gain.value = this.ambienceVolume * (this.ambientOscillator.droneOnly ? 0.02 : AMBIENT_LEVEL);
+        }
+        if (!this.ambienceOn) this.stopAmbientSound();
+        else if (this.ambienceWanted) this.startAmbient();
+    }
+
     setVolume(vol) {
         this.volume = Math.max(0, Math.min(1, vol));
-        if (this.ambientGain && this.ambientOscillator) {
-            this.ambientGain.gain.value = this.volume * (this.ambientOscillator.droneOnly ? 0.02 : AMBIENT_LEVEL);
-        }
     }
 
     // Defendant's murmur: called for every letter as the statement is typed (30 ms

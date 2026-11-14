@@ -2986,4 +2986,6 @@ export default {
     "En yüksek unvana ulaştın.": "You have reached the highest title.",
     "Başarımlar": "Achievements",
     "Kayıtlı oyunun, Sonsuz Mod kilidi, rekorun, unvanın, başarımların ve öğretici bilgisi silinecek. Bu işlem geri alınamaz.": "Your saved game, Endless Mode unlock, record, title, achievements and tutorial progress will be deleted. This cannot be undone.",
+    "Salon uğultusu": "Courtroom murmur",
+    "Uğultu düzeyi": "Murmur volume",
 };

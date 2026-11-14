@@ -93,7 +93,7 @@ export function clearSave() {
 
 export function loadSettings() {
     return {
-        sound: true, volume: 0.5, textSize: 'normal', vibration: true,
+        sound: true, volume: 0.5, ambience: true, ambienceVolume: 0.5, textSize: 'normal', vibration: true,
         tutorialDone: false, endlessUnlocked: false, endlessBest: 0,
         ...(read(SETTINGS_KEY) || {}),
     };
