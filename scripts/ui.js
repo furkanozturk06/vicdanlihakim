@@ -147,13 +147,14 @@ export function hideDirective() {
 // The (unseen) bailiff calls the next defendant in by name
 let bailiffTimer = null;
 
-// The call never covers the door sign: a long name gets smaller letters, and if
+// The call stays clear of the door frame: a long name gets smaller letters, and if
 // even the smallest readable size is too wide, the name moves whole to a second line
+// (made smaller too if the name alone is still too wide)
 const MIN_CALL_FONT = 7.5;
 function fitBailiffCall(call, name) {
-    const sign = document.querySelector('.door-sign').getBoundingClientRect();
-    if (!sign.width) return;
-    const limit = sign.left - 4;
+    const frame = document.querySelector('.door-frame').getBoundingClientRect();
+    if (!frame.width) return;
+    const limit = frame.left - 4;
     const box = call.getBoundingClientRect();
     const over = box.right - limit;
     if (over <= 0) return;
@@ -168,6 +169,9 @@ function fitBailiffCall(call, name) {
     call.textContent = L('Sanık {0}!', name.replace(/ /g, ' '));
     call.style.whiteSpace = 'normal';
     call.style.maxWidth = `${limit - box.left}px`;
+    const room = call.clientWidth - padding;
+    const need = call.scrollWidth - padding;
+    if (need > room) call.style.fontSize = `${Math.floor(parseFloat(style.fontSize) * room / need * 10) / 10}px`;
 }
 
 export function bailiffCall(name) {
