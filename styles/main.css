@@ -3244,9 +3244,11 @@ html.text-xlarge #directive-text { font-size: 0.92rem; }
         radial-gradient(ellipse 120px 90px at 82% 0, rgba(255, 205, 130, 0.13), transparent 70%),
         linear-gradient(180deg, #3b2a1c 0 5px, #120c08 5px 7px, transparent 7px) 0 0 / 100% 7px no-repeat,
         linear-gradient(180deg, #5a3e28 0 4px, #24180f 4px 6px, transparent 6px) 0 58% / 100% 6px no-repeat,
-        repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.35) 0 2px, rgba(255, 225, 180, 0.04) 2px 4px, transparent 4px 78px) 0 100% / 100% 42% no-repeat,
+        /* wainscot stiles, laid out from the middle so they mirror around the door */
+        linear-gradient(90deg, rgba(0, 0, 0, 0.35) 0 2px, rgba(255, 225, 180, 0.04) 2px 4px, transparent 4px) 50% 100% / 78px 42% repeat-x,
         linear-gradient(180deg, rgba(255, 225, 180, 0.04) 0 2px, transparent 2px calc(100% - 3px), rgba(0, 0, 0, 0.35) calc(100% - 3px)) 0 100% / 100% 42% no-repeat,
-        repeating-linear-gradient(90deg, transparent 0 96px, rgba(0, 0, 0, 0.3) 96px 98px, #3a291b 98px 112px, rgba(0, 0, 0, 0.3) 112px 114px) 0 0 / 100% 58% no-repeat,
+        /* pilasters every 114px, one centred behind the door, the rest mirrored */
+        linear-gradient(90deg, transparent 0 49px, rgba(0, 0, 0, 0.3) 49px 51px, #3a291b 51px 63px, rgba(0, 0, 0, 0.3) 63px 65px, transparent 65px) 50% 0 / 114px 58% repeat-x,
         linear-gradient(180deg, #2c2018 0%, #241a13 58%, #1b130d 58%, #120c08 100%);
 }
 
