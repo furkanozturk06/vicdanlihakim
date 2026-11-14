@@ -883,7 +883,6 @@ async function processVerdict(sentenceKey, viaOffer = null) {
         }
         if (result.partial) moneyChange = 0; // close to the law earns nothing
         reputationChange = 2;
-        audio.playSuccess();
     } else {
         moneyChange = -CONFIG.basePenalty * result.severity;
         if (result.tooHarsh) {
@@ -892,7 +891,6 @@ async function processVerdict(sentenceKey, viaOffer = null) {
         } else {
             reputationChange = -5;
         }
-        audio.playFailure();
     }
 
     if (sentenceKey === 'death') {
@@ -992,6 +990,9 @@ async function processVerdict(sentenceKey, viaOffer = null) {
     }
     await ui.npcReact(createNPCElement({ ...c, emotion: reaction.face }), reaction);
 
+    // The verdict sound plays as the verdict screen appears
+    if (result.correct) audio.playSuccess();
+    else audio.playFailure();
     await ui.showFeedback(result.partial ? 'partial' : result.correct, title, message, statsHtml, verdictLabel(sentenceKey));
     ui.updateStats(state);
 
