@@ -208,7 +208,8 @@ export function npcReact(npcElement, { motion, death }) {
         room.classList.add('verdict-death');
         setTimeout(() => room.classList.remove('verdict-death'), 3200);
     }
-    return new Promise(resolve => setTimeout(resolve, 1100));
+    // The verdict screen comes up as soon as the face has changed; the movement goes on behind it
+    return new Promise(resolve => setTimeout(resolve, 450));
 }
 
 // Hide NPC with exit animation: 'free' walks out to the side, 'taken' is led down

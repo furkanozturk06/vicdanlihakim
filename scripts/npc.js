@@ -245,12 +245,17 @@ function verdictWeight(verdict) {
     return 'light';
 }
 
-// An objection after the judge picks a verdict, before the gavel falls. When the
-// verdict is wrong it often points at the right one; when it is right it sometimes
-// tries to lead the judge astray with another law of the same crime. The defence
-// asks for lighter sentences, the prosecution for harsher ones. Story cases and
-// cases still waiting for a report never get one (it would give the answer away).
+// An objection after the judge picks a verdict, before the gavel falls. It comes
+// just as often after a right verdict as after a wrong one, and it can be right or
+// wrong either way: after a wrong verdict half of the objections point at the lawful
+// verdict and half at another wrong one; after a right verdict it always tries to
+// lead the judge astray with another law of the same crime. So an objection never
+// tells the judge whether they were right. The defence asks for lighter sentences,
+// the prosecution for harsher ones. Story cases and cases still waiting for a report
+// never get one.
 // -> { side: 'defence'|'prosecution', verdict, text } or null
+const OBJECTION_CHANCE = 0.15;
+
 export function pickObjection(c, verdict) {
     if (c.finale || c.selinCase || c.specialKey || !c.statementRef) return null;
     if (c.delayed && !c.revealed) return null;
@@ -259,15 +264,16 @@ export function pickObjection(c, verdict) {
         : lawKey === 'base' ? L('olağan ceza uygulanmalı')
             : crime.laws[lawKey].text);
 
+    if (Math.random() >= OBJECTION_CHANCE) return null;
     let proposed;
     let reason;
-    if (verdict !== c.correctVerdict) {
-        if (Math.random() >= 0.35) return null;
+    if (verdict !== c.correctVerdict && Math.random() < 0.5) {
         proposed = c.correctVerdict;
         reason = reasonFor(c.statementRef.law);
     } else {
-        if (Math.random() >= 0.12) return null;
-        const others = Object.entries(crime.laws).filter(([key, law]) => key !== c.statementRef.law && law.verdict !== verdict && law.verdict !== 'death');
+        // a misleading objection: another law of the crime, neither the judge's verdict nor the lawful one
+        const others = Object.entries(crime.laws).filter(([key, law]) => key !== c.statementRef.law
+            && law.verdict !== verdict && law.verdict !== c.correctVerdict && law.verdict !== 'death');
         if (!others.length) return null;
         const [key, law] = pick(others);
         proposed = law.verdict;
