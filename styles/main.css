@@ -3590,3 +3590,125 @@ html.text-xlarge #directive-text { font-size: 0.92rem; }
 @media (prefers-reduced-motion: reduce) {
     .npc[class*="react-"], .npc[class*="exit-"] { animation-duration: 0.01s; }
 }
+
+/* ========================================
+   Career: menu button, career screen, notices
+======================================== */
+.career-btn {
+    margin-top: 2px;
+    padding: 6px 14px;
+    border: 1px solid rgba(201, 162, 39, 0.35);
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.25);
+    color: var(--gold-accent);
+    font-family: var(--font-typewriter);
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+
+.career-content {
+    width: calc(100% - 2 * var(--spacing-md));
+    max-width: 440px;
+    max-height: calc(100% - 2 * var(--spacing-xl));
+    overflow-y: auto;
+}
+
+.career-title {
+    margin: 0 0 var(--spacing-sm);
+    color: var(--gold-accent);
+    font-family: var(--font-typewriter);
+    text-align: center;
+}
+
+.career-progress {
+    height: 8px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.12);
+    overflow: hidden;
+}
+
+.career-progress-bar {
+    height: 100%;
+    background: var(--gold-accent);
+}
+
+.career-next {
+    margin: 6px 0 var(--spacing-md);
+    font-size: 0.75rem;
+    text-align: center;
+    opacity: 0.8;
+}
+
+.career-heading {
+    margin: 0 0 var(--spacing-xs);
+    font-size: 0.95rem;
+}
+
+.achievement-list {
+    list-style: none;
+    margin: 0 0 var(--spacing-md);
+    padding: 0;
+}
+
+.achievement-list li {
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    column-gap: 8px;
+    padding: 7px 0;
+    border-bottom: 1px dotted rgba(201, 162, 39, 0.25);
+}
+
+.achievement-icon {
+    grid-row: span 2;
+    font-size: 1.2rem;
+    text-align: center;
+}
+
+.achievement-title {
+    font-family: var(--font-typewriter);
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.achievement-text {
+    font-size: 0.75rem;
+    opacity: 0.8;
+}
+
+.achievement-list li.locked {
+    opacity: 0.45;
+}
+
+.toast {
+    position: fixed;
+    top: calc(12px + env(safe-area-inset-top, 0px));
+    left: 50%;
+    z-index: 400;
+    max-width: calc(100% - 32px);
+    padding: 8px 16px;
+    border: 1px solid var(--gold-accent);
+    border-radius: 999px;
+    background: #120d0a;
+    color: var(--gold-accent);
+    font-family: var(--font-typewriter);
+    font-size: 0.8rem;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+    opacity: 0;
+    transform: translate(-50%, -20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+}
+
+.toast.visible {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+
+/* The career screen opens from the main menu, so it sits above it like Settings */
+#career-modal {
+    z-index: 640;
+}
+
+.achievement-list li {
+    text-align: left;
+}

@@ -220,6 +220,22 @@
             </div>
         </div>
 
+        <!-- Career: title and achievements -->
+        <div id="career-modal" class="modal hidden">
+            <div class="modal-content career-content">
+                <h2>Kariyer</h2>
+                <p class="career-title" id="career-title"></p>
+                <div class="career-progress"><div class="career-progress-bar" id="career-progress-bar"></div></div>
+                <p class="career-next" id="career-next"></p>
+                <h3 class="career-heading">Başarımlar <span id="career-count"></span></h3>
+                <ul class="achievement-list" id="achievement-list"></ul>
+                <button id="career-close" type="button" class="typewriter-btn">Kapat</button>
+            </div>
+        </div>
+
+        <!-- Short notices (achievement, new title) -->
+        <div id="toast" class="toast" aria-live="polite"></div>
+
         <!-- Settings -->
         <div id="settings-modal" class="modal hidden">
             <div class="modal-content settings-content">
@@ -334,6 +350,7 @@
                         <button id="howto-btn" class="typewriter-btn menu-quiet">Nasıl Oynanır</button>
                         <button id="settings-btn" class="typewriter-btn menu-quiet">Ayarlar</button>
                     </div>
+                    <button id="career-btn" type="button" class="career-btn">🏆 <span>Kariyer</span> · <span id="career-rank"></span></button>
                     <p id="endless-record" class="endless-record hidden"></p>
                     <div class="lang-switch" role="group" aria-label="Dil / Language">
                         <button type="button" data-lang="tr" lang="tr">Türkçe</button>

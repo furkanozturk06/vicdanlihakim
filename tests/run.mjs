@@ -102,6 +102,10 @@ function check(scenario, r) {
     if (e.stoppedAt && r.stoppedAt !== e.stoppedAt) problems.push(`${r.stoppedAt}. günde durdu, beklenen ${e.stoppedAt}`);
     if (e.trial) for (const [k, v] of Object.entries(e.trial)) if (r.trial?.[k] !== v) problems.push(`dava: ${k} "${r.trial?.[k]}", beklenen "${v}"`);
     if (e.finale && r.finale !== e.finale) problems.push(`final "${r.finale}", beklenen "${e.finale}"`);
+    if (e.end === 'Kasabanın Hakimi') {
+        const missing = ['first', 'ayla', 'cleanHands', 'town'].filter(id => !r.settings.achievements?.[id]);
+        if (missing.length) problems.push(`açılmayan başarımlar: ${missing.join(', ')}`);
+    }
     if (e.end === 'Kasabanın Hakimi' && !r.stories.some(t => t.includes('Kararlarının Ardından'))) problems.push('hiç "Kararlarının Ardından" kartı gelmedi');
     if (e.end === 'Kasabanın Hakimi' && (r.trial?.witness !== 'kept' || r.trial?.footage !== 'accepted')) problems.push(`dürüst hakimin davası eksik: ${JSON.stringify(r.trial)}`);
     if (e.tutorial && r.tutorialSteps !== e.tutorial) problems.push(`öğretici ${r.tutorialSteps} adım, beklenen ${e.tutorial}`);

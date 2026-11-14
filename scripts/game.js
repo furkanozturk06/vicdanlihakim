@@ -18,6 +18,7 @@ import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { L, LANG, translatePage, formatMoney } from './i18n.js';
 import { ACT1, finaleStatement } from './trial.js';
 import { aftermathFor } from './aftermath.js';
+import { ACHIEVEMENTS, achievement, rankFor } from './career.js';
 
 // Game configuration
 const CONFIG = {
@@ -169,6 +170,54 @@ export function initGame() {
     ui.showStartScreen();
     ui.setContinueOption(savedDay(), savedMode());
     ui.setEndlessOption(settings.endlessUnlocked, settings.endlessBest);
+    showCareer();
+}
+
+// ---------- Career: titles and achievements (career.js) ----------
+function career() {
+    settings.career = settings.career || { lawful: 0, questioned: 0 };
+    settings.achievements = settings.achievements || {};
+    settings.endingsSeen = settings.endingsSeen || [];
+    return settings.career;
+}
+
+function showCareer() {
+    const c = career();
+    const rank = rankFor(c.lawful);
+    ui.setCareer({
+        rank: rank.title,
+        lawful: c.lawful,
+        next: rank.next ? { title: rank.next.title, at: rank.next.at, from: rank.from } : null,
+        achievements: ACHIEVEMENTS.map(a => ({ ...a, done: Boolean(settings.achievements[a.id]) })),
+    });
+}
+
+function award(id) {
+    career();
+    if (settings.achievements[id]) return;
+    settings.achievements[id] = true;
+    saveSettings(settings);
+    const a = achievement(id);
+    ui.toast(`${a.icon} ${L('Başarım: {0}', a.title)}`);
+    showCareer();
+}
+
+function countLawfulVerdict() {
+    const c = career();
+    const before = rankFor(c.lawful).index;
+    c.lawful++;
+    saveSettings(settings);
+    award('first');
+    const after = rankFor(c.lawful);
+    if (after.index > before) ui.toast(`🎖️ ${L('Yeni unvan: {0}', after.title)}`);
+    showCareer();
+}
+
+function countQuestion() {
+    const c = career();
+    c.questioned++;
+    saveSettings(settings);
+    if (c.questioned >= 100) award('interrogator');
 }
 
 function setupEventListeners() {
@@ -202,6 +251,12 @@ function setupEventListeners() {
             saveSettings(settings);
             location.reload();
         });
+    });
+
+    document.getElementById('career-btn').addEventListener('click', () => {
+        audio.resume();
+        audio.playClick();
+        ui.openCareer();
     });
 
     document.getElementById('howto-btn').addEventListener('click', async () => {
@@ -345,12 +400,12 @@ function openSettings() {
             const ok = await ui.showStory({
                 icon: '⚠️',
                 title: L('İlerlemeyi Sıfırla'),
-                text: L('Kayıtlı oyunun, Sonsuz Mod kilidi, rekorun ve öğretici bilgisi silinecek. Bu işlem geri alınamaz.'),
+                text: L('Kayıtlı oyunun, Sonsuz Mod kilidi, rekorun, unvanın, başarımların ve öğretici bilgisi silinecek. Bu işlem geri alınamaz.'),
                 choices: [{ label: L('Evet, hepsini sıfırla'), value: true }, { label: L('Vazgeç'), value: false }],
             });
             if (!ok) return;
             clearSave();
-            Object.assign(settings, { endlessUnlocked: false, endlessBest: 0, tutorialDone: false });
+            Object.assign(settings, { endlessUnlocked: false, endlessBest: 0, tutorialDone: false, career: null, achievements: {}, endingsSeen: [] });
             saveSettings(settings);
             location.reload();
         },
@@ -750,6 +805,7 @@ async function interrogate() {
     audio.playClick();
     c.asked = true;
     state.questionsLeft--;
+    countQuestion();
     ui.showEvidence(c, state.questionsLeft);
     await ui.typeIntoBubble(c.answer, (text, i) => audio.speakLetter(text, i, c.gender, c.age));
 }
@@ -800,6 +856,7 @@ async function processVerdict(sentenceKey, viaOffer = null) {
             ],
         });
         if (answer === 'change') sentenceKey = objection.verdict;
+        else if (sentenceKey === c.correctVerdict) award('objection');
     }
 
     audio.playGavel();
@@ -817,6 +874,7 @@ async function processVerdict(sentenceKey, viaOffer = null) {
         state.dayCorrect++;
         state.correctTotal++;
         moneyChange = CONFIG.baseReward;
+        if (!result.partial) countLawfulVerdict();
         // A troubled conscience slowly mends with every lawful verdict
         if (!result.partial && !viaOffer && state.conscience < 50) conscienceChange += 1;
         if (state.currentDirective && state.currentDirective.bonus === sentenceBase) {
@@ -859,6 +917,7 @@ async function processVerdict(sentenceKey, viaOffer = null) {
         state.finale = viaOffer === 'finale' || sentenceKey === 'release' ? 'released'
             : result.correct ? 'correct'
                 : result.diff > 0 ? 'harsh' : 'wrong';
+        if (state.finale === 'correct' || state.finale === 'harsh') award('ayla');
     }
     if (c.selinCase) {
         state.selin = sentenceKey === 'death' ? 'death'
@@ -1095,6 +1154,7 @@ async function conscienceAtHome() {
             choices: [{ label: L('Arkalarından bak'), value: true }],
         });
     } else if (change === 'return') {
+        award('redemption');
         await ui.showStory({
             icon: '🚪', title: L('Kapıda Deniz'),
             text: L('Akşam kapı çaldı. Deniz ve Ece eşikte duruyordu. "Son kararlarını gazetede okudum," dedi Deniz. "Tanıdığım insan geri dönmüş gibi." Ece koşup boynuna sarıldı.'),
@@ -1131,6 +1191,7 @@ function endDay() {
     }
     if (state.bribesExposed >= 2) state.scandal = true;
     ui.updateStats(state);
+    if (state.dayCases > 0 && state.dayCorrect === state.dayCases) award('perfectDay');
 
     ui.showDailySummary({
         day: state.day,
@@ -1190,6 +1251,26 @@ function endGame() {
 
     ui.showGameOver({ title: ending.title, description: ending.description, stats: modeNote + (isEndless() ? '' : epilogue) + statsHtml });
     ui.setEndlessOption(settings.endlessUnlocked, settings.endlessBest);
+    awardEnding(ending, daysServed);
+}
+
+// Achievements decided when a game ends
+function awardEnding(ending, daysServed) {
+    if (isEndless()) {
+        if (daysServed >= 30) award('endless30');
+        return;
+    }
+    if (!(state.day > TOTAL_DAYS && state.branch && !state.scandal)) return;
+    const seen = career() && settings.endingsSeen;
+    const id = ending === BRANCHES.surgun.endings.honest ? 'town'
+        : ending === BRANCHES.borc.endings.favored ? 'executed' : 'retired';
+    if (!seen.includes(id)) seen.push(id);
+    saveSettings(settings);
+    award(id);
+    if (['town', 'retired', 'executed'].every(e => seen.includes(e))) award('allEndings');
+    if (state.bribesTaken === 0) award('cleanHands');
+    if (state.deathSentences === 0) award('mercy');
+    if (!state.family.spouseLeft && state.family.harmony >= 60) award('family');
 }
 
 export function getState() {

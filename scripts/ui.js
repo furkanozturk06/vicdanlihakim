@@ -778,6 +778,52 @@ export function hidePendingOffer() {
     document.getElementById('pending-offer').classList.add('hidden');
 }
 
+// Career screen: title, progress to the next title, achievements
+export function setCareer({ rank, lawful, next, achievements }) {
+    document.getElementById('career-rank').textContent = rank;
+    document.getElementById('career-title').textContent = L('{0} · {1} kanuna uygun karar', rank, lawful);
+    const bar = document.getElementById('career-progress-bar');
+    if (next) {
+        bar.style.width = `${Math.round(((lawful - next.from) / (next.at - next.from)) * 100)}%`;
+        document.getElementById('career-next').textContent = L('Sonraki unvan: {0} ({1} karar)', next.title, next.at);
+    } else {
+        bar.style.width = '100%';
+        document.getElementById('career-next').textContent = L('En yüksek unvana ulaştın.');
+    }
+    const done = achievements.filter(a => a.done).length;
+    document.getElementById('career-count').textContent = `${done} / ${achievements.length}`;
+    document.getElementById('achievement-list').replaceChildren(...achievements.map(a => {
+        const li = el('li', a.done ? 'done' : 'locked');
+        li.append(el('span', 'achievement-icon', a.done ? a.icon : '🔒'), el('span', 'achievement-title', a.title), el('span', 'achievement-text', a.text));
+        return li;
+    }));
+}
+
+export function openCareer() {
+    const modal = document.getElementById('career-modal');
+    modal.classList.remove('hidden');
+    document.getElementById('career-close').onclick = () => modal.classList.add('hidden');
+    modal.onclick = (e) => { if (e.target === modal) modal.classList.add('hidden'); };
+}
+
+// A short notice at the top of the screen; several queue up
+const toastQueue = [];
+let toastBusy = false;
+export function toast(text) {
+    toastQueue.push(text);
+    if (toastBusy) return;
+    const next = () => {
+        const t = toastQueue.shift();
+        if (!t) { toastBusy = false; return; }
+        toastBusy = true;
+        const box = document.getElementById('toast');
+        box.textContent = t;
+        box.classList.add('visible');
+        setTimeout(() => { box.classList.remove('visible'); setTimeout(next, 350); }, 2600);
+    };
+    next();
+}
+
 // Rulebook modal
 export function openRulebook() {
     elements.rulebookModal.classList.remove('hidden');
