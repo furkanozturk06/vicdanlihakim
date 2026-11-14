@@ -3788,3 +3788,16 @@ html.text-xlarge #directive-text { font-size: 0.92rem; }
     text-align: right;
     line-height: 1.25;
 }
+
+/* The door sits 2px lower, on the threshold; the frame is 2px taller to match */
+#evidence-desk #courtroom-door {
+    top: 22px;
+}
+
+.door-frame {
+    height: calc(var(--door-h) + 28px);
+}
+
+.door-light {
+    top: calc(var(--door-h) + 28px);
+}
