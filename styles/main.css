@@ -3796,3 +3796,13 @@ html.text-xlarge #directive-text { font-size: 0.92rem; }
 .door-light {
     top: calc(var(--door-h) + 28px);
 }
+
+/* Full-screen dark layers reach a few pixels past the screen edges, so no
+   undarkened column can show at the edge when the page is scaled (as in a
+   desktop preview of the phone layout). Content stays centred. */
+.modal,
+#feedback-overlay,
+#event-overlay,
+#game-over-screen {
+    inset: -4px;
+}
