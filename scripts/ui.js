@@ -559,7 +559,8 @@ rulebookPanel?.addEventListener('touchmove', e => {
     e.preventDefault();
     const along = drag.forward ? -dx : dx;
     drag.dx = dx;
-    setTurnProgress(Math.max(0, Math.min(1, along / rulebookPanel.clientWidth)));
+    // on-screen width (a scaled-up game on a tablet is wider than its layout width)
+    setTurnProgress(Math.max(0, Math.min(1, along / rulebookPanel.getBoundingClientRect().width)));
 }, { passive: false });
 
 rulebookPanel?.addEventListener('touchend', () => {
