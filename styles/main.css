@@ -3771,11 +3771,11 @@ html.text-xlarge #directive-text { font-size: 0.92rem; }
     #courtroom-door, #courtroom-door.closing { transition-duration: 0.01s; animation-duration: 0.01s; }
 }
 
-/* The bailiff's call is always one line, starting at the left edge; a long
-   name may reach over the end of the door sign for the moment it is shown */
+/* The bailiff's call stands right beside the door frame (102px wide, centred)
+   and grows to the left; ui.js keeps a long name on screen */
 .bailiff-call {
-    left: 6px;
-    right: auto;
+    left: auto;
+    right: calc(50% + 55px);
     white-space: nowrap;
 }
 

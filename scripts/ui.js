@@ -147,20 +147,23 @@ export function hideDirective() {
 // The (unseen) bailiff calls the next defendant in by name
 let bailiffTimer = null;
 
-// The call stays clear of the door frame: a long name gets smaller letters, and if
-// even the smallest readable size is too wide, the name moves whole to a second line
-// (made smaller too if the name alone is still too wide)
+// The call sits right beside the door frame and grows to the left. It never runs
+// off the screen: a long name gets smaller letters, and if even the smallest
+// readable size is too wide, the name moves whole to a second line (made smaller
+// too if the name alone is still too wide)
 const MIN_CALL_FONT = 7.5;
+const CALL_EDGE = 6; // margin from the screen edge
 function fitBailiffCall(call, name) {
-    const frame = document.querySelector('.door-frame').getBoundingClientRect();
-    if (!frame.width) return;
-    const limit = frame.left - 4;
+    const scene = call.parentElement;
+    const area = scene.getBoundingClientRect();
+    if (!area.width) return;
+    const ratio = area.width / scene.offsetWidth; // on-screen px per layout px (tablets scale the game up)
     const box = call.getBoundingClientRect();
-    const over = box.right - limit;
+    const over = (area.left - box.left) / ratio + CALL_EDGE;
     if (over <= 0) return;
     const style = getComputedStyle(call);
     const padding = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
-    const text = box.width - padding;
+    const text = box.width / ratio - padding;
     const fitted = parseFloat(style.fontSize) * (text - over) / text;
     if (fitted >= MIN_CALL_FONT) {
         call.style.fontSize = `${Math.floor(fitted * 10) / 10}px`;
@@ -168,7 +171,7 @@ function fitBailiffCall(call, name) {
     }
     call.textContent = L('Sanık {0}!', name.replace(/ /g, ' '));
     call.style.whiteSpace = 'normal';
-    call.style.maxWidth = `${limit - box.left}px`;
+    call.style.maxWidth = `${(box.right - area.left) / ratio - CALL_EDGE}px`;
     const room = call.clientWidth - padding;
     const need = call.scrollWidth - padding;
     if (need > room) call.style.fontSize = `${Math.floor(parseFloat(style.fontSize) * room / need * 10) / 10}px`;
