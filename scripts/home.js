@@ -1,7 +1,7 @@
 // The family at the dinner table, shown at the top of the evening screen. We
 // look across the table from the judge's own seat: Saniye on the left, Deniz in
 // the middle, Ece on the right. While Deniz has left, her chair and Ece's stay
-// empty but their plates are still laid. Saniye wears a shawl when she is ill.
+// empty but their plates are still laid. Saniye wears a shawl when she is ill, and looks pale when she is very ill.
 // Their faces follow the family's mood. Drawn on a 400 x 140 grid.
 import { makePortrait } from './portrait.js';
 
@@ -146,7 +146,9 @@ function person(key, appearance, face) {
 export function homeScene(family) {
     const h = family.harmony;
     const home = family.spouseLeft ? ['mother'] : ['mother', 'spouse', 'child'];
-    let people = person('mother', SANIYE, motherFace(family.motherHealth));
+    // very ill: a pale, greyish face with tired eyes
+    const mother = family.motherHealth === 0 ? { ...SANIYE, skin: '#e2d6cc', sick: true } : SANIYE;
+    let people = person('mother', mother, motherFace(family.motherHealth));
     if (!family.spouseLeft) {
         people += person('spouse', DENIZ, spouseFace(h));
         people += person('child', ECE, childFace(h));

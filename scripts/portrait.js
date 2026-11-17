@@ -139,6 +139,8 @@ export function makePortrait(a, emotion) {
     }[emotion] || '<path d="M53 81 Q60 86 67 81" stroke="#5a2a20" stroke-width="2" fill="none" stroke-linecap="round"/>';
 
     const nose = `<path d="M60 62 Q57 72 60 74 Q62 75 64 73" stroke="${skinDark}" stroke-width="1.6" fill="none" stroke-linecap="round"/>`;
+    // tired, sunken eyes for a very ill face
+    const sickEyes = a.sick ? [46.5, 73.5].map(x => `<path d="M${x - 6} 66 Q${x} 70 ${x + 6} 66" stroke="#9a8a9e" stroke-width="1.6" fill="none" opacity="0.7"/>`).join('') : '';
     const freckles = a.freckles ? [[40, 70], [44, 73], [37, 74], [80, 70], [76, 73], [83, 74]]
         .map(([x, y]) => `<circle cx="${x}" cy="${y}" r="0.9" fill="#a0603c" opacity="0.7"/>`).join('') : '';
     const blush = female ? `<ellipse cx="42" cy="72" rx="5" ry="3" fill="#e08a7a" opacity="0.25"/><ellipse cx="78" cy="72" rx="5" ry="3" fill="#e08a7a" opacity="0.25"/>` : '';
@@ -183,6 +185,7 @@ export function makePortrait(a, emotion) {
         <path d="M60 26 C81 26 90 44 89 63 C88 84 76 99 60 99 C44 99 32 84 31 63 C30 44 39 26 60 26 Z" fill="url(#${id}s)"/>
         ${blush}
         ${freckles}
+        ${sickEyes}
         ${ageLines}
         ${hairFront}
         <path d="${brows[0]}" stroke="${browColor}" stroke-width="3" stroke-linecap="round" fill="none"/>
