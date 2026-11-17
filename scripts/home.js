@@ -8,7 +8,7 @@ import { makePortrait } from './portrait.js';
 // Their looks use hair styles and colours no defendant ever gets (wavy hair with
 // a clip, ribboned braids and freckles, a white tülbent), so nobody in court looks like them.
 const DENIZ = {
-    gender: 'f', skin: '#f0c8b0', hair: '#8a3d1c', hairStyle: 'wavy', clip: '#d9b440', facialHair: 'none',
+    gender: 'f', skin: '#f0c8b0', hair: '#8a3d1c', hairStyle: 'wavy', clip: '#f6f0e6', facialHair: 'none',
     earrings: true, glasses: false, age: '', clothing: '#6b3550', outfit: 'sweater',
 };
 const ECE = {
@@ -65,7 +65,10 @@ function room() {
     <path d="M294 4 L308 4 L306 56 L296 56 Z" fill="#6b2d2d" opacity="0.9"/>
     <!-- a clock on the wall between the window and the lamp -->
     <circle cx="146" cy="20" r="9" fill="#8b6a3e"/><circle cx="146" cy="20" r="7.4" fill="#efe6cf"/>
-    <path d="M146 20 L146 15 M146 20 L149.5 21.5" stroke="#2a1d14" stroke-width="1.1" stroke-linecap="round"/>
+    <path d="M146 13.6 L146 14.8 M152.4 20 L151.2 20 M146 26.4 L146 25.2 M139.6 20 L140.8 20" stroke="#8b6a3e" stroke-width="0.8"/>
+    <!-- eight o'clock in the evening: hour hand on 8, minute hand on 12 -->
+    <path d="M146 20 L142.9 21.8 M146 20 L146 14.4" stroke="#2a1d14" stroke-width="1.1" stroke-linecap="round"/>
+    <circle cx="146" cy="20" r="0.8" fill="#2a1d14"/>
     <!-- lamp hanging over the table -->
     <circle class="home-glow" cx="200" cy="20" r="90" fill="url(#home-lamp-glow)"/>
     <rect x="199.3" y="0" width="1.4" height="5" fill="#2a1d14"/>

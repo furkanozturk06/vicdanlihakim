@@ -83,9 +83,10 @@ export function makePortrait(a, emotion) {
         case 'bald':
             hairFront = `<path d="M30 60 C30 52 33 48 36 47 L37 64 Z" fill="${hair}"/><path d="M90 60 C90 52 87 48 84 47 L83 64 Z" fill="${hair}"/>`;
             break;
-        case 'wavy': // side-swept, with a hair clip
+        case 'wavy': // side-swept, with a small flower pinned in the hair
             hairFront = `<path d="M30 64 C26 30 46 18 64 19 C82 20 95 34 90 62 C88 48 80 38 70 35 C60 34 50 38 44 44 C38 50 33 56 30 64 Z" fill="${hair}"/>
-                <rect x="70" y="28" width="14" height="5" rx="2.5" fill="${a.clip}" transform="rotate(-24 77 30)"/>`;
+                ${[0, 72, 144, 216, 288].map(r => `<ellipse cx="80" cy="25.5" rx="2.6" ry="4" fill="${a.clip}" transform="rotate(${r} 80 30)"/>`).join('')}
+                <circle cx="80" cy="30" r="2.4" fill="#e8b830"/>`;
             break;
         case 'headscarf': // the tülbent frames the face and hides the hair and ears
             hairFront = `<path fill-rule="evenodd" d="M26 66 C24 26 42 14 60 14 C78 14 96 26 94 66 C94 84 88 98 76 104 L44 104 C32 98 26 84 26 66 Z M60 37 C78 37 86 49 85 64 C84 84 74 97 60 97 C46 97 36 84 35 64 C34 49 42 37 60 37 Z" fill="${a.scarf}"/>
