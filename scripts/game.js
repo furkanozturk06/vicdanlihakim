@@ -946,6 +946,12 @@ async function processVerdict(sentenceKey, viaOffer = null) {
     if (!result.correct && !viaOffer && !c.finale && !c.selinCase && !c.specialKey && Math.random() < CONFIG.appealChance) {
         state.appeals.push({
             day: state.day + 2,
+            // enough to recognise the case two days later: who, when, what happened
+            judgedDay: state.day,
+            name: c.name,
+            age: c.age,
+            crime: c.crime,
+            summary: c.summary,
             detail: c.detail,
             verdictLabel: verdictLabel(sentenceKey),
             correctLabel: verdictLabel(c.correctVerdict),
@@ -1081,7 +1087,11 @@ async function deliverAftermath() {
         state.conscience = Math.max(0, Math.min(100, state.conscience + a.conscience));
         state.reputation = Math.max(0, Math.min(100, state.reputation + a.reputation));
     }
-    await ui.showStory({ icon: '🗞️', title: L('Kararlarının Ardından'), text: due.map(a => a.text).join('\n\n'), choices: [{ label: L('Devam'), value: true }] });
+    // each note starts with the case it is about (notes saved before this have no `about`)
+    const note = a => (a.about
+        ? L('{0}. gün · {1} · {2} ({3})', a.about.day, a.about.name, a.about.crime, a.about.detail) + '\n' + a.text
+        : a.text);
+    await ui.showStory({ icon: '🗞️', title: L('Kararlarının Ardından'), text: due.map(note).join('\n\n'), choices: [{ label: L('Devam'), value: true }] });
     ui.updateStats(state);
 }
 

@@ -3861,3 +3861,51 @@ html.text-xlarge #directive-text { font-size: 0.92rem; }
 @media (prefers-reduced-motion: reduce) {
     .home-person, .home-glow, .home-star { animation: none; }
 }
+
+/* News stories look like a page of the newspaper */
+.story-masthead {
+    display: none;
+}
+
+.story-content.as-paper {
+    background: #e9e0cc;
+    color: var(--ink-black);
+    border: none;
+    border-radius: 2px;
+    box-shadow: var(--shadow-soft);
+    animation: paper-in 0.5s ease;
+}
+
+.story-content.as-paper .story-masthead {
+    display: flex;
+}
+
+.story-content.as-paper #story-icon {
+    display: none;
+}
+
+.story-content.as-paper #story-title {
+    font-family: var(--font-elegant);
+    font-weight: 700;
+    font-size: 1.35rem;
+    line-height: 1.2;
+    color: var(--ink-black);
+    text-align: center;
+    padding-bottom: var(--spacing-xs);
+    border-bottom: 1px solid var(--ink-black);
+}
+
+.story-content.as-paper #story-text {
+    font-family: var(--font-elegant);
+    font-size: 1rem;
+    color: var(--ink-black);
+    white-space: pre-line;
+}
+
+/* the line naming the case a note is about */
+.story-content.as-paper #story-text strong {
+    font-family: var(--font-typewriter);
+    font-size: 0.82rem;
+    letter-spacing: 0.3px;
+}
+

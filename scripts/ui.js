@@ -110,7 +110,9 @@ export function hideStartScreen() {
 }
 
 // Update stats display
+let currentDay = 1; // for the date on news pages
 export function updateStats(gameState) {
+    currentDay = gameState.day;
     elements.dayValue.textContent = gameState.day;
     elements.moneyValue.textContent = `₺${formatMoney(gameState.money)}`;
     elements.reputationBar.style.width = `${gameState.reputation}%`;
@@ -700,9 +702,21 @@ export function setSoundIcon(on) {
 // Story moment with one or more choices. Resolves to the chosen value.
 export function showStory({ icon, title, text, choices }) {
     const modal = document.getElementById('story-modal');
+    // News (📰 / 🗞️) is shown as a newspaper page: masthead, date, headline, column
+    const news = icon === '📰' || icon === '🗞️';
+    modal.querySelector('.story-content').classList.toggle('as-paper', news);
+    document.getElementById('story-paper-date').textContent = L('{0}. Gün', currentDay);
     document.getElementById('story-icon').textContent = icon || '';
     document.getElementById('story-title').textContent = title;
-    document.getElementById('story-text').textContent = text;
+    const body = document.getElementById('story-text');
+    body.textContent = text;
+    // On a news page, the lines naming a case ("3. gün · Ahmet Y. · ...") are set in bold
+    if (news) {
+        body.replaceChildren(...text.split('\n').flatMap((line, i) => {
+            const caseLine = / · /.test(line) && /^(\d+\. gün|Day \d+) · /.test(line);
+            return [...(i ? ['\n'] : []), caseLine ? el('strong', '', line) : line];
+        }));
+    }
     const box = document.getElementById('story-choices');
 
     return new Promise(resolve => {

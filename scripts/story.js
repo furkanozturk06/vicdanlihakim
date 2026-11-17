@@ -226,7 +226,10 @@ export function appealText(a) {
     const fix = a.tooHarsh
         ? L('Sanık tahliye edildi; haksız yere yattığı günler için devlet tazminat ödeyecek.')
         : L('Dava yeniden görülecek; sanık şimdilik serbest.');
-    return L('"{0}" davasında verdiğiniz "{1}" kararı bozuldu. Kanuna göre doğrusu: {2}. {3}', a.detail, a.verdictLabel, a.correctLabel, fix);
+    // Appeals saved before the case details were kept only have the short label
+    if (!a.name) return L('"{0}" davasında verdiğiniz "{1}" kararı bozuldu. Kanuna göre doğrusu: {2}. {3}', a.detail, a.verdictLabel, a.correctLabel, fix);
+    return L('{0}. gün gördüğünüz dava: {1}, {2} yaşında. Suç: {3} ({4}).\n{5}\n\nVerdiğiniz "{6}" kararı bozuldu. Kanuna göre doğrusu: {7}. {8}',
+        a.judgedDay, a.name, a.age, a.crime, a.detail, a.summary, a.verdictLabel, a.correctLabel, fix);
 }
 
 // Names by gender so a defendant's name matches how they look
@@ -295,7 +298,9 @@ export function buildNewspaper(dayLog, appeals = []) {
     const items = [];
 
     for (const a of appeals) {
-        items.push({ p: 75, text: L('Yargıtay bozdu: "{0}" davasındaki karar kanuna aykırı bulundu', a.detail) });
+        items.push({ p: 75, text: a.name
+            ? L('Yargıtay bozdu: {0} hakkındaki "{1}" davası kararı kanuna aykırı bulundu', a.name, a.detail)
+            : L('Yargıtay bozdu: "{0}" davasındaki karar kanuna aykırı bulundu', a.detail) });
     }
 
     for (const e of dayLog) {

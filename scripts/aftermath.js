@@ -15,7 +15,11 @@ const CHANCE = 0.45;
 // -> { day, text, conscience, reputation } or null
 export function aftermathFor(c, verdict, result, day) {
     if (c.finale || c.selinCase || c.specialKey || c.returning) return null;
-    const pick = (text, conscience = 0, reputation = 0) => ({ day: day + 2, text, conscience, reputation });
+    // `about` names the case, so the note can say which one it was
+    const pick = (text, conscience = 0, reputation = 0) => ({
+        day: day + 2, text, conscience, reputation,
+        about: { day, name: c.name, crime: c.crime, detail: c.detail },
+    });
     const name = c.name;
 
     if (verdict === 'death') {
