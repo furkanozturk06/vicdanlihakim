@@ -8,11 +8,11 @@ import { makePortrait } from './portrait.js';
 // Their looks use hair styles and colours no defendant ever gets (wavy hair with
 // a flower, ribboned bunches and freckles, a curly perm and pearls), so nobody in court looks like them.
 const DENIZ = {
-    gender: 'f', skin: '#f0c8b0', hair: '#8a3d1c', hairStyle: 'wavy', clip: '#f6f0e6', facialHair: 'none',
+    gender: 'f', skin: '#f0c8b0', hair: '#d4a24c', hairStyle: 'wavy', clip: '#f6f0e6', facialHair: 'none',
     earrings: 'silver', glasses: false, age: '', clothing: '#6b3550', outfit: 'sweater',
 };
 const ECE = {
-    gender: 'f', skin: '#f0c8b0', hair: '#8a3d1c', hairStyle: 'pigtails', ribbon: '#c0392b', freckles: true,
+    gender: 'f', skin: '#f0c8b0', hair: '#d4a24c', hairStyle: 'pigtails', ribbon: '#c0392b', freckles: true,
     facialHair: 'none', earrings: false, glasses: false, age: '', clothing: '#e0a030', outfit: 'hoodie',
 };
 const SANIYE = {
@@ -91,16 +91,19 @@ function food(x) {
 }
 
 // The table in front of everyone, laid for dinner: a plate with a spoon on its
-// right and a glass of tea at each place. Plates of family members who are away stay empty.
+// left and a glass of tea at each place. Plates of family members who are away stay empty.
 function table(ill, home) {
     const place = ([key, { x }]) => `
     <ellipse cx="${x}" cy="${TABLE + 7}" rx="17" ry="4.2" fill="#f2ede2"/>
     <ellipse cx="${x}" cy="${TABLE + 7}" rx="11" ry="2.6" fill="#e3dccb"/>
     ${home.includes(key) ? food(x) : ''}
-    <path d="M${x + 20.5} ${TABLE + 6} L${x + 21} ${TABLE + 12.5}" stroke="#c9ccd1" stroke-width="1.1" stroke-linecap="round"/>
-    <ellipse cx="${x + 20.4}" cy="${TABLE + 4.6}" rx="1.6" ry="2.3" fill="#dfe2e6" stroke="#b5b9bf" stroke-width="0.4"/>
-    <path d="M${x + 27} ${TABLE + 1} L${x + 33} ${TABLE + 1} L${x + 31.6} ${TABLE + 5} L${x + 33} ${TABLE + 9} L${x + 27} ${TABLE + 9} L${x + 28.4} ${TABLE + 5} Z" fill="#a8401c" opacity="0.92"/>
-    <ellipse cx="${x + 30}" cy="${TABLE + 9.6}" rx="5" ry="1.3" fill="#d8d0bf"/>`;
+    <path d="M${x - 20.5} ${TABLE + 6} L${x - 21} ${TABLE + 12.5}" stroke="#c9ccd1" stroke-width="1.1" stroke-linecap="round"/>
+    <ellipse cx="${x - 20.4}" cy="${TABLE + 4.6}" rx="1.6" ry="2.3" fill="#dfe2e6" stroke="#b5b9bf" stroke-width="0.4"/>
+    <ellipse cx="${x + 30}" cy="${TABLE + 10}" rx="6" ry="1.6" fill="#ece6d8" stroke="#c8bea6" stroke-width="0.4"/>
+    <path d="M${x + 26.4} ${TABLE - 2} L${x + 33.6} ${TABLE - 2} L${x + 31.8} ${TABLE + 3.5} L${x + 33.4} ${TABLE + 9.6} L${x + 26.6} ${TABLE + 9.6} L${x + 28.2} ${TABLE + 3.5} Z" fill="rgba(235,240,245,0.22)" stroke="#e8edf2" stroke-width="0.6"/>
+    <path d="M${x + 26.9} ${TABLE - 0.6} L${x + 33.1} ${TABLE - 0.6} L${x + 31.6} ${TABLE + 3.5} L${x + 33} ${TABLE + 9.2} L${x + 27} ${TABLE + 9.2} L${x + 28.4} ${TABLE + 3.5} Z" fill="#b5481c" opacity="0.85"/>
+    <ellipse cx="${x + 30}" cy="${TABLE - 0.6}" rx="3.1" ry="0.6" fill="#d9773a"/>
+    <path d="M${x + 27.6} ${TABLE + 0.6} L${x + 28.6} ${TABLE + 3}" stroke="#fff" stroke-width="0.6" opacity="0.7"/>`;
     const m = SEATS.mother;
     return `
 <svg class="home-front" viewBox="${VIEW_BOX}" preserveAspectRatio="none" aria-hidden="true">
@@ -111,10 +114,10 @@ function table(ill, home) {
     <rect x="0" y="${TABLE}" width="400" height="2" fill="#8a6040"/>
     ${Object.entries(SEATS).map(place).join('')}
     <!-- bread basket: slices of bread standing in a woven basket -->
-    <path d="M164 ${TABLE + 2} Q166.5 ${TABLE - 5} 169 ${TABLE + 2} Z M168 ${TABLE + 2} Q171 ${TABLE - 6} 174 ${TABLE + 2} Z M172.5 ${TABLE + 2} Q175 ${TABLE - 4} 177.5 ${TABLE + 2} Z" fill="#f3e3bc" stroke="#c98a3c" stroke-width="0.9"/>
-    <path d="M162 ${TABLE + 1.5} L180 ${TABLE + 1.5} L178 ${TABLE + 9} L164 ${TABLE + 9} Z" fill="#9a6a34"/>
-    <path d="M163 ${TABLE + 4} L179 ${TABLE + 4} M163.6 ${TABLE + 6.5} L178.4 ${TABLE + 6.5}" stroke="#6e4720" stroke-width="0.7"/>
-    <path d="M166 ${TABLE + 1.5} L166.6 ${TABLE + 9} M170 ${TABLE + 1.5} L170.2 ${TABLE + 9} M174 ${TABLE + 1.5} L173.8 ${TABLE + 9} M178 ${TABLE + 1.5} L177.2 ${TABLE + 9}" stroke="#6e4720" stroke-width="0.5" opacity="0.7"/>
+    <path d="M157 ${TABLE + 2} Q159.5 ${TABLE - 5} 162 ${TABLE + 2} Z M161 ${TABLE + 2} Q164 ${TABLE - 6} 167 ${TABLE + 2} Z M165.5 ${TABLE + 2} Q168 ${TABLE - 4} 170.5 ${TABLE + 2} Z" fill="#f3e3bc" stroke="#c98a3c" stroke-width="0.9"/>
+    <path d="M155 ${TABLE + 1.5} L173 ${TABLE + 1.5} L171 ${TABLE + 9} L157 ${TABLE + 9} Z" fill="#9a6a34"/>
+    <path d="M156 ${TABLE + 4} L172 ${TABLE + 4} M156.6 ${TABLE + 6.5} L171.4 ${TABLE + 6.5}" stroke="#6e4720" stroke-width="0.7"/>
+    <path d="M159 ${TABLE + 1.5} L159.6 ${TABLE + 9} M163 ${TABLE + 1.5} L163.2 ${TABLE + 9} M167 ${TABLE + 1.5} L166.8 ${TABLE + 9} M171 ${TABLE + 1.5} L170.2 ${TABLE + 9}" stroke="#6e4720" stroke-width="0.5" opacity="0.7"/>
     <path d="M0 ${TABLE + 16} L400 ${TABLE + 16} L400 140 L0 140 Z" fill="#e8e0cc"/>
     <path d="M0 ${TABLE + 16} L400 ${TABLE + 16}" stroke="#b03030" stroke-width="2" stroke-dasharray="6 6"/>
     <path d="M0 ${TABLE + 20} L400 ${TABLE + 20}" stroke="#c8bea6" stroke-width="1"/>
