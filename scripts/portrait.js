@@ -33,16 +33,16 @@ export function makePortrait(a, emotion) {
     else if (a.hairStyle === 'wavy') {
         hairBack = `<path d="M27 60 C24 28 44 17 60 17 C77 17 97 28 93 60 C97 72 92 80 96 92 C99 102 92 110 96 118 C88 122 82 116 80 108 L40 108 C38 116 32 122 24 118 C28 110 21 102 24 92 C28 80 23 72 27 60 Z" fill="${hairDark}"/>`;
     } else if (a.hairStyle === 'pigtails') {
-        // two braids below the ears, each tied with a ribbon
+        // two bunches tied high on each side of the head, falling to the shoulders
         hairBack = [-1, 1].map(side => {
-            const x = 60 + side * 35;
-            const braid = [74, 85, 96].map(y => `<ellipse cx="${x}" cy="${y}" rx="6.5" ry="6.5" fill="${hairDark}"/><path d="M${x - 4} ${y - 2} Q${x} ${y + 2} ${x + 4} ${y - 2}" stroke="${hair}" stroke-width="1.6" fill="none"/>`).join('');
-            const bow = `<path d="M${x} 104 L${x - 7} 99 L${x - 7} 109 Z M${x} 104 L${x + 7} 99 L${x + 7} 109 Z" fill="${a.ribbon}"/><circle cx="${x}" cy="104" r="2.2" fill="${a.ribbon}"/>`;
-            return braid + bow;
+            const x = v => 60 + side * v;
+            return `<path d="M${x(26)} 42 C${x(44)} 44 ${x(46)} 64 ${x(42)} 80 C${x(40)} 92 ${x(44)} 100 ${x(40)} 106 C${x(34)} 98 ${x(32)} 86 ${x(31)} 72 C${x(30)} 60 ${x(26)} 52 ${x(26)} 42 Z" fill="${hairDark}"/>
+                <path d="M${x(36)} 58 C${x(40)} 70 ${x(38)} 84 ${x(39)} 96" stroke="${hair}" stroke-width="1.6" fill="none"/>`;
         }).join('');
-    } else if (a.hairStyle === 'headscarf') {
-        // a white tülbent: the cloth behind the head, down over the shoulders
-        hairBack = `<path d="M22 60 C20 22 42 10 60 10 C78 10 100 22 98 60 L104 118 C90 126 30 126 16 118 Z" fill="${shade(a.scarf, -0.1)}"/>`;
+    } else if (a.hairStyle === 'perm') {
+        // short, tightly curled grandmother's perm
+        hairBack = [[30, 48, 10], [90, 48, 10], [28, 62, 8], [92, 62, 8], [36, 34, 11], [84, 34, 11], [48, 24, 12], [72, 24, 12], [60, 21, 12]]
+            .map(([cx, cy, r]) => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${hairDark}"/>`).join('');
     }
 
     // ---- clothing ----
@@ -88,12 +88,15 @@ export function makePortrait(a, emotion) {
                 ${[0, 72, 144, 216, 288].map(r => `<ellipse cx="80" cy="25.5" rx="2.6" ry="4" fill="${a.clip}" transform="rotate(${r} 80 30)"/>`).join('')}
                 <circle cx="80" cy="30" r="2.4" fill="#e8b830"/>`;
             break;
-        case 'headscarf': // the tülbent frames the face and hides the hair and ears
-            hairFront = `<path fill-rule="evenodd" d="M26 66 C24 26 42 14 60 14 C78 14 96 26 94 66 C94 84 88 98 76 104 L44 104 C32 98 26 84 26 66 Z M60 37 C78 37 86 49 85 64 C84 84 74 97 60 97 C46 97 36 84 35 64 C34 49 42 37 60 37 Z" fill="${a.scarf}"/>
-                <path d="M40 41 Q60 31 80 41" stroke="${shade(a.scarf, -0.18)}" stroke-width="1.2" fill="none" stroke-dasharray="2 2.5"/>
-                <path d="M42 40 C48 37 56 36 60 37 C55 39 49 40 44 43 Z" fill="${hair}"/>`;
+        case 'perm':
+            hairFront = [[38, 36, 7], [48, 30, 7.5], [60, 28, 8], [72, 30, 7.5], [82, 36, 7], [33, 46, 5.5], [87, 46, 5.5]]
+                .map(([cx, cy, r]) => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${hair}"/><path d="M${cx - r * 0.5} ${cy} q${r * 0.5} ${-r * 0.5} ${r} 0" stroke="${hairDark}" stroke-width="1" fill="none"/>`).join('');
             break;
-        default: // long, bob, bun, pigtails: a soft fringe
+        case 'pigtails': // a fringe and a ribbon where each bunch is tied
+            hairFront = `<path d="M30 62 C27 32 44 19 61 19 C79 19 94 32 90 62 C88 50 82 40 72 36 C66 42 50 44 40 40 C34 46 31 54 30 62 Z" fill="${hair}"/>
+                ${[-1, 1].map(side => `<path d="M${60 + side * 30} 42 L${60 + side * 38} 36 L${60 + side * 37} 47 Z M${60 + side * 30} 42 L${60 + side * 23} 34 L${60 + side * 25} 46 Z" fill="${a.ribbon}"/><circle cx="${60 + side * 30}" cy="42" r="2.4" fill="${a.ribbon}"/>`).join('')}`;
+            break;
+        default: // long, bob, bun: a soft fringe
             hairFront = `<path d="M30 62 C27 32 44 19 61 19 C79 19 94 32 90 62 C88 50 82 40 72 36 C66 42 50 44 40 40 C34 46 31 54 30 62 Z" fill="${hair}"/>`;
     }
 
@@ -153,6 +156,8 @@ export function makePortrait(a, emotion) {
         <rect x="38" y="53" width="18" height="14" rx="4" fill="rgba(200,220,255,0.18)" stroke="#2b2b2b" stroke-width="2"/>
         <rect x="64" y="53" width="18" height="14" rx="4" fill="rgba(200,220,255,0.18)" stroke="#2b2b2b" stroke-width="2"/>
         <path d="M56 59 Q60 56 64 59" stroke="#2b2b2b" stroke-width="2" fill="none"/>` : '';
+    const necklace = a.necklace ? [-12, -8, -4, 0, 4, 8, 12]
+        .map(d => `<circle cx="${60 + d}" cy="${108 + (144 - d * d) / 24}" r="1.8" fill="#f4efe2" stroke="#cfc6b2" stroke-width="0.4"/>`).join('') : '';
     const earrings = a.earrings ? `<circle cx="30" cy="75" r="2.4" fill="#d9b440"/><circle cx="90" cy="75" r="2.4" fill="#d9b440"/>` : '';
 
     return `<svg viewBox="0 0 120 150" xmlns="http://www.w3.org/2000/svg">
@@ -164,6 +169,7 @@ export function makePortrait(a, emotion) {
         ${shoulders}
         <path d="M50 86 L50 108 Q60 114 70 108 L70 86 Z" fill="${skinDark}"/>
         ${collar}
+        ${necklace}
         <ellipse cx="31" cy="66" rx="5" ry="8" fill="${skinDark}"/><ellipse cx="89" cy="66" rx="5" ry="8" fill="${skinDark}"/>
         <path d="M60 26 C81 26 90 44 89 63 C88 84 76 99 60 99 C44 99 32 84 31 63 C30 44 39 26 60 26 Z" fill="url(#${id}s)"/>
         ${blush}

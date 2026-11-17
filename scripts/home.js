@@ -6,7 +6,7 @@
 import { makePortrait } from './portrait.js';
 
 // Their looks use hair styles and colours no defendant ever gets (wavy hair with
-// a clip, ribboned braids and freckles, a white tülbent), so nobody in court looks like them.
+// a flower, ribboned bunches and freckles, a curly perm and pearls), so nobody in court looks like them.
 const DENIZ = {
     gender: 'f', skin: '#f0c8b0', hair: '#8a3d1c', hairStyle: 'wavy', clip: '#f6f0e6', facialHair: 'none',
     earrings: true, glasses: false, age: '', clothing: '#6b3550', outfit: 'sweater',
@@ -16,8 +16,8 @@ const ECE = {
     facialHair: 'none', earrings: false, glasses: false, age: '', clothing: '#e0a030', outfit: 'hoodie',
 };
 const SANIYE = {
-    gender: 'f', skin: '#e3b496', hair: '#ececec', hairStyle: 'headscarf', scarf: '#f4f1e8', facialHair: 'none',
-    earrings: false, glasses: true, age: 'elderly', clothing: '#2f5a5a', outfit: 'sweater',
+    gender: 'f', skin: '#e3b496', hair: '#ececec', hairStyle: 'perm', necklace: true, facialHair: 'none',
+    earrings: true, glasses: true, age: 'elderly', clothing: '#2f5a5a', outfit: 'sweater',
 };
 
 // Faces: the portrait's own emotions (no emotion = a calm, slight smile)
