@@ -710,13 +710,11 @@ export function showStory({ icon, title, text, choices }) {
     document.getElementById('story-title').textContent = title;
     const body = document.getElementById('story-text');
     body.textContent = text;
-    // On a news page, the lines naming a case ("3. gün · Ahmet Y. · ...") are set in bold
-    if (news) {
-        body.replaceChildren(...text.split('\n').flatMap((line, i) => {
-            const caseLine = / · /.test(line) && /^(\d+\. gün|Day \d+) · /.test(line);
-            return [...(i ? ['\n'] : []), caseLine ? el('strong', '', line) : line];
-        }));
-    }
+    // Lines naming a case ("3. gün · Ahmet Y. · ...") are set in bold
+    body.replaceChildren(...text.split('\n').flatMap((line, i) => {
+        const caseLine = /^(\d+\. gün|Day \d+) · /.test(line);
+        return [...(i ? ['\n'] : []), caseLine ? el('strong', '', line) : line];
+    }));
     const box = document.getElementById('story-choices');
 
     return new Promise(resolve => {

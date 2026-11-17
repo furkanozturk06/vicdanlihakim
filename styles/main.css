@@ -3903,7 +3903,7 @@ html.text-xlarge #directive-text { font-size: 0.92rem; }
 }
 
 /* the line naming the case a note is about */
-.story-content.as-paper #story-text strong {
+#story-text strong {
     font-family: var(--font-typewriter);
     font-size: 0.82rem;
     letter-spacing: 0.3px;

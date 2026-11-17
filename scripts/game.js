@@ -1091,7 +1091,7 @@ async function deliverAftermath() {
     const note = a => (a.about
         ? L('{0}. gün · {1} · {2} ({3})', a.about.day, a.about.name, a.about.crime, a.about.detail) + '\n' + a.text
         : a.text);
-    await ui.showStory({ icon: '🗞️', title: L('Kararlarının Ardından'), text: due.map(note).join('\n\n'), choices: [{ label: L('Devam'), value: true }] });
+    await ui.showStory({ icon: '📋', title: L('Kararlarının Ardından'), text: due.map(note).join('\n\n'), choices: [{ label: L('Devam'), value: true }] });
     ui.updateStats(state);
 }
 
