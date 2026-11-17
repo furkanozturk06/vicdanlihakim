@@ -305,21 +305,21 @@ export function buildNewspaper(dayLog, appeals = []) {
 
     for (const e of dayLog) {
         if (e.exposed) {
-            items.push({ p: 100, text: L('SKANDAL: Hakimin "{0}" davasında rüşvet aldığı ortaya çıktı!', e.detail) });
+            items.push({ p: 100, text: L('SKANDAL: Hakimin {1} hakkındaki "{0}" davasında rüşvet aldığı ortaya çıktı!', e.detail, e.name) });
         }
         if (e.returning) {
             items.push({ p: 80, text: L('Daha önce serbest bırakılan {0} yeniden hakim karşısında', e.name) });
         }
         if (e.verdict === 'death') {
             items.push(e.diff === 0
-                ? { p: 70, text: L('"{0}" davasında idam kararı: Adalet yerini buldu', e.detail) }
-                : { p: 90, text: L('Masum kana mı girildi? "{0}" davasındaki idam kararı tartışılıyor', e.detail) });
+                ? { p: 70, text: L('{1} hakkındaki "{0}" davasında idam kararı: Adalet yerini buldu', e.detail, e.name) }
+                : { p: 90, text: L('Masum kana mı girildi? {1} hakkındaki "{0}" davasında verilen idam kararı tartışılıyor', e.detail, e.name) });
         } else if (e.diff <= -2) {
-            items.push({ p: 60, text: L('"{0}" davasında şaşırtan hafif ceza: Halk güvende mi?', e.detail) });
+            items.push({ p: 60, text: L('{1} hakkındaki "{0}" davasında şaşırtan hafif ceza: Halk güvende mi?', e.detail, e.name) });
         } else if (e.diff >= 2 && e.sympathy) {
-            items.push({ p: 60, text: L('"{0}" davasına verilen ağır ceza tepki çekti', e.detail) });
+            items.push({ p: 60, text: L('{1} hakkındaki "{0}" davasında verilen ağır ceza tepki çekti', e.detail, e.name) });
         } else if (e.diff >= 2) {
-            items.push({ p: 40, text: L('"{0}" davasında beklenmedik sert karar', e.detail) });
+            items.push({ p: 40, text: L('{1} hakkındaki "{0}" davasında beklenmedik sert karar', e.detail, e.name) });
         }
     }
 
