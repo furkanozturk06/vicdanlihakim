@@ -321,7 +321,9 @@ const WHO_MAX = 90; // characters
 const BACK_VOWELS = 'aıou';
 
 export function caseWho(summary) {
-    if (LANG !== 'tr' || !summary) return null;
+    if (!summary) return null;
+    if (LANG === 'en') return caseWhoEn(summary);
+    if (LANG !== 'tr') return null;
     const first = summary.split(/(?<=[.!?])\s/)[0].replace(/[.!?]$/, '');
     if (NOT_THE_DEFENDANT.some(start => first.startsWith(start))) return null;
     // another finished verb inside the sentence ("girdi, ...", "yaktı ve ...") or a
@@ -347,9 +349,56 @@ export function caseWho(summary) {
     return phrase.length <= WHO_MAX ? phrase : null;
 }
 
+// English: the first sentence of the summary becomes a clause after the name,
+// "Elif Z., caught hunting in a protected area ..." / "Mert G., who took two
+// wallets ..." / "Ali V., who, while drunk at a wedding, shoved a guest ...".
+// Returns null when the sentence does not start in a way that allows this.
+const EN_MAX = 110; // characters
+const EN_PAST = /^(took|sold|built|lent|broke|hit|beat|gave|made|set|ran|stole|shot|kept|left|put|sent|spent|told|wrote|drove|threw|bought|brought|got|led|let|paid|said|sat|stood|struck|swore|tore|wore|won|held|hid|fed|fled|fought|grew|hung|knew|lost|met|rode|shook|slid|split|spread|stuck|swept|swung|taught|thought|became|began|came|chose|drew|drank|ate|fell|flew|forgot|went|cut|lit|dug|bit|blew)$/;
+// passive participles: "caught hunting", "detained because ..." - no "who"
+const EN_PASSIVE = /^(caught|arrested|detained|reported|charged|accused|convicted|sentenced|identified|stopped|seen|taken)$/;
+const EN_ADVERBIAL = /^(As|While|At|In|On|After|For|During|Before|When|Since|Despite|Though|Although|With|Without|Over|Under|Using|Through)\b/;
+
+function enVerbClause(words) {
+    const verb = words[0].toLowerCase();
+    if (!/^[a-z-]+$/.test(verb)) return null;
+    const rest = words.slice(1).join(' ');
+    if (EN_PASSIVE.test(verb)) return [verb, rest].join(' ').trim();
+    if (verb.endsWith('ed') || EN_PAST.test(verb)) return `who ${[verb, rest].join(' ').trim()}`;
+    return null;
+}
+
+function caseWhoEn(summary) {
+    let first = summary.split(/(?<=[.!?])\s/)[0].replace(/[.!?]$/, '').replace(/\."$/, '"');
+    if (first.includes(';')) return null;
+    let words = first.split(' ');
+    let phrase = null;
+    if (/^(He|She|They)$/.test(words[0])) {
+        words = words.slice(1);
+        if (/^(was|were)$/.test(words[0])) words = words.slice(1); // "He was caught" -> "caught"
+        phrase = enVerbClause(words);
+    } else if (EN_ADVERBIAL.test(first)) {
+        // "While drunk at a wedding, shoved a guest" -> "who, while drunk at a wedding, shoved a guest"
+        const cut = first.indexOf(', ');
+        if (cut < 0) return null;
+        const adverbial = first.slice(0, cut);
+        if (/\b(he|she|they)\b/.test(adverbial)) return null;
+        let rest = first.slice(cut + 2).split(' ');
+        if (/^(he|she|they)$/.test(rest[0])) rest = rest.slice(1);
+        if (/^(was|were)$/.test(rest[0]) && rest[1] && EN_PASSIVE.test(rest[1])) phrase = `who, ${adverbial.charAt(0).toLowerCase()}${adverbial.slice(1)}, ${rest.join(' ')}`;
+        else {
+            const clause = enVerbClause(rest);
+            if (clause && clause.startsWith('who ')) phrase = `who, ${adverbial.charAt(0).toLowerCase()}${adverbial.slice(1)}, ${clause.slice(4)}`;
+        }
+    } else {
+        phrase = enVerbClause(words);
+    }
+    return phrase && phrase.length <= EN_MAX ? phrase : null;
+}
+
 // Headlines for a case, built around the phrase from caseWho. Several wordings per
 // kind of story, so the paper does not read the same every day.
-const WHO_HEADLINES = {
+const WHO_HEADLINES_TR = {
     appeal: [
         (w, n) => `Yargıtay bozdu: ${w} ${n} hakkında verilen karar kanuna aykırı bulundu`,
         (w, n) => `${w} ${n} hakkındaki karar Yargıtay'dan döndü`,
@@ -388,6 +437,47 @@ const WHO_HEADLINES = {
         (w, n) => `Hukukçular şaşkın: ${w} ${n} beklenenden ağır ceza aldı`,
     ],
 };
+
+const WHO_HEADLINES_EN = {
+    appeal: [
+        (w, n) => `High court overturns ruling on ${n}, ${w}`,
+        (w, n) => `Ruling on ${n}, ${w}, sent back by the high court`,
+        (w, n) => `High court rebukes judge over ${n}, ${w}`,
+    ],
+    scandal: [
+        (w, n) => `SCANDAL: Judge took a bribe in the case of ${n}, ${w}`,
+        (w, n) => `Bribery scandal at the courthouse over ${n}, ${w}`,
+        (w, n) => `Money changed hands in the case of ${n}, ${w}`,
+    ],
+    deathFair: [
+        (w, n) => `Death sentence for ${n}, ${w}: justice is served`,
+        (w, n) => `${n}, ${w}, sentenced to death`,
+        (w, n) => `The court has spoken: death for ${n}, ${w}`,
+    ],
+    deathWrong: [
+        (w, n) => `Innocent blood? Death sentence for ${n}, ${w}, sparks debate`,
+        (w, n) => `Lawyers condemn death sentence for ${n}, ${w}`,
+        (w, n) => `${n}, ${w}, to be executed; the country is divided`,
+    ],
+    light: [
+        (w, n) => `Surprisingly light sentence for ${n}, ${w}: is the public safe?`,
+        (w, n) => `${n}, ${w}, gets off lightly`,
+        (w, n) => `"Is that a sentence?" Anger over ruling on ${n}, ${w}`,
+        (w, n) => `Light sentence for ${n}, ${w}, angers neighbours`,
+    ],
+    heavyOutcry: [
+        (w, n) => `Heavy sentence for ${n}, ${w}, draws criticism`,
+        (w, n) => `"Merciless": outcry over sentence for ${n}, ${w}`,
+        (w, n) => `Hearts ache as ${n}, ${w}, gets a heavy sentence`,
+        (w, n) => `Family of ${n}, ${w}, outside the courthouse: "Too harsh"`,
+    ],
+    harsh: [
+        (w, n) => `Unexpectedly harsh ruling for ${n}, ${w}`,
+        (w, n) => `Court comes down hard on ${n}, ${w}`,
+        (w, n) => `Lawyers stunned: ${n}, ${w}, gets a heavier sentence than expected`,
+    ],
+};
+const WHO_HEADLINES = LANG === 'en' ? WHO_HEADLINES_EN : WHO_HEADLINES_TR;
 
 // A news item about a case: one sentence that says what the case was when it can,
 // otherwise the usual headline with the case summary under it. `used` keeps the
