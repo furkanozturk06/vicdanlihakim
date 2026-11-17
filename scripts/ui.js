@@ -733,10 +733,10 @@ export function showStory({ icon, title, text, choices }) {
 }
 
 // Evening at home: family status, bills and a scene. Resolves to the chosen index.
-export function showEvening({ day, home, family, harmony, bills, balance, text, choices }) {
+export function showEvening({ day, home, moment, family, harmony, bills, balance, text, choices }) {
     const modal = document.getElementById('evening-modal');
     document.getElementById('evening-day').textContent = L('{0}. Gün · Akşam', day);
-    setFamily(home, family);
+    setFamily(home, family, moment);
     setHarmony(harmony);
     document.getElementById('evening-bills').textContent = bills;
     setBalance(balance);
@@ -756,8 +756,8 @@ export function showEvening({ day, home, family, harmony, bills, balance, text, 
 }
 
 // The living room picture and the list of who is home and how they are
-function setFamily(home, family) {
-    document.getElementById('evening-home').innerHTML = homeScene(home);
+function setFamily(home, family, moment) {
+    document.getElementById('evening-home').innerHTML = homeScene(home, moment);
     document.getElementById('evening-family').replaceChildren(...family.map(m => {
         const li = el('li');
         li.appendChild(el('span', 'member', `${m.name} `));
@@ -780,9 +780,9 @@ function setHarmony(value) {
 }
 
 // After the evening choice: show what happened, then wait for the next morning
-export function showEveningResult(text, harmony, balance, home, family) {
+export function showEveningResult(text, harmony, balance, home, family, moment) {
     // the choice may have changed who is home (someone left, someone came back)
-    if (home) setFamily(home, family);
+    if (home) setFamily(home, family, moment);
     setHarmony(harmony);
     if (balance !== undefined) setBalance(balance);
     document.getElementById('evening-text').textContent = text;

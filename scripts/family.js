@@ -41,7 +41,8 @@ export function familyStatus(family) {
 }
 
 // A choice: { label, cost?, apply(state) -> result text }
-export const choice = (label, apply, cost = 0) => ({ label, apply, cost });
+// `moment`: what the table shows after this choice (home.js); left out = unchanged
+export const choice = (label, apply, cost = 0, moment) => ({ label, apply, cost, moment });
 
 export function adjust(state, { harmony = 0, conscience = 0, money = 0, health = 0 }) {
     state.family.harmony = clamp(state.family.harmony + harmony, 0, 100);
@@ -81,6 +82,7 @@ export function eveningScene(state, day) {
     switch (day) {
         case 1:
             return {
+                moment: 'robe',
                 text: L('Eve döndüğünde Deniz sofrayı kurmuştu. Ece senin cübbeni giymiş, aynanın karşısında hakimcilik oynuyor. Annen odasından seslendi: "İlk gün nasıldı evladım?"'),
                 choices: [
                     choice(L('"Zordu ama doğru olanı yapmaya çalıştım."'), s => { adjust(s, { harmony: 5 }); return L('Annen gülümsedi: "Baban da hep böyle derdi."'); }),
@@ -90,15 +92,17 @@ export function eveningScene(state, day) {
 
         case 2:
             return {
+                moment: 'medicineEmpty',
                 text: L('Annenin kalp ilacı bitmiş. Eczane yeni kutuyu ₺12.000\'e veriyor.'),
                 choices: [
-                    choice(L('İlacı al (₺12.000)'), s => { adjust(s, { money: -12000, health: 1 }); return L('Annen ilacını aldı. Akşam yüzüne renk geldi.'); }, 12000),
+                    choice(L('İlacı al (₺12.000)'), s => { adjust(s, { money: -12000, health: 1 }); return L('Annen ilacını aldı. Akşam yüzüne renk geldi.'); }, 12000, 'medicine'),
                     choice(L('Bu hafta idare etsin'), s => { adjust(s, { health: -1, harmony: -5 }); return L('Annen "Önemli değil" dedi ama gece öksürüğünden kimse uyuyamadı.'); }),
                 ],
             };
 
         case 3:
             return {
+                moment: 'form',
                 text: L('Ece heyecanla koştu: "Sınıfça müzeye gidiyoruz! Gezi ücreti ₺6.000, yarına kadar vermem lazım."'),
                 choices: [
                     choice(L('Parayı ver (₺6.000)'), s => { adjust(s, { money: -6000, harmony: 5 }); return L('Ece boynuna sarıldı. Gece rüyasında müzeyi gördüğünü anlattı.'); }, 6000),
@@ -117,6 +121,7 @@ export function eveningScene(state, day) {
                 };
             }
             return {
+                moment: 'phone',
                 text: L('Deniz moralsiz: "Şirkette işten çıkarılacaklar listesinde adım varmış. Bakanlıkta tanıdığın var, bir telefon açsan..."'),
                 choices: [
                     choice(L('"Kimseyi arayamam."'), s => { adjust(s, { harmony: -5, conscience: 3 }); return L('Deniz anlayışla başını salladı ama gece sırtını dönüp uyudu.'); }),
@@ -144,6 +149,7 @@ export function eveningScene(state, day) {
                 };
             }
             return {
+                moment: 'homework',
                 text: L('Ece ödevini okudu: "En saygı duyduğum insan". Seni yazmış. "Çünkü kimseden korkmuyor ve haksızlık yapmıyor."'),
                 choices: [
                     choice(L('Ece\'ye sarıl'), s => { adjust(s, { harmony: 10, conscience: 3 }); return L('O gece mahkemenin ağırlığını biraz daha hafif taşıdın.'); }),
@@ -153,6 +159,7 @@ export function eveningScene(state, day) {
         case 9:
             if (f.motherHealth <= 1) {
                 return {
+                    moment: 'motherAway',
                     text: L('Annen gece fenalaştı, ambulansla hastaneye kaldırıldı. Özel hastane hemen müdahale için ₺25.000 istiyor.'),
                     choices: [
                         choice(L('Öde (₺25.000)'), s => { adjust(s, { money: -25000, health: 2 }); return L('Annen kurtuldu. Doktor ilaçlarını bir daha aksatmamanızı söyledi.'); }, 25000),
@@ -161,6 +168,7 @@ export function eveningScene(state, day) {
                 };
             }
             return {
+                moment: 'teapot',
                 text: L('Annen bahçede çay demlemiş, yanına çağırdı: "Seni izliyorum evladım. Zor bir işin var. Kararların seni yemesin."'),
                 choices: [
                     choice(L('Annenle çay iç'), s => { adjust(s, { harmony: 5, conscience: 5 }); return L('Uzun zamandır ilk kez içinde bir sükunet hissettin.'); }),
@@ -169,6 +177,7 @@ export function eveningScene(state, day) {
 
         case 10:
             return {
+                moment: 'letter',
                 text: L('Ev sahibi kapıya geldi: "Kirayı artırıyorum. Bu ay fazladan ₺10.000 istiyorum, yoksa evi boşaltın."'),
                 choices: [
                     choice(L('Farkı öde (₺10.000)'), s => { adjust(s, { money: -10000 }); return L('Ev sahibi parayı sayıp gitti. Deniz derin bir nefes aldı.'); }, 10000),
@@ -179,9 +188,10 @@ export function eveningScene(state, day) {
         case 13:
             if (state.conscience < 40 || f.harmony < 25) {
                 return {
+                    moment: 'suitcase',
                     text: L('Deniz bavulunu hazırlamış: "Seni tanıyamıyorum artık. Bir süre annemde kalacağım. Ece de benimle geliyor."'),
                     choices: [
-                        choice(L('Kapıya kadar geçir'), s => { s.family.spouseLeft = true; adjust(s, { harmony: -25, conscience: -5 }); return L('Kapı kapandı. Ev, mahkeme salonundan daha sessiz.'); }),
+                        choice(L('Kapıya kadar geçir'), s => { s.family.spouseLeft = true; adjust(s, { harmony: -25, conscience: -5 }); return L('Kapı kapandı. Ev, mahkeme salonundan daha sessiz.'); }, 0, null),
                     ],
                 };
             }
@@ -195,6 +205,7 @@ export function eveningScene(state, day) {
 
         case 4:
             return {
+                moment: 'album',
                 text: L('Annen eski bir fotoğraf albümü açtı. Cübbeli bir adam gülümsüyor: dedenin, yani annenin babasının hakimlik yemin günü. "Babam derdi ki, kanun bir terazidir; ama onu tutan elin titrememesi gerekir."'),
                 choices: [
                     choice(L('Fotoğrafı masana koy'), s => { adjust(s, { conscience: 5, harmony: 3 }); return L('Fotoğraf artık masanda. Zor kararlarda gözün ona kayacak.'); }),
@@ -206,7 +217,7 @@ export function eveningScene(state, day) {
             return {
                 text: L('Bugün Deniz\'in doğum günüymüş. Mahkemenin telaşında aklından çıkmış. Ece fısıldıyor: "Pastacı hâlâ açık, ₺8.000."'),
                 choices: [
-                    choice(L('Pasta ve çiçek al (₺8.000)'), s => { adjust(s, { money: -8000, harmony: 10 }); return L('Deniz mumu üflerken gözleri doldu: "Unuttuğunu sanmıştım."'); }, 8000),
+                    choice(L('Pasta ve çiçek al (₺8.000)'), s => { adjust(s, { money: -8000, harmony: 10 }); return L('Deniz mumu üflerken gözleri doldu: "Unuttuğunu sanmıştım."'); }, 8000, 'cake'),
                     choice(L('Özür dile, yarın kutlarız de'), s => { adjust(s, { harmony: -10 }); return L('Deniz "Önemli değil" dedi. Önemliydi.'); }),
                 ],
             };
@@ -215,6 +226,7 @@ export function eveningScene(state, day) {
             const verdict = state.selin;
             if (verdict === 'death') {
                 return {
+                    moment: 'newspaper',
                     text: L('Ece akşam haberlerinde Selin Aydın\'ın davasını izledi. Sana döndü: "O gazeteci abla gerçekten hain miydi?"'),
                     choices: [
                         choice(L('"Bakanlık öyle dedi."'), s => { adjust(s, { conscience: -6, harmony: -5 }); return L('Ece başka bir şey sormadı. Bir daha da haber izlemedi.'); }),
@@ -223,6 +235,7 @@ export function eveningScene(state, day) {
                 };
             }
             return {
+                moment: 'newspaper',
                 text: L('Ece akşam haberlerinde Selin Aydın\'ın davasını izledi: "Onu sen mi yargıladın? Bakanlık çok kızmış diyorlar."'),
                 choices: [
                     choice(L('"Kanun neyse onu verdim."'), s => { adjust(s, { conscience: 3, harmony: 3 }); return L('Ece gururla gülümsedi: "Yarın okulda anlatacağım."'); }),
@@ -233,6 +246,7 @@ export function eveningScene(state, day) {
 
         case 11:
             return {
+                moment: 'files',
                 text: L('Yarın sabah Ece\'nin veli toplantısı var. Ama masanda yarının dosyaları yığılı.'),
                 choices: [
                     choice(L('Toplantıya git'), s => { adjust(s, { harmony: 8 }); return L('Öğretmen Ece\'yi övdü. Ece eve kadar elini bırakmadı.'); }),
@@ -242,6 +256,7 @@ export function eveningScene(state, day) {
 
         case 12:
             return {
+                moment: 'borek',
                 text: L('Alt kattaki komşu kapını çaldı, elinde bir tepsi börek: "Oğlum yarın sizin mahkemede, hakim bey. Bir kavga meselesi. Biraz anlayış gösterseniz..."'),
                 choices: [
                     choice(L('"Kanun neyse o olur."'), s => { adjust(s, { conscience: 4, harmony: -3 }); return L('Komşu böreği geri götürdü. Merdivende selam vermeden geçti.'); }),

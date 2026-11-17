@@ -33,7 +33,7 @@ const VIEW_X = 70, VIEW_W = 260;
 const VIEW_BOX = `${VIEW_X} 0 ${VIEW_W} 140`;
 
 // Wall, window with the moon, a clock, the lamp over the table and the chair backs
-function room() {
+function room(moment) {
     const chair = ({ x, w }) => `
     <rect x="${x - w * 0.42}" y="38" width="${w * 0.84}" height="70" rx="8" fill="#4a2f20"/>
     <rect x="${x - w * 0.34}" y="44" width="${w * 0.68}" height="60" rx="6" fill="#5c3a28"/>`;
@@ -75,6 +75,7 @@ function room() {
     <path d="M189 14 Q200 2 211 14 Z" fill="#c9a25a"/>
     <ellipse cx="200" cy="14.4" rx="11" ry="1.8" fill="#ffe2a8"/>
     ${Object.values(SEATS).map(chair).join('')}
+    ${moment === 'suitcase' ? SUITCASE : ''}
 </svg>`;
 }
 
@@ -90,9 +91,105 @@ function food(x) {
     <path d="M${x - 14} ${y + 1.2} Q${x - 12} ${y - 1.6} ${x - 9.5} ${y + 1.8}" stroke="#4f8a2e" stroke-width="1.6" fill="none" stroke-linecap="round"/>`;
 }
 
+// ---- Small moments of the evening, drawn on the table where the bread basket is ----
+// (centre x 166, on the table top at y = TABLE). One per evening scene (family.js).
+const T = TABLE;
+const PROPS = {
+    // the mother's heart medicine has run out: an empty blister pack
+    medicineEmpty: `
+    <rect x="155" y="${T - 1}" width="21" height="10" rx="1.2" fill="#cdd1d7" stroke="#9aa1aa" stroke-width="0.5" transform="rotate(-6 166 ${T + 4})"/>
+    ${[0, 1, 2].map(i => `<ellipse cx="${159.5 + i * 6}" cy="${T + 1.8}" rx="2" ry="1.4" fill="#e9ecf0" stroke="#9aa1aa" stroke-width="0.4" transform="rotate(-6 166 ${T + 4})"/><ellipse cx="${159.5 + i * 6}" cy="${T + 6}" rx="2" ry="1.4" fill="#e9ecf0" stroke="#9aa1aa" stroke-width="0.4" transform="rotate(-6 166 ${T + 4})"/>`).join('')}`,
+    // a new box of medicine and a glass of water
+    medicine: `
+    <rect x="155" y="${T - 9}" width="12" height="15" rx="1" fill="#f7f5f0" stroke="#c9c2b2" stroke-width="0.5"/>
+    <rect x="159.6" y="${T - 5.5}" width="2.8" height="8" fill="#d6372b"/><rect x="157" y="${T - 2.9}" width="8" height="2.8" fill="#d6372b"/>
+    <path d="M170 ${T - 6} L177 ${T - 6} L176.2 ${T + 6} L170.8 ${T + 6} Z" fill="rgba(200,225,245,0.35)" stroke="#e3edf5" stroke-width="0.6"/>
+    <path d="M170.3 ${T - 2} L176.7 ${T - 2} L176.2 ${T + 5.6} L170.8 ${T + 5.6} Z" fill="#a9cbe6" opacity="0.6"/>`,
+    // Ece's form for the museum trip
+    form: `
+    <g transform="rotate(-8 166 ${T + 3})">
+    <rect x="154" y="${T - 3}" width="24" height="13" fill="#fbf8ef" stroke="#d6cfbd" stroke-width="0.5"/>
+    <path d="M161 ${T - 0.5} L166 ${T - 2.6} L171 ${T - 0.5} Z" fill="#4f7fa8"/>
+    <path d="M162 ${T} L162 ${T + 2.6} M164.7 ${T} L164.7 ${T + 2.6} M167.3 ${T} L167.3 ${T + 2.6} M170 ${T} L170 ${T + 2.6}" stroke="#4f7fa8" stroke-width="0.8"/>
+    <path d="M157 ${T + 5} L175 ${T + 5} M157 ${T + 7.4} L171 ${T + 7.4}" stroke="#b8b0a0" stroke-width="0.6"/>
+    </g>`,
+    // the old photo album the mother opened: the grandfather in his robe
+    album: `
+    <path d="M151 ${T + 9.5} L181 ${T + 9.5} L179 ${T - 2.5} L153 ${T - 2.5} Z" fill="#5a2a2a"/>
+    <path d="M153.5 ${T - 1.6} L166 ${T - 0.6} L166 ${T + 8.6} L152.2 ${T + 8.6} Z" fill="#f1e8d2"/>
+    <path d="M166 ${T - 0.6} L178.5 ${T - 1.6} L179.8 ${T + 8.6} L166 ${T + 8.6} Z" fill="#f4ecd8"/>
+    <rect x="155.5" y="${T + 0.6}" width="8" height="6" fill="#a88a5e"/><circle cx="159.5" cy="${T + 2.6}" r="1.3" fill="#e2c9a0"/><path d="M157 ${T + 6.6} Q159.5 ${T + 3.6} 162 ${T + 6.6} Z" fill="#2a1d14"/>
+    <rect x="168.5" y="${T + 0.6}" width="8" height="6" fill="#b99a6a"/>`,
+    // Deniz's phone: the job she may lose
+    phone: `
+    <rect x="160" y="${T + 0.5}" width="12" height="7.5" rx="1.4" fill="#1d1f24" transform="rotate(10 166 ${T + 4})"/>
+    <rect x="161" y="${T + 1.4}" width="10" height="5.6" rx="0.8" fill="#4f86c6" opacity="0.85" transform="rotate(10 166 ${T + 4})"/>`,
+    // the paper with Selin Aydın's case
+    newspaper: `
+    <g transform="rotate(-5 166 ${T + 4})">
+    <rect x="153" y="${T - 2}" width="26" height="12" fill="#ece5d2" stroke="#c9c0aa" stroke-width="0.5"/>
+    <rect x="155" y="${T - 0.6}" width="22" height="2.2" fill="#3a332b"/>
+    <path d="M155 ${T + 3.4} L165 ${T + 3.4} M155 ${T + 5.4} L165 ${T + 5.4} M155 ${T + 7.4} L165 ${T + 7.4} M167 ${T + 3.4} L177 ${T + 3.4} M167 ${T + 5.4} L177 ${T + 5.4} M167 ${T + 7.4} L174 ${T + 7.4}" stroke="#8a8172" stroke-width="0.6"/>
+    </g>`,
+    // Ece's homework: "the person I respect most"
+    homework: `
+    <rect x="155" y="${T - 2}" width="20" height="11.5" rx="0.8" fill="#fbfaf4" stroke="#7aa0c8" stroke-width="0.6" transform="rotate(4 166 ${T + 4})"/>
+    <path d="M157.5 ${T + 1} L172.5 ${T + 2} M157.3 ${T + 3.6} L172.3 ${T + 4.6} M157.1 ${T + 6.2} L168 ${T + 7}" stroke="#9db8d6" stroke-width="0.5"/>
+    <path d="M171 ${T + 9} L180 ${T - 1}" stroke="#e8b830" stroke-width="1.6" stroke-linecap="round"/><path d="M171 ${T + 9} L172 ${T + 7.6}" stroke="#3a332b" stroke-width="1.2"/>`,
+    // tea brewed by the mother: a Turkish double teapot, steaming
+    teapot: `
+    <path class="home-steam" d="M168 ${T - 19} q-2 -3 0 -6 q2 -3 0 -6" stroke="#f4efe6" stroke-width="1" fill="none" opacity="0.6"/>
+    <ellipse cx="166" cy="${T + 2}" rx="10" ry="7" fill="#b03a2e"/>
+    <ellipse cx="166" cy="${T - 4}" rx="7" ry="1.6" fill="#8d2c22"/>
+    <path d="M175 ${T + 1} Q181 ${T - 2} 182 ${T - 6}" stroke="#b03a2e" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+    <ellipse cx="166" cy="${T - 9}" rx="5.5" ry="4.6" fill="#c84536"/>
+    <circle cx="166" cy="${T - 14}" r="1.4" fill="#2a1d14"/>
+    <path d="M160 ${T - 10} Q156 ${T - 12} 156 ${T - 15}" stroke="#c84536" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <path d="M161 ${T - 1} Q166 ${T + 1} 171 ${T - 1}" stroke="#f0c070" stroke-width="0.8" fill="none" opacity="0.7"/>`,
+    // the landlord's letter about the rent
+    letter: `
+    <g transform="rotate(-7 166 ${T + 4})">
+    <rect x="155" y="${T - 1}" width="22" height="12" fill="#efe6d2" stroke="#c9bea6" stroke-width="0.5"/>
+    <path d="M155 ${T - 1} L166 ${T + 5.5} L177 ${T - 1}" stroke="#c9bea6" stroke-width="0.6" fill="none"/>
+    <circle cx="166" cy="${T + 5.2}" r="2" fill="#a82a22"/>
+    </g>`,
+    // tomorrow's case files piled on the table
+    files: `
+    <rect x="154" y="${T + 3}" width="24" height="6" rx="0.6" fill="#c9b07a" stroke="#8a7448" stroke-width="0.4"/>
+    <rect x="156" y="${T - 2}" width="23" height="5.4" rx="0.6" fill="#5a7aa8" stroke="#3d5677" stroke-width="0.4" transform="rotate(-4 166 ${T})"/>
+    <rect x="155" y="${T - 7}" width="23" height="5.4" rx="0.6" fill="#d9c38f" stroke="#8a7448" stroke-width="0.4" transform="rotate(3 166 ${T - 4})"/>
+    <rect x="160" y="${T - 9}" width="6" height="2.4" fill="#d9c38f" transform="rotate(3 166 ${T - 4})"/>`,
+    // the neighbour's tray of börek
+    borek: `
+    <ellipse cx="166" cy="${T + 4.5}" rx="15" ry="4.6" fill="#b9bdc3" stroke="#8c9097" stroke-width="0.5"/>
+    <ellipse cx="166" cy="${T + 3.8}" rx="13" ry="3.6" fill="#d8a24c"/>
+    <path d="M155 ${T + 3.8} L177 ${T + 3.8} M160 ${T + 1} L158 ${T + 6.8} M166 ${T + 0.3} L166 ${T + 7.4} M172 ${T + 1} L174 ${T + 6.8}" stroke="#a8742a" stroke-width="0.7"/>
+    <circle cx="162" cy="${T + 2.4}" r="0.4" fill="#2a1d14"/><circle cx="169" cy="${T + 2.2}" r="0.4" fill="#2a1d14"/><circle cx="164" cy="${T + 5.4}" r="0.4" fill="#2a1d14"/><circle cx="171" cy="${T + 5.6}" r="0.4" fill="#2a1d14"/>`,
+    // Deniz's birthday cake with candles
+    cake: `
+    <ellipse cx="166" cy="${T + 6}" rx="14" ry="3.6" fill="#f2ede2" stroke="#d6cfbd" stroke-width="0.5"/>
+    <path d="M156 ${T - 4} L156 ${T + 4.5} Q166 ${T + 7.5} 176 ${T + 4.5} L176 ${T - 4} Z" fill="#7a4a2e"/>
+    <path d="M156 ${T - 4} L156 ${T - 1} Q158 ${T + 1.5} 160 ${T - 1} Q162 ${T + 2} 164 ${T - 1} Q166 ${T + 1.5} 168 ${T - 1} Q170 ${T + 2} 172 ${T - 1} Q174 ${T + 1.5} 176 ${T - 1} L176 ${T - 4} Z" fill="#f6eee6"/>
+    <ellipse cx="166" cy="${T - 4}" rx="10" ry="2.6" fill="#fbf5ee"/>
+    <circle cx="160" cy="${T - 4.4}" r="0.9" fill="#d6372b"/><circle cx="172" cy="${T - 4}" r="0.9" fill="#d6372b"/>
+    ${[162, 166, 170].map(x => `<rect x="${x - 0.6}" y="${T - 10}" width="1.2" height="6" fill="#7aa0c8"/><path class="home-flame" d="M${x} ${T - 13.5} Q${x + 1.3} ${T - 11.4} ${x} ${T - 10} Q${x - 1.3} ${T - 11.4} ${x} ${T - 13.5} Z" fill="#ffcc4d"/>`).join('')}`,
+};
+
+const BREAD_BASKET = `
+    <path d="M157 ${TABLE + 1} Q160 ${TABLE - 9} 163 ${TABLE + 1} Z M161.5 ${TABLE + 1} Q166 ${TABLE - 11} 170.5 ${TABLE + 1} Z M168.5 ${TABLE + 1} Q172 ${TABLE - 8} 175.5 ${TABLE + 1} Z" fill="#f3e3bc" stroke="#c98a3c" stroke-width="1"/>
+    <path d="M155 ${TABLE} L178 ${TABLE} L175.5 ${TABLE + 10} L157.5 ${TABLE + 10} Z" fill="#9a6a34"/>
+    <path d="M155.8 ${TABLE + 3.3} L177.2 ${TABLE + 3.3} M156.6 ${TABLE + 6.7} L176.4 ${TABLE + 6.7}" stroke="#6e4720" stroke-width="0.7"/>
+    <path d="M159.5 ${TABLE} L160.3 ${TABLE + 10} M164 ${TABLE} L164.4 ${TABLE + 10} M168.5 ${TABLE} L168.5 ${TABLE + 10} M173 ${TABLE} L172.6 ${TABLE + 10}" stroke="#6e4720" stroke-width="0.5" opacity="0.7"/>`;
+
+// Deniz's packed suitcase, standing by the wall (drawn behind the table)
+const SUITCASE = `
+    <rect x="309" y="74" width="17" height="27" rx="2" fill="#6b4226" stroke="#4a2c18" stroke-width="0.6"/>
+    <path d="M314 74 L314 70 L321 70 L321 74" stroke="#2a1d14" stroke-width="1.4" fill="none"/>
+    <path d="M309 82 L326 82 M309 92 L326 92" stroke="#4a2c18" stroke-width="0.8"/>`;
+
 // The table in front of everyone, laid for dinner: a plate with a spoon on its
 // left and a glass of tea at each place. Plates and glasses of family members who are away stay empty.
-function table(ill, home) {
+function table(ill, home, moment) {
     const place = ([key, { x }]) => `
     <ellipse cx="${x}" cy="${TABLE + 7}" rx="17" ry="4.2" fill="#f2ede2"/>
     <ellipse cx="${x}" cy="${TABLE + 7}" rx="11" ry="2.6" fill="#e3dccb"/>
@@ -115,11 +212,8 @@ function table(ill, home) {
     <rect x="0" y="${TABLE}" width="400" height="16" fill="#6e4a30"/>
     <rect x="0" y="${TABLE}" width="400" height="2" fill="#8a6040"/>
     ${Object.entries(SEATS).map(place).join('')}
-    <!-- bread basket: slices of bread standing in a woven basket -->
-    <path d="M157 ${TABLE + 1} Q160 ${TABLE - 9} 163 ${TABLE + 1} Z M161.5 ${TABLE + 1} Q166 ${TABLE - 11} 170.5 ${TABLE + 1} Z M168.5 ${TABLE + 1} Q172 ${TABLE - 8} 175.5 ${TABLE + 1} Z" fill="#f3e3bc" stroke="#c98a3c" stroke-width="1"/>
-    <path d="M155 ${TABLE} L178 ${TABLE} L175.5 ${TABLE + 10} L157.5 ${TABLE + 10} Z" fill="#9a6a34"/>
-    <path d="M155.8 ${TABLE + 3.3} L177.2 ${TABLE + 3.3} M156.6 ${TABLE + 6.7} L176.4 ${TABLE + 6.7}" stroke="#6e4720" stroke-width="0.7"/>
-    <path d="M159.5 ${TABLE} L160.3 ${TABLE + 10} M164 ${TABLE} L164.4 ${TABLE + 10} M168.5 ${TABLE} L168.5 ${TABLE + 10} M173 ${TABLE} L172.6 ${TABLE + 10}" stroke="#6e4720" stroke-width="0.5" opacity="0.7"/>
+    <!-- the evening's moment, or else the bread basket -->
+    ${PROPS[moment] || BREAD_BASKET}
     <!-- salad bowl between Deniz's tea and Ece's spoon: lettuce, tomato, cucumber, carrot -->
     <ellipse cx="247" cy="${TABLE + 1.5}" rx="10" ry="2.6" fill="#5e9a38"/>
     <circle cx="241" cy="${TABLE - 0.5}" r="3" fill="#6fb043"/><circle cx="246" cy="${TABLE - 2}" r="3.4" fill="#7cbd4c"/><circle cx="252" cy="${TABLE - 0.8}" r="3" fill="#6fb043"/>
@@ -142,16 +236,20 @@ function person(key, appearance, face) {
     return `<div class="home-person home-${key}" style="left:${pct(x - w / 2 - VIEW_X)}%;width:${pct(w)}%;bottom:${bottom / 1.4}%">${makePortrait(appearance, face)}</div>`;
 }
 
-// family = state.family ({ harmony, motherHealth, spouseLeft })
-export function homeScene(family) {
+// family = state.family ({ harmony, motherHealth, spouseLeft }); moment = what this
+// evening's scene puts on the table (family.js), e.g. 'cake', 'medicine', 'motherAway'
+export function homeScene(family, moment) {
     const h = family.harmony;
-    const home = family.spouseLeft ? ['mother'] : ['mother', 'spouse', 'child'];
+    const motherHome = moment !== 'motherAway';   // taken to hospital tonight
+    const home = [...(motherHome ? ['mother'] : []), ...(family.spouseLeft ? [] : ['spouse', 'child'])];
     // very ill: a sallow, yellowish face with tired eyes
     const mother = family.motherHealth === 0 ? { ...SANIYE, skin: '#dcc68e', sick: true } : SANIYE;
-    let people = person('mother', mother, motherFace(family.motherHealth));
+    // the first evening Ece has put on the judge's black robe
+    const ece = moment === 'robe' ? { ...ECE, clothing: '#1c1c22', outfit: 'shirt' } : ECE;
+    let people = motherHome ? person('mother', mother, motherFace(family.motherHealth)) : '';
     if (!family.spouseLeft) {
         people += person('spouse', DENIZ, spouseFace(h));
-        people += person('child', ECE, childFace(h));
+        people += person('child', ece, childFace(h));
     }
-    return room() + people + table(family.motherHealth <= 1, home);
+    return room(moment) + people + table(motherHome && family.motherHealth <= 1, home, moment);
 }
