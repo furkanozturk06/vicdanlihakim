@@ -3963,3 +3963,89 @@ html.text-xlarge #directive-text { font-size: 0.92rem; }
     font-size: 0.88rem;
 }
 
+
+/* The newspaper fits on one screen without scrolling: the day's figures in one
+   strip, and the case notes kept to two lines (three under the headline) */
+.newspaper #summary-stats {
+    display: flex;
+    border-top: 1px solid var(--ink-black);
+    border-bottom: 1px solid var(--ink-black);
+    margin-bottom: var(--spacing-sm);
+}
+
+.newspaper .summary-row {
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 2px;
+    border-bottom: none;
+    font-size: 0.66rem;
+    text-align: center;
+}
+
+.newspaper .summary-row + .summary-row {
+    border-left: 1px solid rgba(26, 22, 19, 0.3);
+}
+
+.newspaper .summary-row span:last-child {
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.paper-lede,
+.paper-note {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.paper-lede {
+    -webkit-line-clamp: 3;
+}
+
+.paper-note {
+    -webkit-line-clamp: 2;
+}
+
+@media (max-height: 760px) {
+    .newspaper {
+        padding: var(--spacing-md) var(--spacing-md);
+    }
+
+    .paper-name {
+        font-size: 1.35rem;
+    }
+
+    .paper-headline {
+        font-size: 1.12rem;
+        line-height: 1.15;
+        margin-bottom: 4px;
+    }
+
+    .paper-masthead {
+        margin-bottom: 6px;
+    }
+
+    .newspaper .summary-row {
+        font-size: 0.6rem;
+        padding: 4px 2px;
+    }
+
+    .newspaper .typewriter-btn {
+        padding: 10px var(--spacing-lg);
+    }
+
+    .newspaper .paper-side li {
+        font-size: 0.9rem;
+        padding: 4px 0 4px 16px;
+    }
+
+    .paper-lede {
+        font-size: 0.88rem;
+    }
+
+    .paper-note {
+        font-size: 0.82rem;
+    }
+}
