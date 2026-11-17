@@ -3,7 +3,7 @@
  * Directives, defendant names, bribe/threat offers and newspaper generation.
  */
 
-import { L } from './i18n.js';
+import { L, LANG } from './i18n.js';
 
 // Daily directives from the ministry
 export const DIRECTIVES = [
@@ -294,32 +294,104 @@ const FILLER_NEWS = [
  * Build the end-of-day newspaper from the day's verdict log.
  * Each log entry: { crime, detail, name, verdict, correct, diff, sympathy, offer, exposed, returning }
  */
+// ---- Newspaper headlines that tell what the case was (Turkish only) ----
+// "Dedesinin tüfeğiyle yasak bölgede avlanırken yakalandı." becomes the phrase
+// "Dedesinin tüfeğiyle yasak bölgede avlanırken yakalanan", so a headline can read
+// "... yakalanan Elif Z. hakkında verilen ağır ceza tepki çekti". The past-tense
+// verb at the end of the first sentence turns into a participle (-an/-en).
+// Returns null when that would not read well; the headline then names the case
+// and its summary is printed under it.
+
+// First sentences whose final verb belongs to someone else (a fire, a victim,
+// other firms...), so "...-an <defendant>" would say the wrong thing
+const NOT_THE_DEFENDANT = [
+    'Piknikte attığı sigaradan çıkan yangın',
+    'Balkonundaki mangaldan çıktığı söylenen yangın',
+    'Para karşılığı verdiği yalan ifadeyle masum bir adam',
+    'Dört firma,',
+    'İnternetten "ucuz insülin" diye sattığı sahte ilacı kullanan',
+    'Salgın döneminde "aşı" diye sattığı sıvıyı',
+    'Ruhsatsız bir klinikte böbreği alınan genç bir göçmen',
+    'Emekli maaşıyla geçinen sanık,',
+    'Eski eşinin mahrem fotoğrafları',
+];
+
+const VOWELS = 'aeıioöuü';
+const WHO_MAX = 90; // characters
+const BACK_VOWELS = 'aıou';
+
+export function caseWho(summary) {
+    if (LANG !== 'tr' || !summary) return null;
+    const first = summary.split(/(?<=[.!?])\s/)[0].replace(/[.!?]$/, '');
+    if (NOT_THE_DEFENDANT.some(start => first.startsWith(start))) return null;
+    // another finished verb inside the sentence ("girdi, ...", "yaktı ve ...") or a
+    // second clause after ";" would leave half the sentence unchanged
+    if (first.includes(';') || /[dt][ıiuü](,| ve | ama )/.test(first)) return null;
+    const words = first.split(' ');
+    const verb = words.pop();
+    const past = verb.match(/^(.*)[dt][ıiuü]$/);
+    if (!past) return null;
+    let stem = past[1];
+    if (/(yor|mış|miş|muş|müş)$/.test(stem)) return null;   // "satıyordu", "almıştı"
+    if (verb === 'dedi') return [...words, 'diyen'].join(' ');
+    if (verb === 'yedi') return [...words, 'yiyen'].join(' ');
+    // "etmek" and its compounds soften: etti, kaybetti -> eden, kaybeden (but iletti -> ileten)
+    if (/^(etti|kaybetti|kaydetti|reddetti|affetti|hissetti|seyretti)$/.test(verb)) stem = stem.replace(/et$/, 'ed');
+    if (/gitti$/.test(verb)) stem = stem.replace(/git$/, 'gid'); // gitti -> giden
+    const vowels = stem.split('').filter(ch => VOWELS.includes(ch));
+    if (!vowels.length) return null;
+    const ending = BACK_VOWELS.includes(vowels[vowels.length - 1]) ? 'an' : 'en';
+    const participle = VOWELS.includes(stem[stem.length - 1]) ? `${stem}y${ending}` : stem + ending;
+    const phrase = [...words, participle].join(' ');
+    // a very long phrase would make the headline too long for one screen
+    return phrase.length <= WHO_MAX ? phrase : null;
+}
+
+// Headline for a case, built around the phrase from caseWho
+const WHO_HEADLINES = {
+    appeal: (w, n) => `Yargıtay bozdu: ${w} ${n} hakkında verilen karar kanuna aykırı bulundu`,
+    scandal: (w, n) => `SKANDAL: ${w} ${n} davasında hakimin rüşvet aldığı ortaya çıktı!`,
+    deathFair: (w, n) => `${w} ${n} hakkında idam kararı: Adalet yerini buldu`,
+    deathWrong: (w, n) => `Masum kana mı girildi? ${w} ${n} hakkında verilen idam kararı tartışılıyor`,
+    light: (w, n) => `${w} ${n} hakkında verilen hafif ceza şaşırttı: Halk güvende mi?`,
+    heavyOutcry: (w, n) => `${w} ${n} hakkında verilen ağır ceza tepki çekti`,
+    harsh: (w, n) => `${w} ${n} hakkında beklenmedik sert karar`,
+};
+
+// A news item about a case: one sentence that says what the case was when it can,
+// otherwise the usual headline with the case summary under it
+function caseNews(kind, p, e, fallback) {
+    const who = caseWho(e.summary);
+    if (who) return { p, text: WHO_HEADLINES[kind](who, e.name), note: '' };
+    return { p, text: fallback, note: e.summary };
+}
+
 export function buildNewspaper(dayLog, appeals = []) {
     const items = [];
 
     for (const a of appeals) {
-        items.push({ p: 75, note: a.summary, text: a.name
-            ? L('Yargıtay bozdu: {0} hakkındaki "{1}" davası kararı kanuna aykırı bulundu', a.name, a.detail)
-            : L('Yargıtay bozdu: "{0}" davasındaki karar kanuna aykırı bulundu', a.detail) });
+        items.push(a.name
+            ? caseNews('appeal', 75, a, L('Yargıtay bozdu: {0} hakkındaki "{1}" davası kararı kanuna aykırı bulundu', a.name, a.detail))
+            : { p: 75, note: '', text: L('Yargıtay bozdu: "{0}" davasındaki karar kanuna aykırı bulundu', a.detail) });
     }
 
     for (const e of dayLog) {
         if (e.exposed) {
-            items.push({ p: 100, note: e.summary, text: L('SKANDAL: Hakimin {1} hakkındaki "{0}" davasında rüşvet aldığı ortaya çıktı!', e.detail, e.name) });
+            items.push(caseNews('scandal', 100, e, L('SKANDAL: Hakimin {1} hakkındaki "{0}" davasında rüşvet aldığı ortaya çıktı!', e.detail, e.name)));
         }
         if (e.returning) {
             items.push({ p: 80, note: e.summary, text: L('Daha önce serbest bırakılan {0} yeniden hakim karşısında', e.name) });
         }
         if (e.verdict === 'death') {
             items.push(e.diff === 0
-                ? { p: 70, note: e.summary, text: L('{1} hakkındaki "{0}" davasında idam kararı: Adalet yerini buldu', e.detail, e.name) }
-                : { p: 90, note: e.summary, text: L('Masum kana mı girildi? {1} hakkındaki "{0}" davasında verilen idam kararı tartışılıyor', e.detail, e.name) });
+                ? caseNews('deathFair', 70, e, L('{1} hakkındaki "{0}" davasında idam kararı: Adalet yerini buldu', e.detail, e.name))
+                : caseNews('deathWrong', 90, e, L('Masum kana mı girildi? {1} hakkındaki "{0}" davasında verilen idam kararı tartışılıyor', e.detail, e.name)));
         } else if (e.diff <= -2) {
-            items.push({ p: 60, note: e.summary, text: L('{1} hakkındaki "{0}" davasında şaşırtan hafif ceza: Halk güvende mi?', e.detail, e.name) });
+            items.push(caseNews('light', 60, e, L('{1} hakkındaki "{0}" davasında şaşırtan hafif ceza: Halk güvende mi?', e.detail, e.name)));
         } else if (e.diff >= 2 && e.sympathy) {
-            items.push({ p: 60, note: e.summary, text: L('{1} hakkındaki "{0}" davasında verilen ağır ceza tepki çekti', e.detail, e.name) });
+            items.push(caseNews('heavyOutcry', 60, e, L('{1} hakkındaki "{0}" davasında verilen ağır ceza tepki çekti', e.detail, e.name)));
         } else if (e.diff >= 2) {
-            items.push({ p: 40, note: e.summary, text: L('{1} hakkındaki "{0}" davasında beklenmedik sert karar', e.detail, e.name) });
+            items.push(caseNews('harsh', 40, e, L('{1} hakkındaki "{0}" davasında beklenmedik sert karar', e.detail, e.name)));
         }
     }
 
