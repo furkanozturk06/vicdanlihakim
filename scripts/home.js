@@ -75,11 +75,25 @@ function room() {
 </svg>`;
 }
 
-// The table in front of everyone, laid for dinner: a plate and a glass of tea at each place
-function table(ill) {
-    const place = ({ x }) => `
+// Dinner on a plate: rice, beans in tomato sauce and a slice of green pepper
+function food(x) {
+    const y = TABLE + 7;
+    return `
+    <path d="M${x - 1} ${y + 0.6} Q${x + 5} ${y - 6} ${x + 11} ${y + 0.6} Z" fill="#f7f2e4"/>
+    <path d="M${x + 2} ${y - 1} l1 0 M${x + 5} ${y - 2.6} l1 0 M${x + 7.5} ${y - 1.2} l1 0" stroke="#ded5bf" stroke-width="0.8"/>
+    <ellipse cx="${x - 5}" cy="${y - 0.4}" rx="7.5" ry="2.8" fill="#a8461c"/>
+    <circle cx="${x - 8}" cy="${y - 0.8}" r="1" fill="#f1e6cf"/><circle cx="${x - 5}" cy="${y - 1.6}" r="1" fill="#f1e6cf"/>
+    <circle cx="${x - 2.6}" cy="${y - 0.2}" r="1" fill="#f1e6cf"/><circle cx="${x - 6}" cy="${y + 0.8}" r="1" fill="#f1e6cf"/>
+    <path d="M${x - 14} ${y + 1.2} Q${x - 12} ${y - 1.6} ${x - 9.5} ${y + 1.8}" stroke="#4f8a2e" stroke-width="1.6" fill="none" stroke-linecap="round"/>`;
+}
+
+// The table in front of everyone, laid for dinner: a plate and a glass of tea at
+// each place. Plates of family members who are away stay empty.
+function table(ill, home) {
+    const place = ([key, { x }]) => `
     <ellipse cx="${x}" cy="${TABLE + 7}" rx="17" ry="4.2" fill="#f2ede2"/>
     <ellipse cx="${x}" cy="${TABLE + 7}" rx="11" ry="2.6" fill="#e3dccb"/>
+    ${home.includes(key) ? food(x) : ''}
     <path d="M${x + 24} ${TABLE + 1} L${x + 30} ${TABLE + 1} L${x + 28.6} ${TABLE + 5} L${x + 30} ${TABLE + 9} L${x + 24} ${TABLE + 9} L${x + 25.4} ${TABLE + 5} Z" fill="#a8401c" opacity="0.92"/>
     <ellipse cx="${x + 27}" cy="${TABLE + 9.6}" rx="5" ry="1.3" fill="#d8d0bf"/>`;
     const m = SEATS.mother;
@@ -90,7 +104,7 @@ function table(ill) {
     <path d="M${m.x - m.w * 0.3} 84 L${m.x - m.w * 0.34} ${TABLE} M${m.x + m.w * 0.3} 84 L${m.x + m.w * 0.34} ${TABLE}" stroke="#c9a25a" stroke-width="1.4" opacity="0.6"/>` : ''}
     <rect x="0" y="${TABLE}" width="400" height="16" fill="#6e4a30"/>
     <rect x="0" y="${TABLE}" width="400" height="2" fill="#8a6040"/>
-    ${Object.values(SEATS).map(place).join('')}
+    ${Object.entries(SEATS).map(place).join('')}
     <ellipse cx="163" cy="${TABLE + 8}" rx="9" ry="3.4" fill="#8b5a2b"/>
     <ellipse cx="163" cy="${TABLE + 6.4}" rx="6.4" ry="2.2" fill="#d9a55c"/>
     <path d="M0 ${TABLE + 16} L400 ${TABLE + 16} L400 140 L0 140 Z" fill="#e8e0cc"/>
@@ -110,10 +124,11 @@ function person(key, appearance, face) {
 // family = state.family ({ harmony, motherHealth, spouseLeft })
 export function homeScene(family) {
     const h = family.harmony;
+    const home = family.spouseLeft ? ['mother'] : ['mother', 'spouse', 'child'];
     let people = person('mother', SANIYE, motherFace(family.motherHealth));
     if (!family.spouseLeft) {
         people += person('spouse', DENIZ, spouseFace(h));
         people += person('child', ECE, childFace(h));
     }
-    return room() + people + table(family.motherHealth <= 1);
+    return room() + people + table(family.motherHealth <= 1, home);
 }
