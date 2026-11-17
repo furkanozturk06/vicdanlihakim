@@ -13,7 +13,7 @@ const DENIZ = {
 };
 const ECE = {
     gender: 'f', skin: '#f0c8b0', hair: '#d4a24c', hairStyle: 'pigtails', ribbon: '#c0392b', freckles: true,
-    facialHair: 'none', earrings: false, glasses: false, age: '', clothing: '#e0a030', outfit: 'sweater',
+    facialHair: 'none', earrings: false, glasses: false, age: '', clothing: '#e0a030', outfit: 'kidHoodie',
 };
 const SANIYE = {
     gender: 'f', skin: '#e3b496', hair: '#ececec', hairStyle: 'perm', necklace: true, facialHair: 'none',
@@ -91,7 +91,7 @@ function food(x) {
 }
 
 // The table in front of everyone, laid for dinner: a plate with a spoon on its
-// left and a glass of tea at each place. Plates of family members who are away stay empty.
+// left and a glass of tea at each place. Plates and glasses of family members who are away stay empty.
 function table(ill, home) {
     const place = ([key, { x }]) => `
     <ellipse cx="${x}" cy="${TABLE + 7}" rx="17" ry="4.2" fill="#f2ede2"/>
@@ -102,8 +102,8 @@ function table(ill, home) {
     <g transform="translate(${x + 30} ${TABLE + 10}) scale(0.74) translate(${-(x + 30)} ${-(TABLE + 10)})">
     <ellipse cx="${x + 30}" cy="${TABLE + 10}" rx="6" ry="1.6" fill="#ece6d8" stroke="#c8bea6" stroke-width="0.4"/>
     <path d="M${x + 26.4} ${TABLE - 2} L${x + 33.6} ${TABLE - 2} L${x + 31.8} ${TABLE + 3.5} L${x + 33.4} ${TABLE + 9.6} L${x + 26.6} ${TABLE + 9.6} L${x + 28.2} ${TABLE + 3.5} Z" fill="rgba(235,240,245,0.22)" stroke="#e8edf2" stroke-width="0.6"/>
-    <path d="M${x + 26.9} ${TABLE - 0.6} L${x + 33.1} ${TABLE - 0.6} L${x + 31.6} ${TABLE + 3.5} L${x + 33} ${TABLE + 9.2} L${x + 27} ${TABLE + 9.2} L${x + 28.4} ${TABLE + 3.5} Z" fill="#b5481c" opacity="0.85"/>
-    <ellipse cx="${x + 30}" cy="${TABLE - 0.6}" rx="3.1" ry="0.6" fill="#d9773a"/>
+    ${home.includes(key) ? `<path d="M${x + 26.9} ${TABLE - 0.6} L${x + 33.1} ${TABLE - 0.6} L${x + 31.6} ${TABLE + 3.5} L${x + 33} ${TABLE + 9.2} L${x + 27} ${TABLE + 9.2} L${x + 28.4} ${TABLE + 3.5} Z" fill="#b5481c" opacity="0.85"/>
+    <ellipse cx="${x + 30}" cy="${TABLE - 0.6}" rx="3.1" ry="0.6" fill="#d9773a"/>` : ''}
     <path d="M${x + 27.6} ${TABLE + 0.6} L${x + 28.6} ${TABLE + 3}" stroke="#fff" stroke-width="0.6" opacity="0.7"/>
     </g>`;
     const m = SEATS.mother;

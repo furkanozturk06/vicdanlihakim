@@ -54,6 +54,16 @@ export function makePortrait(a, emotion) {
             <path d="M56 110 L60 106 L64 110 L62 140 L60 144 L58 140 Z" fill="#7a1f1f"/>
             <path d="M38 108 L52 106 L60 132 L46 150 L36 150 Z" fill="${clothDark}"/>
             <path d="M82 108 L68 106 L60 132 L74 150 L84 150 Z" fill="${clothDark}"/>`;
+    } else if (a.outfit === 'kidHoodie') {
+        // Ece's hoodie (family only): the hood bunched on both sides of the neck,
+        // drawstrings with red tips and a small heart on the chest
+        collar = `
+            <path d="M28 114 C27 101 40 95 50 101 L53 112 C45 110 36 111 28 114 Z" fill="${clothDark}"/>
+            <path d="M92 114 C93 101 80 95 70 101 L67 112 C75 110 84 111 92 114 Z" fill="${clothDark}"/>
+            <path d="M47 107 Q60 117 73 107" stroke="${clothDark}" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+            <path d="M54 112 Q53 120 54 128 M66 112 Q67 120 66 128" stroke="#fff6e0" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+            <circle cx="54" cy="129.5" r="1.7" fill="#c0392b"/><circle cx="66" cy="129.5" r="1.7" fill="#c0392b"/>
+            <path d="M77 124 C77 121 81 120.5 82 123.2 C83 120.5 87 121 87 124 C87 127 82 130 82 130 C82 130 77 127 77 124 Z" fill="#e85a6b"/>`;
     } else if (a.outfit === 'hoodie') {
         collar = `
             <path d="M34 112 C40 100 80 100 86 112 C78 118 42 118 34 112 Z" fill="${clothDark}"/>
