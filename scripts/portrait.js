@@ -31,13 +31,13 @@ export function makePortrait(a, emotion) {
     // The styles below are only for the judge's family (home.js); defendants never
     // get them, so no defendant looks like Deniz, Ece or Saniye.
     else if (a.hairStyle === 'wavy') {
-        hairBack = `<path d="M27 60 C24 28 44 17 60 17 C77 17 97 28 93 60 C97 72 92 80 96 92 C99 102 92 110 96 118 C88 122 82 116 80 108 L40 108 C38 116 32 122 24 118 C28 110 21 102 24 92 C28 80 23 72 27 60 Z" fill="${hairDark}"/>`;
+        hairBack = `<path d="M24 58 C20 24 42 12 60 12 C80 12 100 24 96 58 C100 70 94 80 99 92 C103 104 95 112 99 122 C92 128 84 122 82 112 L38 112 C36 122 28 128 21 122 C25 112 17 104 21 92 C26 80 20 70 24 58 Z" fill="${hairDark}"/>`;
     } else if (a.hairStyle === 'pigtails') {
         // two bunches tied high on each side of the head, falling to the shoulders
         hairBack = [-1, 1].map(side => {
             const x = v => 60 + side * v;
-            return `<path d="M${x(26)} 42 C${x(44)} 44 ${x(46)} 64 ${x(42)} 80 C${x(40)} 92 ${x(44)} 100 ${x(40)} 106 C${x(34)} 98 ${x(32)} 86 ${x(31)} 72 C${x(30)} 60 ${x(26)} 52 ${x(26)} 42 Z" fill="${hairDark}"/>
-                <path d="M${x(36)} 58 C${x(40)} 70 ${x(38)} 84 ${x(39)} 96" stroke="${hair}" stroke-width="1.6" fill="none"/>`;
+            return `<path d="M${x(26)} 42 C${x(44)} 44 ${x(46)} 64 ${x(42)} 80 C${x(40)} 92 ${x(44)} 100 ${x(40)} 106 C${x(34)} 98 ${x(32)} 86 ${x(31)} 72 C${x(30)} 60 ${x(26)} 52 ${x(26)} 42 Z" fill="${hair}"/>
+                <path d="M${x(36)} 58 C${x(40)} 70 ${x(38)} 84 ${x(39)} 96" stroke="${hairDark}" stroke-width="1.2" fill="none" opacity="0.7"/>`;
         }).join('');
     } else if (a.hairStyle === 'perm') {
         // short, tightly curled grandmother's perm
@@ -83,11 +83,16 @@ export function makePortrait(a, emotion) {
         case 'bald':
             hairFront = `<path d="M30 60 C30 52 33 48 36 47 L37 64 Z" fill="${hair}"/><path d="M90 60 C90 52 87 48 84 47 L83 64 Z" fill="${hair}"/>`;
             break;
-        case 'wavy': // side-swept, with a small flower pinned in the hair
-            hairFront = `<path d="M30 64 C26 30 46 18 64 19 C82 20 95 34 90 62 C88 48 80 38 70 35 C60 34 50 38 44 44 C38 50 33 56 30 64 Z" fill="${hair}"/>
+        case 'wavy': { // full side-parted waves framing the face, with a small flower pinned in
+            const hairLight = shade(a.hair, 0.14);
+            hairFront = `<path d="M29 66 C24 30 44 15 62 16 C82 17 97 32 91 64 C90 52 85 44 78 40 C72 46 66 46 62 40 C56 36 48 38 42 46 C36 54 32 60 29 66 Z" fill="${hair}"/>
+                <path d="M31 56 C27 70 34 80 29 92 C27 100 33 104 31 110 C37 104 35 96 38 88 C41 78 35 70 37 58 Z" fill="${hair}"/>
+                <path d="M89 56 C93 70 86 80 91 92 C93 100 87 104 89 110 C83 104 85 96 82 88 C79 78 85 70 83 58 Z" fill="${hair}"/>
+                <path d="M47 23 C57 18 71 20 80 28 M36 42 C39 33 46 28 53 26 M86 52 C88 62 84 70 87 80" stroke="${hairLight}" stroke-width="1.6" fill="none" stroke-linecap="round"/>
                 ${[0, 72, 144, 216, 288].map(r => `<ellipse cx="80" cy="25.5" rx="2.6" ry="4" fill="${a.clip}" transform="rotate(${r} 80 30)"/>`).join('')}
                 <circle cx="80" cy="30" r="2.4" fill="#e8b830"/>`;
             break;
+        }
         case 'perm':
             hairFront = [[38, 36, 7], [48, 30, 7.5], [60, 28, 8], [72, 30, 7.5], [82, 36, 7], [33, 46, 5.5], [87, 46, 5.5]]
                 .map(([cx, cy, r]) => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${hair}"/><path d="M${cx - r * 0.5} ${cy} q${r * 0.5} ${-r * 0.5} ${r} 0" stroke="${hairDark}" stroke-width="1" fill="none"/>`).join('');
@@ -158,7 +163,10 @@ export function makePortrait(a, emotion) {
         <path d="M56 59 Q60 56 64 59" stroke="#2b2b2b" stroke-width="2" fill="none"/>` : '';
     const necklace = a.necklace ? [-12, -8, -4, 0, 4, 8, 12]
         .map(d => `<circle cx="${60 + d}" cy="${108 + (144 - d * d) / 24}" r="1.8" fill="#f4efe2" stroke="#cfc6b2" stroke-width="0.4"/>`).join('') : '';
-    const earrings = a.earrings ? `<circle cx="30" cy="75" r="2.4" fill="#d9b440"/><circle cx="90" cy="75" r="2.4" fill="#d9b440"/>` : '';
+    // gold studs; 'silver' gives small silver drops (Deniz)
+    const earrings = a.earrings === 'silver'
+        ? [30, 90].map(x => `<circle cx="${x}" cy="74" r="1.6" fill="#d8dce2"/><path d="M${x} 75.5 L${x} 79" stroke="#c4c9d1" stroke-width="1"/><path d="M${x} 78.5 C${x - 3} 82 ${x - 2} 85.5 ${x} 85.5 C${x + 2} 85.5 ${x + 3} 82 ${x} 78.5 Z" fill="#e3e7ec" stroke="#a9b0ba" stroke-width="0.5"/>`).join('')
+        : a.earrings ? `<circle cx="30" cy="75" r="2.4" fill="#d9b440"/><circle cx="90" cy="75" r="2.4" fill="#d9b440"/>` : '';
 
     return `<svg viewBox="0 0 120 150" xmlns="http://www.w3.org/2000/svg">
         <defs>

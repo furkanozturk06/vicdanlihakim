@@ -9,7 +9,7 @@ import { makePortrait } from './portrait.js';
 // a flower, ribboned bunches and freckles, a curly perm and pearls), so nobody in court looks like them.
 const DENIZ = {
     gender: 'f', skin: '#f0c8b0', hair: '#8a3d1c', hairStyle: 'wavy', clip: '#f6f0e6', facialHair: 'none',
-    earrings: true, glasses: false, age: '', clothing: '#6b3550', outfit: 'sweater',
+    earrings: 'silver', glasses: false, age: '', clothing: '#6b3550', outfit: 'sweater',
 };
 const ECE = {
     gender: 'f', skin: '#f0c8b0', hair: '#8a3d1c', hairStyle: 'pigtails', ribbon: '#c0392b', freckles: true,
