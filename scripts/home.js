@@ -90,15 +90,17 @@ function food(x) {
     <path d="M${x - 14} ${y + 1.2} Q${x - 12} ${y - 1.6} ${x - 9.5} ${y + 1.8}" stroke="#4f8a2e" stroke-width="1.6" fill="none" stroke-linecap="round"/>`;
 }
 
-// The table in front of everyone, laid for dinner: a plate and a glass of tea at
-// each place. Plates of family members who are away stay empty.
+// The table in front of everyone, laid for dinner: a plate with a spoon on its
+// right and a glass of tea at each place. Plates of family members who are away stay empty.
 function table(ill, home) {
     const place = ([key, { x }]) => `
     <ellipse cx="${x}" cy="${TABLE + 7}" rx="17" ry="4.2" fill="#f2ede2"/>
     <ellipse cx="${x}" cy="${TABLE + 7}" rx="11" ry="2.6" fill="#e3dccb"/>
     ${home.includes(key) ? food(x) : ''}
-    <path d="M${x + 24} ${TABLE + 1} L${x + 30} ${TABLE + 1} L${x + 28.6} ${TABLE + 5} L${x + 30} ${TABLE + 9} L${x + 24} ${TABLE + 9} L${x + 25.4} ${TABLE + 5} Z" fill="#a8401c" opacity="0.92"/>
-    <ellipse cx="${x + 27}" cy="${TABLE + 9.6}" rx="5" ry="1.3" fill="#d8d0bf"/>`;
+    <path d="M${x + 20.5} ${TABLE + 6} L${x + 21} ${TABLE + 12.5}" stroke="#c9ccd1" stroke-width="1.1" stroke-linecap="round"/>
+    <ellipse cx="${x + 20.4}" cy="${TABLE + 4.6}" rx="1.6" ry="2.3" fill="#dfe2e6" stroke="#b5b9bf" stroke-width="0.4"/>
+    <path d="M${x + 27} ${TABLE + 1} L${x + 33} ${TABLE + 1} L${x + 31.6} ${TABLE + 5} L${x + 33} ${TABLE + 9} L${x + 27} ${TABLE + 9} L${x + 28.4} ${TABLE + 5} Z" fill="#a8401c" opacity="0.92"/>
+    <ellipse cx="${x + 30}" cy="${TABLE + 9.6}" rx="5" ry="1.3" fill="#d8d0bf"/>`;
     const m = SEATS.mother;
     return `
 <svg class="home-front" viewBox="${VIEW_BOX}" preserveAspectRatio="none" aria-hidden="true">
@@ -108,8 +110,11 @@ function table(ill, home) {
     <rect x="0" y="${TABLE}" width="400" height="16" fill="#6e4a30"/>
     <rect x="0" y="${TABLE}" width="400" height="2" fill="#8a6040"/>
     ${Object.entries(SEATS).map(place).join('')}
-    <ellipse cx="163" cy="${TABLE + 8}" rx="9" ry="3.4" fill="#8b5a2b"/>
-    <ellipse cx="163" cy="${TABLE + 6.4}" rx="6.4" ry="2.2" fill="#d9a55c"/>
+    <!-- bread basket: slices of bread standing in a woven basket -->
+    <path d="M164 ${TABLE + 2} Q166.5 ${TABLE - 5} 169 ${TABLE + 2} Z M168 ${TABLE + 2} Q171 ${TABLE - 6} 174 ${TABLE + 2} Z M172.5 ${TABLE + 2} Q175 ${TABLE - 4} 177.5 ${TABLE + 2} Z" fill="#f3e3bc" stroke="#c98a3c" stroke-width="0.9"/>
+    <path d="M162 ${TABLE + 1.5} L180 ${TABLE + 1.5} L178 ${TABLE + 9} L164 ${TABLE + 9} Z" fill="#9a6a34"/>
+    <path d="M163 ${TABLE + 4} L179 ${TABLE + 4} M163.6 ${TABLE + 6.5} L178.4 ${TABLE + 6.5}" stroke="#6e4720" stroke-width="0.7"/>
+    <path d="M166 ${TABLE + 1.5} L166.6 ${TABLE + 9} M170 ${TABLE + 1.5} L170.2 ${TABLE + 9} M174 ${TABLE + 1.5} L173.8 ${TABLE + 9} M178 ${TABLE + 1.5} L177.2 ${TABLE + 9}" stroke="#6e4720" stroke-width="0.5" opacity="0.7"/>
     <path d="M0 ${TABLE + 16} L400 ${TABLE + 16} L400 140 L0 140 Z" fill="#e8e0cc"/>
     <path d="M0 ${TABLE + 16} L400 ${TABLE + 16}" stroke="#b03030" stroke-width="2" stroke-dasharray="6 6"/>
     <path d="M0 ${TABLE + 20} L400 ${TABLE + 20}" stroke="#c8bea6" stroke-width="1"/>
