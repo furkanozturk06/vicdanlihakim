@@ -3964,35 +3964,8 @@ html.text-xlarge #directive-text { font-size: 0.92rem; }
 }
 
 
-/* The newspaper fits on one screen without scrolling: the day's figures in one
-   strip, and the case notes kept to two lines (three under the headline) */
-.newspaper #summary-stats {
-    display: flex;
-    border-top: 1px solid var(--ink-black);
-    border-bottom: 1px solid var(--ink-black);
-    margin-bottom: var(--spacing-sm);
-}
-
-.newspaper .summary-row {
-    flex: 1;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    padding: 6px 2px;
-    border-bottom: none;
-    font-size: 0.66rem;
-    text-align: center;
-}
-
-.newspaper .summary-row + .summary-row {
-    border-left: 1px solid rgba(26, 22, 19, 0.3);
-}
-
-.newspaper .summary-row span:last-child {
-    font-size: 1rem;
-    font-weight: 700;
-}
-
+/* The newspaper fits on one screen without scrolling: the case notes are kept
+   short (two lines under the headline, one under each other story) */
 .paper-lede,
 .paper-note {
     display: -webkit-box;
@@ -4001,11 +3974,11 @@ html.text-xlarge #directive-text { font-size: 0.92rem; }
 }
 
 .paper-lede {
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 2;
 }
 
 .paper-note {
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 1;
 }
 
 @media (max-height: 760px) {
@@ -4025,11 +3998,6 @@ html.text-xlarge #directive-text { font-size: 0.92rem; }
 
     .paper-masthead {
         margin-bottom: 6px;
-    }
-
-    .newspaper .summary-row {
-        font-size: 0.6rem;
-        padding: 4px 2px;
     }
 
     .newspaper .typewriter-btn {
