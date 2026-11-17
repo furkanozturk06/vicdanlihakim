@@ -1046,6 +1046,7 @@ body {
     font-family: var(--font-elegant);
     color: var(--paper-dark);
     max-width: 300px;
+    margin: 0 auto; /* centred under the title, however wide the title is */
 }
 
 /* ========================================
