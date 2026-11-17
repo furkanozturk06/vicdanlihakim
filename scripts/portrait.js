@@ -28,6 +28,22 @@ export function makePortrait(a, emotion) {
     } else if (a.hairStyle === 'bun') {
         hairBack = `<circle cx="60" cy="16" r="11" fill="${hairDark}"/>`;
     }
+    // The styles below are only for the judge's family (home.js); defendants never
+    // get them, so no defendant looks like Deniz, Ece or Saniye.
+    else if (a.hairStyle === 'wavy') {
+        hairBack = `<path d="M27 60 C24 28 44 17 60 17 C77 17 97 28 93 60 C97 72 92 80 96 92 C99 102 92 110 96 118 C88 122 82 116 80 108 L40 108 C38 116 32 122 24 118 C28 110 21 102 24 92 C28 80 23 72 27 60 Z" fill="${hairDark}"/>`;
+    } else if (a.hairStyle === 'pigtails') {
+        // two braids below the ears, each tied with a ribbon
+        hairBack = [-1, 1].map(side => {
+            const x = 60 + side * 35;
+            const braid = [74, 85, 96].map(y => `<ellipse cx="${x}" cy="${y}" rx="6.5" ry="6.5" fill="${hairDark}"/><path d="M${x - 4} ${y - 2} Q${x} ${y + 2} ${x + 4} ${y - 2}" stroke="${hair}" stroke-width="1.6" fill="none"/>`).join('');
+            const bow = `<path d="M${x} 104 L${x - 7} 99 L${x - 7} 109 Z M${x} 104 L${x + 7} 99 L${x + 7} 109 Z" fill="${a.ribbon}"/><circle cx="${x}" cy="104" r="2.2" fill="${a.ribbon}"/>`;
+            return braid + bow;
+        }).join('');
+    } else if (a.hairStyle === 'headscarf') {
+        // a white tülbent: the cloth behind the head, down over the shoulders
+        hairBack = `<path d="M22 60 C20 22 42 10 60 10 C78 10 100 22 98 60 L104 118 C90 126 30 126 16 118 Z" fill="${shade(a.scarf, -0.1)}"/>`;
+    }
 
     // ---- clothing ----
     const shoulders = `<path d="M8 150 C9 120 28 106 60 106 C92 106 111 120 112 150 Z" fill="url(#${id}c)"/>`;
@@ -67,7 +83,16 @@ export function makePortrait(a, emotion) {
         case 'bald':
             hairFront = `<path d="M30 60 C30 52 33 48 36 47 L37 64 Z" fill="${hair}"/><path d="M90 60 C90 52 87 48 84 47 L83 64 Z" fill="${hair}"/>`;
             break;
-        default: // long, bob, bun: a soft fringe
+        case 'wavy': // side-swept, with a hair clip
+            hairFront = `<path d="M30 64 C26 30 46 18 64 19 C82 20 95 34 90 62 C88 48 80 38 70 35 C60 34 50 38 44 44 C38 50 33 56 30 64 Z" fill="${hair}"/>
+                <rect x="70" y="28" width="14" height="5" rx="2.5" fill="${a.clip}" transform="rotate(-24 77 30)"/>`;
+            break;
+        case 'headscarf': // the tülbent frames the face and hides the hair and ears
+            hairFront = `<path fill-rule="evenodd" d="M26 66 C24 26 42 14 60 14 C78 14 96 26 94 66 C94 84 88 98 76 104 L44 104 C32 98 26 84 26 66 Z M60 37 C78 37 86 49 85 64 C84 84 74 97 60 97 C46 97 36 84 35 64 C34 49 42 37 60 37 Z" fill="${a.scarf}"/>
+                <path d="M40 41 Q60 31 80 41" stroke="${shade(a.scarf, -0.18)}" stroke-width="1.2" fill="none" stroke-dasharray="2 2.5"/>
+                <path d="M42 40 C48 37 56 36 60 37 C55 39 49 40 44 43 Z" fill="${hair}"/>`;
+            break;
+        default: // long, bob, bun, pigtails: a soft fringe
             hairFront = `<path d="M30 62 C27 32 44 19 61 19 C79 19 94 32 90 62 C88 50 82 40 72 36 C66 42 50 44 40 40 C34 46 31 54 30 62 Z" fill="${hair}"/>`;
     }
 
@@ -104,6 +129,8 @@ export function makePortrait(a, emotion) {
     }[emotion] || '<path d="M53 81 Q60 86 67 81" stroke="#5a2a20" stroke-width="2" fill="none" stroke-linecap="round"/>';
 
     const nose = `<path d="M60 62 Q57 72 60 74 Q62 75 64 73" stroke="${skinDark}" stroke-width="1.6" fill="none" stroke-linecap="round"/>`;
+    const freckles = a.freckles ? [[40, 70], [44, 73], [37, 74], [80, 70], [76, 73], [83, 74]]
+        .map(([x, y]) => `<circle cx="${x}" cy="${y}" r="0.9" fill="#a0603c" opacity="0.7"/>`).join('') : '';
     const blush = female ? `<ellipse cx="42" cy="72" rx="5" ry="3" fill="#e08a7a" opacity="0.25"/><ellipse cx="78" cy="72" rx="5" ry="3" fill="#e08a7a" opacity="0.25"/>` : '';
 
     const ageLines = old ? `
@@ -139,6 +166,7 @@ export function makePortrait(a, emotion) {
         <ellipse cx="31" cy="66" rx="5" ry="8" fill="${skinDark}"/><ellipse cx="89" cy="66" rx="5" ry="8" fill="${skinDark}"/>
         <path d="M60 26 C81 26 90 44 89 63 C88 84 76 99 60 99 C44 99 32 84 31 63 C30 44 39 26 60 26 Z" fill="url(#${id}s)"/>
         ${blush}
+        ${freckles}
         ${ageLines}
         ${hairFront}
         <path d="${brows[0]}" stroke="${browColor}" stroke-width="3" stroke-linecap="round" fill="none"/>

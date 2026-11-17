@@ -3,6 +3,7 @@
  * Handles animations, transitions, and visual feedback
  */
 
+import { homeScene } from './home.js';
 import { L, formatMoney } from './i18n.js';
 
 
@@ -720,16 +721,10 @@ export function showStory({ icon, title, text, choices }) {
 }
 
 // Evening at home: family status, bills and a scene. Resolves to the chosen index.
-export function showEvening({ day, family, harmony, bills, balance, text, choices }) {
+export function showEvening({ day, home, family, harmony, bills, balance, text, choices }) {
     const modal = document.getElementById('evening-modal');
     document.getElementById('evening-day').textContent = L('{0}. Gün · Akşam', day);
-    document.getElementById('evening-family').replaceChildren(...family.map(m => {
-        const li = el('li');
-        li.appendChild(el('span', 'member', `${m.name} `));
-        li.appendChild(el('span', 'role', `(${m.role})`));
-        li.appendChild(el('span', 'state', m.status));
-        return li;
-    }));
+    setFamily(home, family);
     setHarmony(harmony);
     document.getElementById('evening-bills').textContent = bills;
     setBalance(balance);
@@ -748,6 +743,18 @@ export function showEvening({ day, family, harmony, bills, balance, text, choice
     });
 }
 
+// The living room picture and the list of who is home and how they are
+function setFamily(home, family) {
+    document.getElementById('evening-home').innerHTML = homeScene(home);
+    document.getElementById('evening-family').replaceChildren(...family.map(m => {
+        const li = el('li');
+        li.appendChild(el('span', 'member', `${m.name} `));
+        li.appendChild(el('span', 'role', `(${m.role})`));
+        li.appendChild(el('span', 'state', m.status));
+        return li;
+    }));
+}
+
 function setBalance(money) {
     const el = document.getElementById('evening-balance');
     el.textContent = `₺${formatMoney(money)}`;
@@ -761,7 +768,9 @@ function setHarmony(value) {
 }
 
 // After the evening choice: show what happened, then wait for the next morning
-export function showEveningResult(text, harmony, balance) {
+export function showEveningResult(text, harmony, balance, home, family) {
+    // the choice may have changed who is home (someone left, someone came back)
+    if (home) setFamily(home, family);
     setHarmony(harmony);
     if (balance !== undefined) setBalance(balance);
     document.getElementById('evening-text').textContent = text;

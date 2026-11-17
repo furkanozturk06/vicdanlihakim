@@ -3801,3 +3801,64 @@ html.text-xlarge #directive-text { font-size: 0.92rem; }
 #game-over-screen {
     inset: -4px;
 }
+
+/* Evening: the living room with the family at the top of the screen */
+.evening-home {
+    position: relative;
+    aspect-ratio: 260 / 140;
+    /* reaches both edges of the evening card so the family is shown large */
+    margin: 0 calc(-1 * var(--spacing-md)) var(--spacing-sm);
+    border-top: 1px solid rgba(201, 162, 39, 0.35);
+    border-bottom: 1px solid rgba(201, 162, 39, 0.35);
+    overflow: hidden;
+    box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.6);
+}
+
+.home-room,
+.home-front {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.home-person {
+    position: absolute;
+    transform-origin: bottom center;
+    animation: home-breathe 4.2s ease-in-out infinite;
+}
+
+.home-person svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.home-child { animation-delay: -1.4s; }
+.home-mother { animation-duration: 5s; animation-delay: -2.6s; }
+
+@keyframes home-breathe {
+    0%, 100% { transform: scale(1, 1); }
+    50% { transform: scale(1.01, 1.025); }
+}
+
+.home-glow { animation: home-lamp 3.6s ease-in-out infinite; }
+
+@keyframes home-lamp {
+    0%, 100% { opacity: 1; }
+    45% { opacity: 0.82; }
+    55% { opacity: 0.92; }
+}
+
+.home-star { animation: home-twinkle 2.8s ease-in-out infinite; }
+.home-star.s2 { animation-delay: -1s; }
+.home-star.s3 { animation-delay: -1.9s; }
+
+@keyframes home-twinkle {
+    0%, 100% { opacity: 0.9; }
+    50% { opacity: 0.25; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .home-person, .home-glow, .home-star { animation: none; }
+}

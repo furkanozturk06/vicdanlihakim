@@ -1138,6 +1138,7 @@ async function runEvening(day) {
     }
     const pick = await ui.showEvening({
         day,
+        home: state.family,
         family: familyStatus(state.family),
         harmony: state.family.harmony,
         bills,
@@ -1150,7 +1151,7 @@ async function runEvening(day) {
     });
     const result = scene.choices[pick].apply(state);
     ui.updateStats(state);
-    await ui.showEveningResult(result, state.family.harmony, state.money);
+    await ui.showEveningResult(result, state.family.harmony, state.money, state.family, familyStatus(state.family));
 }
 
 // With no conscience left Deniz takes Ece and leaves; they come back once the judge
