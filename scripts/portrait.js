@@ -162,6 +162,11 @@ export function makePortrait(a, emotion) {
         <rect x="38" y="53" width="18" height="14" rx="4" fill="rgba(200,220,255,0.18)" stroke="#2b2b2b" stroke-width="2"/>
         <rect x="64" y="53" width="18" height="14" rx="4" fill="rgba(200,220,255,0.18)" stroke="#2b2b2b" stroke-width="2"/>
         <path d="M56 59 Q60 56 64 59" stroke="#2b2b2b" stroke-width="2" fill="none"/>` : '';
+    // a fever thermometer held in the corner of the mouth (Saniye when she is ill)
+    const thermometer = a.thermometer ? `
+        <path d="M62 83 L89 94" stroke="#f4f6f8" stroke-width="3.4" stroke-linecap="round"/>
+        <path d="M66 84.7 L85 92.4" stroke="#d6372b" stroke-width="1.1" stroke-linecap="round"/>
+        <path d="M62 83 L89 94" stroke="#9aa3ad" stroke-width="0.5" stroke-linecap="round" fill="none" opacity="0.6"/>` : '';
     const necklace = a.necklace ? [-12, -8, -4, 0, 4, 8, 12]
         .map(d => `<circle cx="${60 + d}" cy="${108 + (144 - d * d) / 24}" r="1.8" fill="#f4efe2" stroke="#cfc6b2" stroke-width="0.4"/>`).join('') : '';
     // gold studs; 'silver' gives small silver drops (Deniz)
@@ -191,6 +196,7 @@ export function makePortrait(a, emotion) {
         ${nose}
         ${facial}
         ${mouth}
+        ${thermometer}
         ${glasses}
         ${earrings}
     </svg>`;
