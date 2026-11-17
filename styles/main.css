@@ -3806,10 +3806,9 @@ html.text-xlarge #directive-text { font-size: 0.92rem; }
 .evening-home {
     position: relative;
     aspect-ratio: 260 / 140;
-    /* reaches both edges of the evening card so the family is shown large */
-    margin: 0 calc(-1 * var(--spacing-md)) var(--spacing-sm);
-    border-top: 1px solid rgba(201, 162, 39, 0.35);
-    border-bottom: 1px solid rgba(201, 162, 39, 0.35);
+    margin-bottom: var(--spacing-sm);
+    border: 1px solid rgba(201, 162, 39, 0.35);
+    border-radius: 6px;
     overflow: hidden;
     box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.6);
 }
