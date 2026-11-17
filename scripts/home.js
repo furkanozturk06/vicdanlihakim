@@ -146,8 +146,8 @@ function person(key, appearance, face) {
 export function homeScene(family) {
     const h = family.harmony;
     const home = family.spouseLeft ? ['mother'] : ['mother', 'spouse', 'child'];
-    // very ill: a pale, greyish face with tired eyes
-    const mother = family.motherHealth === 0 ? { ...SANIYE, skin: '#e2d6cc', sick: true } : SANIYE;
+    // very ill: a sallow, yellowish face with tired eyes
+    const mother = family.motherHealth === 0 ? { ...SANIYE, skin: '#dcc68e', sick: true } : SANIYE;
     let people = person('mother', mother, motherFace(family.motherHealth));
     if (!family.spouseLeft) {
         people += person('spouse', DENIZ, spouseFace(h));
