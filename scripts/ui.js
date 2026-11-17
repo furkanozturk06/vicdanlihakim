@@ -707,7 +707,7 @@ export function showStory({ icon, title, text, choices }) {
     const news = icon === '📰' || icon === '🗞️';
     modal.querySelector('.story-content').classList.toggle('as-paper', news);
     if (news) audio.playNewspaper();
-    else audio.playSlide();
+    else audio.playNotice();
     document.getElementById('story-paper-date').textContent = L('{0}. Gün', currentDay);
     document.getElementById('story-icon').textContent = icon || '';
     document.getElementById('story-title').textContent = title;
@@ -825,6 +825,9 @@ export function showIntro({ title, text, button }) {
 export function showOffer({ icon, title, text, accept, decline }, deferLabel = null) {
     const deferBtn = document.getElementById('offer-defer');
     elements.offerIcon.textContent = icon;
+    // the bribe: an envelope slid onto the desk
+    if (icon === '✉️') audio.playEnvelope();
+    else audio.playNotice();
     elements.offerTitle.textContent = title;
     elements.offerText.textContent = text;
     elements.offerAccept.textContent = accept;
@@ -988,7 +991,7 @@ export function showEvent(type, title, description) {
 
     elements.eventIcon.textContent = icons[type] || '📢';
     if (type === 'media') audio.playNewspaper();
-    else audio.playSlide();
+    else audio.playNotice();
     elements.eventTitle.textContent = title;
     elements.eventDescription.textContent = description;
     elements.eventOverlay.classList.remove('hidden');

@@ -11,7 +11,7 @@ const VOWEL_FORMANTS = {
 const VOICE_LEVEL = 0.35;
 
 // Recorded sounds in public/audio (licences in AUDIO_CREDITS.md)
-const SAMPLE_FILES = ['gavel', 'page', 'book', 'door', 'chime', 'sting', 'gasp', 'hall', 'court', 'newspaper', 'slide', 'calm', 'uneasy'];
+const SAMPLE_FILES = ['gavel', 'page', 'book', 'door', 'chime', 'sting', 'gasp', 'hall', 'court', 'newspaper', 'slide', 'calm', 'uneasy', 'notice'];
 const AMBIENT_LEVEL = 1;
 // The courtroom murmur is two recordings looped together: a seated crowd waiting in
 // a large hall (3 minutes; the door closing at its end is left out of the loop) and,
@@ -93,10 +93,16 @@ class AudioManager {
         this.playSample('newspaper', { offset: 0.15, duration: 1.7, gain: 12 });
     }
 
-    // A sheet of paper slid onto the desk: a story card or a notice appears
-    playSlide() {
+    // An envelope slid onto the desk: a bribe is offered
+    playEnvelope() {
         if (!this.enabled) return;
         this.playSample('slide', { offset: 0.12, duration: 1.2, gain: 0.9 });
+    }
+
+    // A story card or a notice appears: a rubber stamp comes down on paper
+    playNotice() {
+        if (!this.enabled) return;
+        this.playSample('notice', { offset: 0.03, duration: 0.3, gain: 0.45 });
     }
 
     // Coming home: a soft harp when the family is at peace, uneasy cellos when not
