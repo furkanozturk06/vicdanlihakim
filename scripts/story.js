@@ -347,51 +347,87 @@ export function caseWho(summary) {
     return phrase.length <= WHO_MAX ? phrase : null;
 }
 
-// Headline for a case, built around the phrase from caseWho
+// Headlines for a case, built around the phrase from caseWho. Several wordings per
+// kind of story, so the paper does not read the same every day.
 const WHO_HEADLINES = {
-    appeal: (w, n) => `Yargıtay bozdu: ${w} ${n} hakkında verilen karar kanuna aykırı bulundu`,
-    scandal: (w, n) => `SKANDAL: ${w} ${n} davasında hakimin rüşvet aldığı ortaya çıktı!`,
-    deathFair: (w, n) => `${w} ${n} hakkında idam kararı: Adalet yerini buldu`,
-    deathWrong: (w, n) => `Masum kana mı girildi? ${w} ${n} hakkında verilen idam kararı tartışılıyor`,
-    light: (w, n) => `${w} ${n} hakkında verilen hafif ceza şaşırttı: Halk güvende mi?`,
-    heavyOutcry: (w, n) => `${w} ${n} hakkında verilen ağır ceza tepki çekti`,
-    harsh: (w, n) => `${w} ${n} hakkında beklenmedik sert karar`,
+    appeal: [
+        (w, n) => `Yargıtay bozdu: ${w} ${n} hakkında verilen karar kanuna aykırı bulundu`,
+        (w, n) => `${w} ${n} hakkındaki karar Yargıtay'dan döndü`,
+        (w, n) => `Yargıtay'dan hakime ders: ${w} ${n} hakkındaki karar bozuldu`,
+    ],
+    scandal: [
+        (w, n) => `SKANDAL: ${w} ${n} davasında hakimin rüşvet aldığı ortaya çıktı!`,
+        (w, n) => `Adliyede rüşvet skandalı: ${w} ${n} davasında para el değiştirdi`,
+        (w, n) => `${w} ${n} davasında hakime zarf iddiası doğrulandı`,
+    ],
+    deathFair: [
+        (w, n) => `${w} ${n} hakkında idam kararı: Adalet yerini buldu`,
+        (w, n) => `${w} ${n} idama mahkûm edildi`,
+        (w, n) => `Mahkeme son sözü söyledi: ${w} ${n} için idam`,
+    ],
+    deathWrong: [
+        (w, n) => `Masum kana mı girildi? ${w} ${n} hakkında verilen idam kararı tartışılıyor`,
+        (w, n) => `${w} ${n} için verilen idam kararına hukukçulardan sert tepki`,
+        (w, n) => `${w} ${n} idam edilecek; karar ülkeyi ikiye böldü`,
+    ],
+    light: [
+        (w, n) => `${w} ${n} hakkında verilen hafif ceza şaşırttı: Halk güvende mi?`,
+        (w, n) => `${w} ${n} ucuz kurtuldu`,
+        (w, n) => `"Bu ceza mı?" ${w} ${n} için verilen karar tepki topladı`,
+        (w, n) => `${w} ${n} için verilen hafif ceza mahallede öfke yarattı`,
+    ],
+    heavyOutcry: [
+        (w, n) => `${w} ${n} hakkında verilen ağır ceza tepki çekti`,
+        (w, n) => `${w} ${n} için verilen cezaya "insafsızlık" yorumu`,
+        (w, n) => `Vicdanlar sızladı: ${w} ${n} ağır ceza aldı`,
+        (w, n) => `${w} ${n} için ailesi adliye önünde: "Bu ceza çok ağır"`,
+    ],
+    harsh: [
+        (w, n) => `${w} ${n} hakkında beklenmedik sert karar`,
+        (w, n) => `${w} ${n} için mahkemeden sert çıkış`,
+        (w, n) => `Hukukçular şaşkın: ${w} ${n} beklenenden ağır ceza aldı`,
+    ],
 };
 
 // A news item about a case: one sentence that says what the case was when it can,
-// otherwise the usual headline with the case summary under it
-function caseNews(kind, p, e, fallback) {
+// otherwise the usual headline with the case summary under it. `used` keeps the
+// wordings already in today's paper, so the same one does not appear twice.
+function caseNews(kind, p, e, fallback, used) {
     const who = caseWho(e.summary);
-    if (who) return { p, text: WHO_HEADLINES[kind](who, e.name), note: '' };
-    return { p, text: fallback, note: e.summary };
+    if (!who) return { p, text: fallback, note: e.summary };
+    const options = WHO_HEADLINES[kind].filter(make => !used.has(make));
+    const make = (options.length ? options : WHO_HEADLINES[kind])[Math.floor(Math.random() * (options.length || WHO_HEADLINES[kind].length))];
+    used.add(make);
+    return { p, text: make(who, e.name), note: '' };
 }
 
 export function buildNewspaper(dayLog, appeals = []) {
     const items = [];
+    const used = new Set(); // headline wordings already in this paper
 
     for (const a of appeals) {
         items.push(a.name
-            ? caseNews('appeal', 75, a, L('Yargıtay bozdu: {0} hakkındaki "{1}" davası kararı kanuna aykırı bulundu', a.name, a.detail))
+            ? caseNews('appeal', 75, a, L('Yargıtay bozdu: {0} hakkındaki "{1}" davası kararı kanuna aykırı bulundu', a.name, a.detail), used)
             : { p: 75, note: '', text: L('Yargıtay bozdu: "{0}" davasındaki karar kanuna aykırı bulundu', a.detail) });
     }
 
     for (const e of dayLog) {
         if (e.exposed) {
-            items.push(caseNews('scandal', 100, e, L('SKANDAL: Hakimin {1} hakkındaki "{0}" davasında rüşvet aldığı ortaya çıktı!', e.detail, e.name)));
+            items.push(caseNews('scandal', 100, e, L('SKANDAL: Hakimin {1} hakkındaki "{0}" davasında rüşvet aldığı ortaya çıktı!', e.detail, e.name), used));
         }
         if (e.returning) {
             items.push({ p: 80, note: e.summary, text: L('Daha önce serbest bırakılan {0} yeniden hakim karşısında', e.name) });
         }
         if (e.verdict === 'death') {
             items.push(e.diff === 0
-                ? caseNews('deathFair', 70, e, L('{1} hakkındaki "{0}" davasında idam kararı: Adalet yerini buldu', e.detail, e.name))
-                : caseNews('deathWrong', 90, e, L('Masum kana mı girildi? {1} hakkındaki "{0}" davasında verilen idam kararı tartışılıyor', e.detail, e.name)));
+                ? caseNews('deathFair', 70, e, L('{1} hakkındaki "{0}" davasında idam kararı: Adalet yerini buldu', e.detail, e.name), used)
+                : caseNews('deathWrong', 90, e, L('Masum kana mı girildi? {1} hakkındaki "{0}" davasında verilen idam kararı tartışılıyor', e.detail, e.name), used));
         } else if (e.diff <= -2) {
-            items.push(caseNews('light', 60, e, L('{1} hakkındaki "{0}" davasında şaşırtan hafif ceza: Halk güvende mi?', e.detail, e.name)));
+            items.push(caseNews('light', 60, e, L('{1} hakkındaki "{0}" davasında şaşırtan hafif ceza: Halk güvende mi?', e.detail, e.name), used));
         } else if (e.diff >= 2 && e.sympathy) {
-            items.push(caseNews('heavyOutcry', 60, e, L('{1} hakkındaki "{0}" davasında verilen ağır ceza tepki çekti', e.detail, e.name)));
+            items.push(caseNews('heavyOutcry', 60, e, L('{1} hakkındaki "{0}" davasında verilen ağır ceza tepki çekti', e.detail, e.name), used));
         } else if (e.diff >= 2) {
-            items.push(caseNews('harsh', 40, e, L('{1} hakkındaki "{0}" davasında beklenmedik sert karar', e.detail, e.name)));
+            items.push(caseNews('harsh', 40, e, L('{1} hakkındaki "{0}" davasında beklenmedik sert karar', e.detail, e.name), used));
         }
     }
 
