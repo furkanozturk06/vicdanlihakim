@@ -120,6 +120,14 @@ function table(ill, home) {
     <path d="M155 ${TABLE} L178 ${TABLE} L175.5 ${TABLE + 10} L157.5 ${TABLE + 10} Z" fill="#9a6a34"/>
     <path d="M155.8 ${TABLE + 3.3} L177.2 ${TABLE + 3.3} M156.6 ${TABLE + 6.7} L176.4 ${TABLE + 6.7}" stroke="#6e4720" stroke-width="0.7"/>
     <path d="M159.5 ${TABLE} L160.3 ${TABLE + 10} M164 ${TABLE} L164.4 ${TABLE + 10} M168.5 ${TABLE} L168.5 ${TABLE + 10} M173 ${TABLE} L172.6 ${TABLE + 10}" stroke="#6e4720" stroke-width="0.5" opacity="0.7"/>
+    <!-- salad bowl between Deniz's tea and Ece's spoon: lettuce, tomato, cucumber, carrot -->
+    <ellipse cx="247" cy="${TABLE + 1.5}" rx="10" ry="2.6" fill="#5e9a38"/>
+    <circle cx="241" cy="${TABLE - 0.5}" r="3" fill="#6fb043"/><circle cx="246" cy="${TABLE - 2}" r="3.4" fill="#7cbd4c"/><circle cx="252" cy="${TABLE - 0.8}" r="3" fill="#6fb043"/>
+    <circle cx="243.5" cy="${TABLE - 1.4}" r="1.8" fill="#d6372b"/><circle cx="250.5" cy="${TABLE - 2.2}" r="1.7" fill="#d6372b"/>
+    <circle cx="247.5" cy="${TABLE + 0.2}" r="1.6" fill="#dfeec5" stroke="#5e9a38" stroke-width="0.5"/>
+    <path d="M239.5 ${TABLE + 0.5} l2.5 -1.2 M253 ${TABLE + 0.3} l2.4 -1" stroke="#e8892a" stroke-width="0.9" stroke-linecap="round"/>
+    <path d="M236.6 ${TABLE + 1.4} Q237.5 ${TABLE + 9.8} 247 ${TABLE + 9.8} Q256.5 ${TABLE + 9.8} 257.4 ${TABLE + 1.4} Z" fill="#f4f0e6" stroke="#cfc6b2" stroke-width="0.5"/>
+    <path d="M238.5 ${TABLE + 4.5} Q247 ${TABLE + 6.4} 255.5 ${TABLE + 4.5}" stroke="#4f7fa8" stroke-width="0.7" fill="none"/>
     <path d="M0 ${TABLE + 16} L400 ${TABLE + 16} L400 140 L0 140 Z" fill="#e8e0cc"/>
     <path d="M0 ${TABLE + 16} L400 ${TABLE + 16}" stroke="#b03030" stroke-width="2" stroke-dasharray="6 6"/>
     <path d="M0 ${TABLE + 20} L400 ${TABLE + 20}" stroke="#c8bea6" stroke-width="1"/>

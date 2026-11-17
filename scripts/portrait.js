@@ -36,8 +36,8 @@ export function makePortrait(a, emotion) {
         // two bunches tied high on each side of the head, falling to the shoulders
         hairBack = [-1, 1].map(side => {
             const x = v => 60 + side * v;
-            return `<path d="M${x(26)} 42 C${x(44)} 44 ${x(46)} 64 ${x(42)} 80 C${x(40)} 92 ${x(44)} 100 ${x(40)} 106 C${x(34)} 98 ${x(32)} 86 ${x(31)} 72 C${x(30)} 60 ${x(26)} 52 ${x(26)} 42 Z" fill="${hair}"/>
-                <path d="M${x(36)} 58 C${x(40)} 70 ${x(38)} 84 ${x(39)} 96" stroke="${hairDark}" stroke-width="1.2" fill="none" opacity="0.7"/>`;
+            return `<path d="M${x(26)} 42 C${x(44)} 44 ${x(46)} 64 ${x(42)} 80 C${x(40)} 92 ${x(44)} 100 ${x(40)} 106 C${x(34)} 98 ${x(32)} 86 ${x(31)} 72 C${x(30)} 60 ${x(26)} 52 ${x(26)} 42 Z" fill="${hairDark}"/>
+                <path d="M${x(36)} 58 C${x(40)} 70 ${x(38)} 84 ${x(39)} 96" stroke="${hair}" stroke-width="1.2" fill="none" opacity="0.7"/>`;
         }).join('');
     } else if (a.hairStyle === 'perm') {
         // short, tightly curled grandmother's perm
