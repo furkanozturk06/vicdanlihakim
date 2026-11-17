@@ -14,6 +14,7 @@ import { ACT_LENGTH, TOTAL_DAYS, ACT2_CASES_PER_DAY, BRANCHES, branchFor } from 
 import { saveGame, loadGame, savedDay, savedMode, clearSave, loadSettings, saveSettings } from './save.js';
 import * as ui from './ui.js';
 import { audio } from './audio.js';
+import { initAds, adBetweenDays } from './ads.js';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { L, LANG, translatePage, formatMoney } from './i18n.js';
 import { ACT1, finaleStatement } from './trial.js';
@@ -171,6 +172,7 @@ export function initGame() {
     ui.setContinueOption(savedDay(), savedMode());
     ui.setEndlessOption(settings.endlessUnlocked, settings.endlessBest);
     showCareer();
+    initAds(); // phone apps only; does not hold up the start screen
 }
 
 // ---------- Career: titles and achievements (career.js) ----------
@@ -341,6 +343,8 @@ function setupEventListeners() {
             }
         }
         saveGame(state);
+        // after every second day, a full-screen ad (phone apps only); sound is paused meanwhile
+        await adBetweenDays(state.day - 1, { pause: () => audio.pauseAll(), resume: () => audio.resume() });
         startNewDay();
     });
 

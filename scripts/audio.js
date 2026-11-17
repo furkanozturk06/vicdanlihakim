@@ -11,7 +11,7 @@ const VOWEL_FORMANTS = {
 const VOICE_LEVEL = 0.35;
 
 // Recorded sounds in public/audio (licences in AUDIO_CREDITS.md)
-const SAMPLE_FILES = ['gavel', 'page', 'book', 'door', 'chime', 'sting', 'gasp', 'hall', 'court'];
+const SAMPLE_FILES = ['gavel', 'page', 'book', 'door', 'chime', 'sting', 'gasp', 'hall', 'court', 'newspaper', 'slide', 'calm', 'uneasy'];
 const AMBIENT_LEVEL = 1;
 // The courtroom murmur is two recordings looped together: a seated crowd waiting in
 // a large hall (3 minutes; the door closing at its end is left out of the loop) and,
@@ -84,6 +84,33 @@ class AudioManager {
         level.connect(ctx.destination);
         source.start(now, offset, length * rate);
         return true;
+    }
+
+    // A newspaper shaken open: the evening paper and news pages
+    playNewspaper() {
+        if (!this.enabled) return;
+        // the recording is very quiet, hence the high gain
+        this.playSample('newspaper', { offset: 0.15, duration: 1.7, gain: 12 });
+    }
+
+    // A sheet of paper slid onto the desk: a story card or a notice appears
+    playSlide() {
+        if (!this.enabled) return;
+        this.playSample('slide', { offset: 0.12, duration: 1.2, gain: 0.9 });
+    }
+
+    // Coming home: a soft harp when the family is at peace, uneasy cellos when not
+    playHome(peaceful) {
+        if (!this.enabled) return;
+        if (peaceful) this.playSample('calm', { duration: 2.2, gain: 3.5 });
+        else this.playSample('uneasy', { duration: 3.2, gain: 0.55 });
+    }
+
+    // Silence everything (e.g. while a full-screen ad is shown); resume() brings it back
+    pauseAll() {
+        if (this.audioContext && this.audioContext.state === 'running') {
+            this.audioContext.suspend();
+        }
     }
 
     // Resume audio context (needed after user interaction)

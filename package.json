@@ -23,6 +23,7 @@
     "vite": "^7.3.1"
   },
   "dependencies": {
+    "@capacitor-community/admob": "^8.4.2",
     "@capacitor/android": "^8.6.0",
     "@capacitor/core": "^8.6.0",
     "@capacitor/haptics": "^8.0.2",

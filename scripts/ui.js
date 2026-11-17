@@ -4,6 +4,7 @@
  */
 
 import { homeScene } from './home.js';
+import { audio } from './audio.js';
 import { L, formatMoney } from './i18n.js';
 
 
@@ -705,6 +706,8 @@ export function showStory({ icon, title, text, choices }) {
     // News (📰 / 🗞️) is shown as a newspaper page: masthead, date, headline, column
     const news = icon === '📰' || icon === '🗞️';
     modal.querySelector('.story-content').classList.toggle('as-paper', news);
+    if (news) audio.playNewspaper();
+    else audio.playSlide();
     document.getElementById('story-paper-date').textContent = L('{0}. Gün', currentDay);
     document.getElementById('story-icon').textContent = icon || '';
     document.getElementById('story-title').textContent = title;
@@ -736,6 +739,7 @@ export function showStory({ icon, title, text, choices }) {
 export function showEvening({ day, home, moment, family, harmony, bills, balance, text, choices }) {
     const modal = document.getElementById('evening-modal');
     document.getElementById('evening-day').textContent = L('{0}. Gün · Akşam', day);
+    audio.playHome(!home.spouseLeft && harmony >= 60);
     setFamily(home, family, moment);
     setHarmony(harmony);
     document.getElementById('evening-bills').textContent = bills;
@@ -945,6 +949,7 @@ export function showFeedback(outcome, title, message, stats, stampLabel = '') {
 
 // Show the end-of-day newspaper
 export function showDailySummary(dayStats, paper) {
+    audio.playNewspaper();
     elements.paperDate.textContent = L('{0}. Gün', dayStats.day);
     elements.paperHeadline.textContent = paper.main.text;
     const lede = document.getElementById('paper-lede');
@@ -982,6 +987,8 @@ export function showEvent(type, title, description) {
     };
 
     elements.eventIcon.textContent = icons[type] || '📢';
+    if (type === 'media') audio.playNewspaper();
+    else audio.playSlide();
     elements.eventTitle.textContent = title;
     elements.eventDescription.textContent = description;
     elements.eventOverlay.classList.remove('hidden');
