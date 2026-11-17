@@ -3941,3 +3941,25 @@ html.text-xlarge #directive-text { font-size: 0.92rem; }
     font-size: 0.6rem;
 }
 
+/* What a news story's case was about: under the headline, and under each short news item */
+.paper-lede {
+    font-family: var(--font-elegant);
+    font-style: italic;
+    font-size: 0.95rem;
+    line-height: 1.35;
+    text-align: center;
+    margin: -4px 0 var(--spacing-xs);
+}
+
+.newspaper .paper-side li strong {
+    display: block;
+}
+
+.paper-note {
+    display: block;
+    margin-top: 2px;
+    font-weight: 400;
+    font-style: italic;
+    font-size: 0.88rem;
+}
+

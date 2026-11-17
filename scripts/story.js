@@ -298,28 +298,28 @@ export function buildNewspaper(dayLog, appeals = []) {
     const items = [];
 
     for (const a of appeals) {
-        items.push({ p: 75, text: a.name
+        items.push({ p: 75, note: a.summary, text: a.name
             ? L('Yargıtay bozdu: {0} hakkındaki "{1}" davası kararı kanuna aykırı bulundu', a.name, a.detail)
             : L('Yargıtay bozdu: "{0}" davasındaki karar kanuna aykırı bulundu', a.detail) });
     }
 
     for (const e of dayLog) {
         if (e.exposed) {
-            items.push({ p: 100, text: L('SKANDAL: Hakimin {1} hakkındaki "{0}" davasında rüşvet aldığı ortaya çıktı!', e.detail, e.name) });
+            items.push({ p: 100, note: e.summary, text: L('SKANDAL: Hakimin {1} hakkındaki "{0}" davasında rüşvet aldığı ortaya çıktı!', e.detail, e.name) });
         }
         if (e.returning) {
-            items.push({ p: 80, text: L('Daha önce serbest bırakılan {0} yeniden hakim karşısında', e.name) });
+            items.push({ p: 80, note: e.summary, text: L('Daha önce serbest bırakılan {0} yeniden hakim karşısında', e.name) });
         }
         if (e.verdict === 'death') {
             items.push(e.diff === 0
-                ? { p: 70, text: L('{1} hakkındaki "{0}" davasında idam kararı: Adalet yerini buldu', e.detail, e.name) }
-                : { p: 90, text: L('Masum kana mı girildi? {1} hakkındaki "{0}" davasında verilen idam kararı tartışılıyor', e.detail, e.name) });
+                ? { p: 70, note: e.summary, text: L('{1} hakkındaki "{0}" davasında idam kararı: Adalet yerini buldu', e.detail, e.name) }
+                : { p: 90, note: e.summary, text: L('Masum kana mı girildi? {1} hakkındaki "{0}" davasında verilen idam kararı tartışılıyor', e.detail, e.name) });
         } else if (e.diff <= -2) {
-            items.push({ p: 60, text: L('{1} hakkındaki "{0}" davasında şaşırtan hafif ceza: Halk güvende mi?', e.detail, e.name) });
+            items.push({ p: 60, note: e.summary, text: L('{1} hakkındaki "{0}" davasında şaşırtan hafif ceza: Halk güvende mi?', e.detail, e.name) });
         } else if (e.diff >= 2 && e.sympathy) {
-            items.push({ p: 60, text: L('{1} hakkındaki "{0}" davasında verilen ağır ceza tepki çekti', e.detail, e.name) });
+            items.push({ p: 60, note: e.summary, text: L('{1} hakkındaki "{0}" davasında verilen ağır ceza tepki çekti', e.detail, e.name) });
         } else if (e.diff >= 2) {
-            items.push({ p: 40, text: L('{1} hakkındaki "{0}" davasında beklenmedik sert karar', e.detail, e.name) });
+            items.push({ p: 40, note: e.summary, text: L('{1} hakkındaki "{0}" davasında beklenmedik sert karar', e.detail, e.name) });
         }
     }
 
@@ -328,12 +328,13 @@ export function buildNewspaper(dayLog, appeals = []) {
     }
 
     items.sort((a, b) => b.p - a.p);
-    const headlines = items.map(i => i.text);
+    const news = items.map(i => ({ text: i.text, note: i.note || '' }));
 
     const fillers = [...FILLER_NEWS].sort(() => Math.random() - 0.5);
-    while (headlines.length < 3) {
-        headlines.push(fillers.pop());
+    while (news.length < 3) {
+        news.push({ text: fillers.pop(), note: '' });
     }
 
-    return { main: headlines[0], side: headlines.slice(1, 3) };
+    // each story: a headline and, for a court case, a line on what the case was about
+    return { main: news[0], side: news.slice(1, 3) };
 }

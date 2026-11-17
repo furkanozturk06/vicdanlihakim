@@ -967,6 +967,7 @@ async function processVerdict(sentenceKey, viaOffer = null) {
     state.dayLog.push({
         detail: c.detail,
         name: c.name,
+        summary: c.summary, // what happened, told under the headline
         verdict: sentenceKey,
         correct: result.correct,
         diff: result.diff,

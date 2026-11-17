@@ -946,8 +946,16 @@ export function showFeedback(outcome, title, message, stats, stampLabel = '') {
 // Show the end-of-day newspaper
 export function showDailySummary(dayStats, paper) {
     elements.paperDate.textContent = L('{0}. Gün', dayStats.day);
-    elements.paperHeadline.textContent = paper.main;
-    elements.paperSide.replaceChildren(...paper.side.map(t => el('li', '', t)));
+    elements.paperHeadline.textContent = paper.main.text;
+    const lede = document.getElementById('paper-lede');
+    lede.textContent = paper.main.note;
+    lede.hidden = !paper.main.note;
+    elements.paperSide.replaceChildren(...paper.side.map(n => {
+        const li = el('li');
+        li.appendChild(el('strong', '', n.text));
+        if (n.note) li.appendChild(el('span', 'paper-note', n.note));
+        return li;
+    }));
 
     elements.casesJudged.textContent = dayStats.casesJudged;
     elements.correctVerdicts.textContent = dayStats.correctVerdicts;
