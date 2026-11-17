@@ -71,7 +71,7 @@ function room() {
     <circle cx="146" cy="20" r="0.8" fill="#2a1d14"/>
     <!-- lamp hanging over the table -->
     <circle class="home-glow" cx="200" cy="20" r="90" fill="url(#home-lamp-glow)"/>
-    <rect x="199.3" y="0" width="1.4" height="5" fill="#2a1d14"/>
+    <rect x="199.3" y="0" width="1.4" height="9.5" fill="#2a1d14"/>
     <path d="M189 14 Q200 2 211 14 Z" fill="#c9a25a"/>
     <ellipse cx="200" cy="14.4" rx="11" ry="1.8" fill="#ffe2a8"/>
     ${Object.values(SEATS).map(chair).join('')}
@@ -97,13 +97,15 @@ function table(ill, home) {
     <ellipse cx="${x}" cy="${TABLE + 7}" rx="17" ry="4.2" fill="#f2ede2"/>
     <ellipse cx="${x}" cy="${TABLE + 7}" rx="11" ry="2.6" fill="#e3dccb"/>
     ${home.includes(key) ? food(x) : ''}
-    <path d="M${x - 20.5} ${TABLE + 6} L${x - 21} ${TABLE + 12.5}" stroke="#c9ccd1" stroke-width="1.1" stroke-linecap="round"/>
-    <ellipse cx="${x - 20.4}" cy="${TABLE + 4.6}" rx="1.6" ry="2.3" fill="#dfe2e6" stroke="#b5b9bf" stroke-width="0.4"/>
+    <path d="M${x - 20.6} ${TABLE + 1.5} L${x - 20.9} ${TABLE + 8}" stroke="#c9ccd1" stroke-width="1.1" stroke-linecap="round"/>
+    <ellipse cx="${x - 21}" cy="${TABLE + 9.8}" rx="1.6" ry="2.3" fill="#dfe2e6" stroke="#b5b9bf" stroke-width="0.4"/>
+    <g transform="translate(${x + 30} ${TABLE + 10}) scale(0.74) translate(${-(x + 30)} ${-(TABLE + 10)})">
     <ellipse cx="${x + 30}" cy="${TABLE + 10}" rx="6" ry="1.6" fill="#ece6d8" stroke="#c8bea6" stroke-width="0.4"/>
     <path d="M${x + 26.4} ${TABLE - 2} L${x + 33.6} ${TABLE - 2} L${x + 31.8} ${TABLE + 3.5} L${x + 33.4} ${TABLE + 9.6} L${x + 26.6} ${TABLE + 9.6} L${x + 28.2} ${TABLE + 3.5} Z" fill="rgba(235,240,245,0.22)" stroke="#e8edf2" stroke-width="0.6"/>
     <path d="M${x + 26.9} ${TABLE - 0.6} L${x + 33.1} ${TABLE - 0.6} L${x + 31.6} ${TABLE + 3.5} L${x + 33} ${TABLE + 9.2} L${x + 27} ${TABLE + 9.2} L${x + 28.4} ${TABLE + 3.5} Z" fill="#b5481c" opacity="0.85"/>
     <ellipse cx="${x + 30}" cy="${TABLE - 0.6}" rx="3.1" ry="0.6" fill="#d9773a"/>
-    <path d="M${x + 27.6} ${TABLE + 0.6} L${x + 28.6} ${TABLE + 3}" stroke="#fff" stroke-width="0.6" opacity="0.7"/>`;
+    <path d="M${x + 27.6} ${TABLE + 0.6} L${x + 28.6} ${TABLE + 3}" stroke="#fff" stroke-width="0.6" opacity="0.7"/>
+    </g>`;
     const m = SEATS.mother;
     return `
 <svg class="home-front" viewBox="${VIEW_BOX}" preserveAspectRatio="none" aria-hidden="true">
@@ -114,10 +116,10 @@ function table(ill, home) {
     <rect x="0" y="${TABLE}" width="400" height="2" fill="#8a6040"/>
     ${Object.entries(SEATS).map(place).join('')}
     <!-- bread basket: slices of bread standing in a woven basket -->
-    <path d="M157 ${TABLE + 2} Q159.5 ${TABLE - 5} 162 ${TABLE + 2} Z M161 ${TABLE + 2} Q164 ${TABLE - 6} 167 ${TABLE + 2} Z M165.5 ${TABLE + 2} Q168 ${TABLE - 4} 170.5 ${TABLE + 2} Z" fill="#f3e3bc" stroke="#c98a3c" stroke-width="0.9"/>
-    <path d="M155 ${TABLE + 1.5} L173 ${TABLE + 1.5} L171 ${TABLE + 9} L157 ${TABLE + 9} Z" fill="#9a6a34"/>
-    <path d="M156 ${TABLE + 4} L172 ${TABLE + 4} M156.6 ${TABLE + 6.5} L171.4 ${TABLE + 6.5}" stroke="#6e4720" stroke-width="0.7"/>
-    <path d="M159 ${TABLE + 1.5} L159.6 ${TABLE + 9} M163 ${TABLE + 1.5} L163.2 ${TABLE + 9} M167 ${TABLE + 1.5} L166.8 ${TABLE + 9} M171 ${TABLE + 1.5} L170.2 ${TABLE + 9}" stroke="#6e4720" stroke-width="0.5" opacity="0.7"/>
+    <path d="M157 ${TABLE + 1} Q160 ${TABLE - 9} 163 ${TABLE + 1} Z M161.5 ${TABLE + 1} Q166 ${TABLE - 11} 170.5 ${TABLE + 1} Z M168.5 ${TABLE + 1} Q172 ${TABLE - 8} 175.5 ${TABLE + 1} Z" fill="#f3e3bc" stroke="#c98a3c" stroke-width="1"/>
+    <path d="M155 ${TABLE} L178 ${TABLE} L175.5 ${TABLE + 10} L157.5 ${TABLE + 10} Z" fill="#9a6a34"/>
+    <path d="M155.8 ${TABLE + 3.3} L177.2 ${TABLE + 3.3} M156.6 ${TABLE + 6.7} L176.4 ${TABLE + 6.7}" stroke="#6e4720" stroke-width="0.7"/>
+    <path d="M159.5 ${TABLE} L160.3 ${TABLE + 10} M164 ${TABLE} L164.4 ${TABLE + 10} M168.5 ${TABLE} L168.5 ${TABLE + 10} M173 ${TABLE} L172.6 ${TABLE + 10}" stroke="#6e4720" stroke-width="0.5" opacity="0.7"/>
     <path d="M0 ${TABLE + 16} L400 ${TABLE + 16} L400 140 L0 140 Z" fill="#e8e0cc"/>
     <path d="M0 ${TABLE + 16} L400 ${TABLE + 16}" stroke="#b03030" stroke-width="2" stroke-dasharray="6 6"/>
     <path d="M0 ${TABLE + 20} L400 ${TABLE + 20}" stroke="#c8bea6" stroke-width="1"/>
