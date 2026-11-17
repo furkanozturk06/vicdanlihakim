@@ -13,7 +13,7 @@ const DENIZ = {
 };
 const ECE = {
     gender: 'f', skin: '#f0c8b0', hair: '#d4a24c', hairStyle: 'pigtails', ribbon: '#c0392b', freckles: true,
-    facialHair: 'none', earrings: false, glasses: false, age: '', clothing: '#e0a030', outfit: 'kidHoodie',
+    facialHair: 'none', earrings: false, glasses: false, age: '', clothing: '#e0a030', outfit: 'kidTop',
 };
 const SANIYE = {
     gender: 'f', skin: '#e3b496', hair: '#ececec', hairStyle: 'perm', necklace: true, facialHair: 'none',

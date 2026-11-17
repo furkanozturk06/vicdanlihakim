@@ -54,15 +54,11 @@ export function makePortrait(a, emotion) {
             <path d="M56 110 L60 106 L64 110 L62 140 L60 144 L58 140 Z" fill="#7a1f1f"/>
             <path d="M38 108 L52 106 L60 132 L46 150 L36 150 Z" fill="${clothDark}"/>
             <path d="M82 108 L68 106 L60 132 L74 150 L84 150 Z" fill="${clothDark}"/>`;
-    } else if (a.outfit === 'kidHoodie') {
-        // Ece's hoodie (family only): the hood lies behind the neck (drawn further
-        // down, behind everything); in front a closed round neckline, drawstrings
-        // with red tips and a small heart on the chest
+    } else if (a.outfit === 'kidTop') {
+        // Ece's top (family only): a round neckline and a small heart on the chest
         collar = `
             <path d="M49 101 Q60 109 71 101 L73 108 Q60 117 47 108 Z" fill="${cloth}"/>
             <path d="M49 101 Q60 109 71 101" stroke="${clothDark}" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-            <path d="M54 112 Q53 120 54 128 M66 112 Q67 120 66 128" stroke="#fff6e0" stroke-width="1.6" fill="none" stroke-linecap="round"/>
-            <circle cx="54" cy="129.5" r="1.7" fill="#c0392b"/><circle cx="66" cy="129.5" r="1.7" fill="#c0392b"/>
             <path d="M77 124 C77 121 81 120.5 82 123.2 C83 120.5 87 121 87 124 C87 127 82 130 82 130 C82 130 77 127 77 124 Z" fill="#e85a6b"/>`;
     } else if (a.outfit === 'hoodie') {
         collar = `
@@ -178,7 +174,6 @@ export function makePortrait(a, emotion) {
             <radialGradient id="${id}s" cx="45%" cy="40%" r="65%"><stop offset="0" stop-color="${skinLight}"/><stop offset="1" stop-color="${skinDark}"/></radialGradient>
             <linearGradient id="${id}c" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${clothLight}"/><stop offset="1" stop-color="${clothDark}"/></linearGradient>
         </defs>
-        ${a.outfit === 'kidHoodie' ? `<path d="M29 118 C27 97 44 89 60 91 C76 89 93 97 91 118 Z" fill="${clothDark}"/><path d="M38 108 C41 99 50 95 60 96 C70 95 79 99 82 108" stroke="${shade(a.clothing, -0.25)}" stroke-width="1.4" fill="none"/>` : ''}
         ${hairBack}
         ${shoulders}
         <path d="M50 86 L50 108 Q60 114 70 108 L70 86 Z" fill="${skinDark}"/>
