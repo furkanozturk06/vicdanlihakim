@@ -409,7 +409,7 @@ export function showHearingChoice(choices) {
             const b = el('button', 'typewriter-btn', c.label);
             b.type = 'button';
             b.onclick = () => {
-                audio.playClick();
+                // a hearing decision is a verdict: the gavel speaks for it, no click
                 card.classList.add('hidden');
                 panel.classList.remove('behind-hearing');
                 resolve(c.value);
@@ -802,7 +802,7 @@ export function showEvening({ day, home, moment, family, harmony, bills, balance
             const b = el('button', 'typewriter-btn', c.label);
             b.type = 'button';
             b.disabled = Boolean(c.disabled);
-            b.onclick = () => { audio.playClick(); resolve(i); };
+            b.onclick = () => resolve(i); // no click: the sound of the house follows
             return b;
         }));
         modal.classList.remove('hidden');
@@ -891,7 +891,7 @@ export function showOffer({ icon, title, text, accept, decline }, deferLabel = n
 
     return new Promise(resolve => {
         const done = (choice) => {
-            audio.playClick();
+            if (choice === 'defer') audio.playClick(); // accepting or refusing is a weighty choice: no click
             elements.offerAccept.onclick = null;
             elements.offerDecline.onclick = null;
             deferBtn.onclick = null;
