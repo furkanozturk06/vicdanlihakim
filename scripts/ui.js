@@ -803,8 +803,6 @@ export function showEvening({ day, home, moment, family, harmony, bills, balance
             return b;
         }));
         modal.classList.remove('hidden');
-        // the sound of the house comes with the picture, once the card is on screen
-        requestAnimationFrame(() => setTimeout(() => audio.playHome(!home.spouseLeft && harmony >= 60), 300));
     });
 }
 
@@ -848,6 +846,8 @@ export function showEveningResult(text, harmony, balance, home, family, moment) 
             resolve();
         };
         box.replaceChildren(b);
+        // the sound of the house follows the choice: calm when the family is at peace after it
+        if (home) audio.playHome(!home.spouseLeft && harmony >= 60);
     });
 }
 

@@ -1061,7 +1061,7 @@ async function processVerdict(sentenceKey, viaOffer = null) {
     `;
 
     // The defendant takes the verdict before the verdict screen comes up
-    const reaction = verdictReaction(sentenceKey, c.emotion);
+    const reaction = verdictReaction(sentenceKey, c.emotion, c.correctVerdict);
     state.lastExit = reaction.exit;
     if (reaction.death) {
         audio.playToll();

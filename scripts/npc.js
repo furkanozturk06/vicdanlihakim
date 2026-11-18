@@ -298,11 +298,24 @@ const VISIBLE_REACTIONS = {
     heavy: { remorseful: 'crying', panicked: 'panicked', defiant: 'angry', proud: 'remorseful' },
     death: { remorseful: 'crying', panicked: 'panicked', defiant: 'angry', proud: 'remorseful' },
 };
+// A fine or a prison term judged against what the law asks for: someone who got off
+// lighter than they expected does not get angry, and someone punished harder does not smile
+const LUCKY = { remorseful: 'relieved', panicked: 'relieved', defiant: 'proud', proud: 'proud' };
+const WRONGED = { remorseful: 'crying', panicked: 'panicked', defiant: 'angry', proud: 'angry' };
 const MOTION = { relieved: 'react-hop', proud: 'react-nod', crying: 'react-sink', panicked: 'react-shock', angry: 'react-shake', remorseful: 'react-sink', defiant: 'react-shake' };
 
-export function verdictReaction(verdict, emotion) {
+// -1: lighter than the law asks, 1: harsher, 0: as the law asks (release and death keep their own reactions)
+function verdictShift(verdict, lawful) {
     const weight = verdictWeight(verdict);
-    const face = VISIBLE_REACTIONS[weight][emotion] || emotion;
+    if (!lawful || weight === 'release' || weight === 'death') return 0;
+    return Math.sign(LADDER.indexOf(verdict) - LADDER.indexOf(lawful));
+}
+
+export function verdictReaction(verdict, emotion, lawful) {
+    const weight = verdictWeight(verdict);
+    const shift = verdictShift(verdict, lawful);
+    const faces = shift < 0 ? LUCKY : shift > 0 ? WRONGED : VISIBLE_REACTIONS[weight];
+    const face = faces[emotion] || emotion;
     return { face, motion: MOTION[face] || 'react-nod', exit: weight === 'release' ? 'free' : weight === 'light' ? 'quiet' : 'taken', death: weight === 'death' };
 }
 
@@ -326,6 +339,20 @@ const DEFENDANT_REACTIONS = {
         defiant: L('Sanık öfkeyle masaya vurdu; görevliler zor tuttu.'),
         proud: L('Sanığın kibri bir anda söndü.'),
     },
+    // a fine or prison term lighter than the law asks
+    lucky: {
+        remorseful: L('Sanık şaşkınlıkla başını kaldırdı; beklediğinden hafif çıkmıştı. Sessizce teşekkür etti.'),
+        panicked: L('Sanık derin bir nefes aldı; beklediğinden çok hafif çıkmıştı.'),
+        defiant: L('Sanık bıyık altından gülerek kararı dinledi.'),
+        proud: L('Sanık "Biliyordum" der gibi gülümsedi.'),
+    },
+    // a fine or prison term harsher than the law asks
+    wronged: {
+        remorseful: L('Sanık kararı duyunca yıkıldı; bu kadarını beklemiyordu.'),
+        panicked: L('Sanık "Bu haksızlık!" diye haykırdı.'),
+        defiant: L('Sanık öfkeyle masaya vurdu: "Bu ceza fazla!"'),
+        proud: L('Sanığın kibri bir anda söndü; cezanın ağırlığına inanamadı.'),
+    },
     death: {
         remorseful: L('Sanık bembeyaz kesildi, tek kelime edemedi.'),
         panicked: L('Sanık bayıldı; görevliler kucaklayarak çıkardı.'),
@@ -344,7 +371,9 @@ export function verdictFeedback(caseData, result, verdict) {
     else if (result.tooLenient) title = L('Fazla Hafif Karar');
     else if (result.tooHarsh) title = L('Fazla Ağır Karar');
 
-    const parts = [DEFENDANT_REACTIONS[verdictWeight(verdict)][caseData.emotion]];
+    const shift = verdictShift(verdict, caseData.correctVerdict);
+    const mood = shift < 0 ? 'lucky' : shift > 0 ? 'wronged' : verdictWeight(verdict);
+    const parts = [DEFENDANT_REACTIONS[mood][caseData.emotion]];
 
     if (result.tooLenient) {
         parts.push(caseData.sympathy
