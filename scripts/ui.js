@@ -276,9 +276,12 @@ export function hideNPC(exit = 'quiet') {
 }
 
 // Show speech bubble with typewriter effect
-export function showSpeechBubble(text, crimeType, onLetter) {
+// `label`: what the bubble header says before crimeType ("Suç:" for a defendant,
+// "Tanık:", "Avukat:"... at a hearing)
+export function showSpeechBubble(text, crimeType, onLetter, label = L('Suç:')) {
     elements.speechBubble.classList.remove('hidden');
     elements.bubbleText.textContent = '';
+    document.querySelector('#speech-bubble .crime-label').textContent = label;
 
     // Set crime type if available
     if (elements.crimeType && crimeType) {
@@ -379,6 +382,42 @@ export function showEvidence(caseData, questionsLeft) {
 
     elements.evidenceContent.replaceChildren(...[header, summary, list, pending, interrogation].filter(Boolean));
     elements.evidenceDesk.classList.remove('hidden');
+}
+
+// The case file at a story hearing: what the hearing is about
+export function showHearingFile(title, text) {
+    shownCase = null;
+    document.querySelector('.case-file').scrollTop = 0;
+    elements.evidenceContent.replaceChildren(el('p', 'case-defendant', title), el('p', 'case-summary hearing-text', text));
+    elements.evidenceDesk.classList.remove('hidden');
+}
+
+// A hearing's decision, on a card over the verdict buttons. Resolves to the chosen value.
+export function showHearingChoice(choices) {
+    const card = document.getElementById('hearing-choice');
+    const box = document.getElementById('hearing-choice-buttons');
+    audio.playNotice();
+    return new Promise(resolve => {
+        box.replaceChildren(...choices.map(c => {
+            const b = el('button', 'typewriter-btn', c.label);
+            b.type = 'button';
+            b.onclick = () => {
+                card.classList.add('hidden');
+                resolve(c.value);
+            };
+            return b;
+        }));
+        card.classList.remove('hidden');
+    });
+}
+
+// Switch one verdict button off (e.g. the death penalty at a custody hearing)
+export function setVerdictAvailable(sentence, available) {
+    document.querySelectorAll(`.verdict-btn[data-sentence="${sentence}"]`).forEach(btn => {
+        btn.disabled = !available;
+        btn.style.opacity = available ? '' : '0.35';
+        btn.style.pointerEvents = available ? '' : 'none';
+    });
 }
 
 // Hide evidence

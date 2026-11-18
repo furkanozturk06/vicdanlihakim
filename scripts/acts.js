@@ -36,9 +36,10 @@ const quiet = (state, options) => {
 // a favourable verdict in the branch's story cases.
 const gaveWay = (s) => { s.trial.gaveWay = (s.trial.gaveWay || 0) + 1; };
 
-function hearing(title, text, keepLabel, dropLabel, key, onKeep = {}, onDrop = {}) {
+// `speaker`: who stands up in the courtroom ({ name, age, gender, role, emotion, says })
+function hearing(title, text, keepLabel, dropLabel, key, onKeep = {}, onDrop = {}, speaker = null) {
     return {
-        icon: '⚖️', title, text,
+        icon: '⚖️', title, text, speaker,
         choices: [{ label: keepLabel, value: 'keep' }, { label: dropLabel, value: 'drop' }],
         onChoice: (s, v) => {
             s.trial[key] = v === 'keep';
@@ -135,13 +136,15 @@ export const BRANCHES = {
             }),
             20: () => hearing(L('Birinci Duruşma: Vakfın Defterleri'),
                 L('Hacı Rıza Karaca hakkındaki iddianame kabul edildi. Savcı, Hikmet Vakfı binasında arama yapılmasını ve gizli defterlere el konulmasını istiyor.\n\nVakfın avukatı ayağa kalktı: "Burası hayır kurumu, hakim bey. Bir ibadet yerinin kapısını polise mi açacaksınız? Kasaba bunu affetmez."'),
-                L('Arama kararı ver'), L('Talebi reddet'), 'books'),
+                L('Arama kararı ver'), L('Talebi reddet'), 'books', {}, {},
+                { name: L('Vakfın avukatı'), age: 56, gender: 'm', role: L('Avukat:'), emotion: 'defiant', says: L('Burası hayır kurumu, hakim bey. Bir ibadet yerinin kapısını polise mi açacaksınız? Kasaba bunu affetmez.') }),
             21: (s) => (s.specials.imar && s.specials.imar.favored
                 ? { icon: '🧺', title: L('Vakıftan Bir Sepet'), text: L('Kapına vakıftan bir erzak sepeti bırakılmış: yağ, şeker, bir de Ece için oyuncak. Kartta "Hacı Rıza Bey\'in selamıyla" yazıyor.'), choices: [{ label: L('Devam'), value: true }], apply: { conscience: -4 } }
                 : { icon: '🚰', title: L('Suyunuz Kesildi'), text: L('Sabah musluklardan su akmadı. Belediyeden gelen görevli omuz silkti: "Arıza var, hakim bey. Ne zaman düzelir, Hacı Rıza Bey bilir."'), choices: [{ label: L('Devam'), value: true }], apply: { harmony: -8 } }),
             24: () => hearing(L('İkinci Duruşma: İtirafçı'),
                 L('Hacı Rıza\'nın on yıllık koruması Ali Demir, avukatı aracılığıyla itirafçı olmak istediğini bildirdi. Karşılığında kendisi ve ailesi için koruma istiyor.\n\nO gece senin evinin önünden de vakfın arabası yavaşça geçti.'),
-                L('Tanık koruma kararı ver'), L('Talebi reddet'), 'insider', { harmony: -5 }),
+                L('Tanık koruma kararı ver'), L('Talebi reddet'), 'insider', { harmony: -5 }, {},
+                { name: L('Ali Demir'), age: 44, gender: 'm', role: L('Tanık:'), emotion: 'remorseful', says: L('On yıl Hacı Rıza\'nın yanındaydım. Ailemi korursanız her şeyi anlatırım.') }),
             23: () => ({
                 icon: '🩺', title: L('Doktor Leyla Tan'),
                 text: L('Sağlık ocağının genç doktoru Leyla Tan annenin kontrolünden sonra seni kenara çekti: "Vakfın yurdunda geçen ay bir öğrenci öldü. Rapora \'kaza\' yazmamı istediler, yazmadım. Dosya size gelecek. Ben gerçeği söyleyeceğim."'),
@@ -149,7 +152,8 @@ export const BRANCHES = {
             }),
             26: () => hearing(L('Üçüncü Duruşma: Yurttaki Ölüm'),
                 L('Doktor Leyla Tan kürsüde: "Yurtta ölen on dört yaşındaki çocuğun ellerinde nasır, sırtında taşıma izleri vardı. Aylarca inşaatta çalıştırılmış."\n\nVakfın avukatı: "Doktor hanım kasabaya geldiği günden beri vakfa düşman. Raporunun dosyadan çıkarılmasını talep ediyoruz."'),
-                L('Raporu dosyaya al'), L('Raporu dışarıda bırak'), 'doctor'),
+                L('Raporu dosyaya al'), L('Raporu dışarıda bırak'), 'doctor', {}, {},
+                { name: L('Leyla Tan'), age: 34, gender: 'f', role: L('Tanık:'), emotion: 'defiant', says: L('Yurtta ölen on dört yaşındaki çocuğun ellerinde nasır, sırtında taşıma izleri vardı. Aylarca inşaatta çalıştırılmış.') }),
             27: (s) => {
                 const h = s.specials.hasan;
                 if (h && h.verdict === 'release') return { icon: '📰', title: L('Karaçam Postası Yeniden Çıktı'), text: L('Hasan\'ın gazetesinin manşeti: "Vakfın yurtlarında neler oluyor?" Kasaba gazeteyi elden ele dolaştırıyor. Hasan sana bir not bırakmış: "Teşekkürler. Korkmadığınız için."'), choices: [{ label: L('Devam'), value: true }], apply: { reputation: 6 } };
@@ -326,7 +330,8 @@ export const BRANCHES = {
             22: (s) => (s.flags.elif === 'take'
                 ? hearing(L('Birinci Duruşma: Elif\'in Dosyası'),
                     L('Selami Kuru hakkındaki iddianame Daire\'ye geldi. Savcı Elif Demir\'in sana verdiği dosya masanda: banka dekontları, e-postalar, ihale belgeleri.\n\nSelami\'nin avukatı: "Bu bir savcının kişisel arşivi, sayın hakim. Usulsüz toplanmış belgeler delil olamaz."'),
-                    L('Dosyayı delil olarak kabul et'), L('Dosyayı reddet'), 'elifFile')
+                    L('Dosyayı delil olarak kabul et'), L('Dosyayı reddet'), 'elifFile', {}, {},
+                    { name: L('Selami\'nin avukatı'), age: 52, gender: 'm', role: L('Avukat:'), emotion: 'defiant', says: L('Bu bir savcının kişisel arşivi, sayın hakim. Usulsüz toplanmış belgeler delil olamaz.') })
                 : {
                     icon: '⚖️', title: L('Birinci Duruşma: Elif\'in Dosyası'),
                     text: L('Selami Kuru hakkındaki iddianame Daire\'ye geldi. Savcı Elif Demir\'in topladığı delil dosyası ortada yok; Elif sana vermek istemişti ama sen almamıştın.'),
@@ -341,7 +346,8 @@ export const BRANCHES = {
             },
             25: () => hearing(L('İkinci Duruşma: Telefon Kayıtları'),
                 L('Savcılık, Selami Kuru\'nun telefonunun mahkeme kararıyla dinlendiği kayıtları sundu: Cahit Ural\'a şantaj talimatı açıkça duyuluyor.\n\nAvukat: "Dinleme kararının süresi kayıttan iki gün önce dolmuştu. Hukuka aykırı delil!" Dinleme kararını veren hakimin imzası ise tarihsiz.'),
-                L('Kayıtları delil say'), L('Kayıtları dosyadan çıkar'), 'wiretap'),
+                L('Kayıtları delil say'), L('Kayıtları dosyadan çıkar'), 'wiretap', {}, {},
+                { name: L('Selami\'nin avukatı'), age: 52, gender: 'm', role: L('Avukat:'), emotion: 'angry', says: L('Dinleme kararının süresi kayıttan iki gün önce dolmuştu. Hukuka aykırı delil!') }),
             27: () => ({
                 icon: '⚖️', title: L('Nazım Bey\'in Uyarısı'),
                 text: L('Nazım Bey çayını karıştırırken alçak sesle: "Başsavcılıkta bir ekip kurulmuş. Son yıllarda verilen kararları tek tek inceliyorlar. Kimin kime borcu olduğunu biliyorlar hakim bey."'),
@@ -349,7 +355,8 @@ export const BRANCHES = {
             }),
             28: () => hearing(L('Üçüncü Duruşma: Yabancı Tanık'),
                 L('Yabancı silah şirketinin eski çalışanı görüntülü bağlantıyla ifade vermek istiyor: "Gizli teknik bilgileri bize Selami Kuru\'nun adamları sattı; parayı da onun hesabına yatırdık."\n\nParti sözcüsü salonun önünde kameralara konuştu: "Dış güçlerin oyunu! Yabancı bir şirketin ifadesiyle bu ülkenin partisi yargılanamaz."'),
-                L('Tanığı dinle'), L('Tanığı dinlemeyi reddet'), 'insider'),
+                L('Tanığı dinle'), L('Tanığı dinlemeyi reddet'), 'insider', {}, {},
+                { name: L('Şirketin eski çalışanı'), age: 47, gender: 'm', role: L('Tanık:'), emotion: 'remorseful', says: L('Gizli teknik bilgileri bize Selami Kuru\'nun adamları sattı; parayı da onun hesabına yatırdık.') }),
             29: () => ({
                 icon: '📞', title: L('Gece Yarısı Telefonu'),
                 text: L('Telefondaki ses tanıdık: "Yarın Selami Bey\'in davası. Bakanın oğlunu hatırlıyor musunuz hakim bey? Biz hatırlıyoruz. Borç ödenir."'),

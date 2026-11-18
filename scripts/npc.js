@@ -33,8 +33,8 @@ function hairColorFor(age) {
     return pick(NPC_APPEARANCES.hairColors);
 }
 
-// Look of a defendant, matching their gender and age
-function generateNPCAppearance(age, gender) {
+// Look of a defendant (or a witness), matching their gender and age
+export function generateNPCAppearance(age, gender) {
     const female = gender === 'f';
     const old = age >= 60;
     const middle = age >= 40;

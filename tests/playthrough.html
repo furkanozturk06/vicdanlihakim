@@ -91,6 +91,18 @@ for (let step = 0; step < 90000; step++) {
             || (['surgunHearings', 'borcHearings'].includes(policy) && g.getState().day > 15);
         btns[giveWay ? btns.length - 1 : 0].click(); continue;
     }
+    if (vis('hearing-choice')) {
+        const btns = [...document.querySelectorAll('#hearing-choice-buttons button')];
+        out.stories.push(`g${g.getState().day}: hearing`);
+        const giveWay = (policy === 'trialLost' && g.getState().day <= 15)
+            || (['surgunHearings', 'borcHearings'].includes(policy) && g.getState().day > 15);
+        btns[giveWay ? btns.length - 1 : 0].click(); continue;
+    }
+    if (g.getState().hearing) {
+        // the custody hearing: prison means custody, release lets him go
+        out.stories.push(`g${g.getState().day}: custody hearing`);
+        button(policy === 'trialLost' ? 'release' : 'jail-short').click(); continue;
+    }
     if (vis('evening-modal')) {
         const btns = [...document.querySelectorAll('#evening-choices button')].filter(b => !b.disabled);
         if (btns.length === 1 && btns[0].textContent === 'Sabah oldu') out.evenings++;

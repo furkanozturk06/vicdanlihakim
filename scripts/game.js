@@ -3,7 +3,7 @@
  * Core game loop, state management, and decision processing
  */
 
-import { generateCase, buildCase, createNPCElement, evaluateVerdict, getRandomDirective, verdictFeedback, verdictLabel, activeAmendments, verdictReaction, pickObjection } from './npc.js';
+import { generateCase, buildCase, generateNPCAppearance, createNPCElement, evaluateVerdict, getRandomDirective, verdictFeedback, verdictLabel, activeAmendments, verdictReaction, pickObjection } from './npc.js';
 import { CRIMES, GENERAL_NOTES, AMENDMENTS, VERDICT_LABELS, LADDER, LAW_CHAPTERS } from './cases.js';
 import {
     OFFERS, buildNewspaper, FINALE, FINAL_DIRECTIVE, INTRO, TUTORIAL, ENDLESS_INTRO, HOW_TO_PLAY, inspectorReport,
@@ -371,9 +371,14 @@ function setupEventListeners() {
 
     document.querySelectorAll('.verdict-btn').forEach(btn => {
         btn.addEventListener('click', () => {
+            const key = btn.dataset.level ? `${btn.dataset.sentence}-${btn.dataset.level}` : btn.dataset.sentence;
+            if (state.hearing) {
+                audio.playClick();
+                state.hearing(key);
+                return;
+            }
             if (state.isProcessing || !state.currentCase) return;
             audio.playClick();
-            const key = btn.dataset.level ? `${btn.dataset.sentence}-${btn.dataset.level}` : btn.dataset.sentence;
             processVerdict(key);
         });
     });
@@ -633,9 +638,9 @@ function nextCase() {
     const special = specialCaseNow();
     if (special) {
         const statement = typeof special.statement === 'function' ? special.statement(state) : special.statement;
-        return buildCase(special.crimeType, statement, state.day, {
-            name: special.name, age: special.age, gender: special.gender, specialKey: special.key,
-        });
+        return remembered(buildCase(special.crimeType, statement, state.day, {
+            name: special.name, age: special.age, gender: special.gender, specialKey: special.key, ...lookOf(special.name),
+        }));
     }
     if (state.day === 7 && state.dayCases === 0 && !state.selin) {
         return buildCase(SELIN_CASE.crimeType, SELIN_CASE.statement, state.day, { name: SELIN_CASE.name, age: SELIN_CASE.age, gender: SELIN_CASE.gender, selinCase: true });
@@ -647,9 +652,62 @@ function nextCase() {
         return buildCase(p.crimeType, statement, state.day, { name: p.name, age: p.age, appearance: p.appearance, revealed: true });
     }
     if (state.day === ACT_LENGTH && state.dayCases === casesToday() - 1) {
-        return buildCase(FINALE.crimeType, finaleStatement(state.trial), state.day, { name: FINALE.name, age: FINALE.age, gender: FINALE.gender, finale: true });
+        return remembered(buildCase(FINALE.crimeType, finaleStatement(state.trial), state.day, { name: FINALE.name, age: FINALE.age, gender: FINALE.gender, finale: true, ...lookOf(FINALE.name) }));
     }
     return generateCase(state.day, state.currentDirective, takeReturningOffender(), state.usedStatements, state.branch);
+}
+
+// Story people keep their face: Kerem B. at his custody hearing is the Kerem B. of
+// the final trial, Officer Murat S. on the stand is the Murat S. who was judged
+function lookOf(name) {
+    state.looks = state.looks || {};
+    return state.looks[name] ? { appearance: state.looks[name] } : {};
+}
+function remembered(c) {
+    state.looks = state.looks || {};
+    state.looks[c.name] = c.appearance;
+    return c;
+}
+
+// A hearing of the story, held in the courtroom: the speaker comes in through the
+// door and speaks; the file says what the hearing is about. The judge decides on a
+// card over the verdict buttons, or, at the custody hearing, with the verdict buttons
+// themselves. Resolves to the chosen value.
+async function courtHearing(beat) {
+    const sp = beat.speaker;
+    const person = {
+        name: sp.name, age: sp.age, gender: sp.gender, emotion: sp.emotion || 'nervous',
+        appearance: lookOf(sp.name).appearance || generateNPCAppearance(sp.age, sp.gender),
+    };
+    remembered(person);
+    ui.bailiffCall(sp.name);
+    audio.playDoor();
+    await ui.openDoor();
+    await ui.showNPC(createNPCElement(person));
+    audio.playDoorClose();
+    await ui.closeDoor();
+    ui.showHearingFile(beat.title, beat.text);
+    await ui.showSpeechBubble(sp.says, sp.name, (text, i) => audio.speakLetter(text, i, sp.gender, sp.age), sp.role);
+
+    let value;
+    if (beat.verdicts) {
+        ui.setVerdictAvailable('death', false);
+        ui.setSentencingEnabled(true);
+        ui.setVerdictAvailable('death', false);
+        value = await new Promise(resolve => { state.hearing = key => resolve(beat.verdicts(key)); });
+        state.hearing = null;
+        ui.setSentencingEnabled(false);
+        ui.setVerdictAvailable('death', true);
+    } else {
+        value = await ui.showHearingChoice(beat.choices);
+    }
+    audio.playGavel();
+    await new Promise(resolve => setTimeout(resolve, 600));
+    ui.hideSpeechBubble();
+    ui.hideEvidence();
+    ui.hideNPC();
+    await new Promise(resolve => setTimeout(resolve, 700));
+    return value;
 }
 
 // The story arc running now: the Ayla Öğretmen trial in act 1, the branch in act 2
@@ -1049,7 +1107,9 @@ async function morningStory() {
         const make = arc && arc.beats[state.day];
         if (!make) return;
         const beat = make(state);
-        const value = await ui.showStory({ icon: beat.icon, title: beat.title, text: beat.text, choices: beat.choices });
+        const value = beat.speaker
+            ? await courtHearing(beat)
+            : await ui.showStory({ icon: beat.icon, title: beat.title, text: beat.text, choices: beat.choices });
         if (beat.onChoice) beat.onChoice(state, value);
         if (beat.apply) {
             state.family.harmony = Math.max(0, Math.min(100, state.family.harmony + (beat.apply.harmony || 0)));

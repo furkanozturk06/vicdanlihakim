@@ -34,6 +34,10 @@ export const ACT1 = {
             icon: '⚖️', title: L('Birinci Duruşma: Tutuklama'),
             text: L('Salon tıklım tıklım. Ayla Öğretmen\'in öğrencileri en arkada. Savcı Kerem B.\'nin tutuklanmasını istiyor: "Kaçma ve delilleri karartma şüphesi var." Avukat itiraz ediyor: "Müvekkilim saygın bir ailenin çocuğu; adli kontrol yeterli."\n\nKerem sana bakıp gülümsüyor.'),
             choices: [{ label: L('Tutuklanmasına karar ver'), value: 'arrest' }, { label: L('Adli kontrolle serbest bırak'), value: 'release' }],
+            // held in the courtroom; decided with the usual verdict buttons:
+            // any prison term means custody, anything lighter release under supervision
+            speaker: { name: L('Kerem B.'), age: 24, gender: 'm', role: L('Sanık:'), emotion: 'proud', says: L('Kaçacak değilim ya, hakim bey. Babam her şeyi halleder.') },
+            verdicts: key => (key.startsWith('jail') ? 'arrest' : 'release'),
             onChoice: (st, v) => {
                 st.trial.arrested = v === 'arrest';
                 if (v === 'arrest') adjust(st, { conscience: 3 });
@@ -58,12 +62,14 @@ export const ACT1 = {
                 icon: '⚖️', title: L('İkinci Duruşma: Tanık'),
                 text: L('Ayla Öğretmen\'in öğrencisi Defne (17) kürsüde: "Kerem\'i tanıyorum, aynı mahalledeyiz. Arabayı o kullanıyordu. Hocam yere düşünce bir an durdu, sonra gaza bastı."\n\nAvukat ayağa kalkıyor: "Reşit olmayan, öğretmenine duygusal olarak bağlı bir tanık. İfadesinin dosyadan çıkarılmasını talep ediyoruz."'),
                 choices: [{ label: L('İtirazı reddet, ifade dosyada kalsın'), value: 'kept' }, { label: L('İtirazı kabul et'), value: 'lost' }],
+                speaker: { name: L('Defne'), age: 17, gender: 'f', role: L('Tanık:'), emotion: 'defiant', says: L('Kerem\'i tanıyorum, aynı mahalledeyiz. Arabayı o kullanıyordu. Hocam yere düşünce bir an durdu, sonra gaza bastı.') },
                 onChoice: (st, v) => { st.trial.witness = v; adjust(st, v === 'kept' ? { conscience: 3 } : { conscience: -5 }); },
             }
             : {
                 icon: '⚖️', title: L('İkinci Duruşma: Tanık'),
                 text: L('Defne (17) kürsüye titreyerek çıktı: "Ben... ifademi geri çekmek istiyorum. Emin değilim." Sonra sesini alçalttı: "Bir haftadır evimizin önünde siyah bir araba bekliyor. Annem işten çıkarıldı."\n\nKerem B. tutuksuz yargılandığı için salonda, ön sırada oturuyor.'),
                 choices: [{ label: L('Tanık koruma kararı ver, ifade dosyada kalsın'), value: 'kept' }, { label: L('İfadesini geri çekmesine izin ver'), value: 'lost' }],
+                speaker: { name: L('Defne'), age: 17, gender: 'f', role: L('Tanık:'), emotion: 'panicked', says: L('Ben... ifademi geri çekmek istiyorum. Emin değilim.') },
                 onChoice: (st, v) => { st.trial.witness = v; adjust(st, v === 'kept' ? { conscience: 4, harmony: -5 } : { conscience: -6 }); },
             }),
         10: () => ({
@@ -79,6 +85,7 @@ export const ACT1 = {
                 icon: '⚖️', title: L('Üçüncü Duruşma: Kamera Kaydı'),
                 text: L('Polis Murat S.\'nin sakladığı kopya kayıt oynatıldı. Görüntü net: arabayı Kerem B. kullanıyor, çarpmadan sonra duruyor, sonra hızla uzaklaşıyor. Salonda biri ağlamaya başladı.\n\nAvukat: "Bu kayıt kurallara aykırı biçimde kopyalanmıştır. Hukuka aykırı delil kullanılamaz!"'),
                 choices: [{ label: L('Kaydı delil olarak kabul et'), value: 'accepted' }, { label: L('Kaydı dosyadan çıkar'), value: 'rejected' }],
+                speaker: { name: L('Murat S.'), age: 38, gender: 'm', role: L('Polis:'), emotion: 'remorseful', says: L('Kaydı silmemi emrettiler. Bir kopyasını sakladım; vicdanım el vermedi.') },
                 onChoice: (st, v) => { st.trial.footage = v; adjust(st, v === 'accepted' ? { conscience: 3 } : { conscience: -6 }); },
             }
             : {
