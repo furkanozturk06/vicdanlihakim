@@ -396,6 +396,8 @@ export function showHearingFile(title, text) {
 export function showHearingChoice(choices) {
     const card = document.getElementById('hearing-choice');
     const box = document.getElementById('hearing-choice-buttons');
+    // the verdict buttons are not part of this decision: hidden while the card is up
+    const panel = document.getElementById('sentencing-panel');
     audio.playNotice();
     return new Promise(resolve => {
         box.replaceChildren(...choices.map(c => {
@@ -403,10 +405,12 @@ export function showHearingChoice(choices) {
             b.type = 'button';
             b.onclick = () => {
                 card.classList.add('hidden');
+                panel.classList.remove('behind-hearing');
                 resolve(c.value);
             };
             return b;
         }));
+        panel.classList.add('behind-hearing');
         card.classList.remove('hidden');
     });
 }

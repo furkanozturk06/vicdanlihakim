@@ -4076,3 +4076,8 @@ html.text-xlarge #directive-text { font-size: 0.92rem; }
     white-space: pre-line;
 }
 
+/* While a hearing's decision card is up, the verdict buttons behind it stay out of sight */
+#sentencing-panel.behind-hearing .verdict-row {
+    visibility: hidden;
+}
+
