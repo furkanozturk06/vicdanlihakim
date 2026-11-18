@@ -32,7 +32,7 @@ export const ACT1 = {
         }),
         4: () => ({
             icon: '⚖️', title: L('Birinci Duruşma: Tutuklama'),
-            text: L('Salon tıklım tıklım. Ayla Öğretmen\'in öğrencileri en arkada. Savcı Kerem B.\'nin tutuklanmasını istiyor: "Kaçma ve delilleri karartma şüphesi var." Avukat itiraz ediyor: "Müvekkilim saygın bir ailenin çocuğu; adli kontrol yeterli."\n\nKerem sana bakıp gülümsüyor.'),
+            text: L('Salon tıklım tıklım. Hayatını kaybeden Ayla Öğretmen\'in öğrencileri en arkada. Savcı Kerem B.\'nin tutuklanmasını istiyor: "Kaçma ve delilleri karartma şüphesi var." Avukat itiraz ediyor: "Müvekkilim saygın bir ailenin çocuğu; adli kontrol yeterli."\n\nKerem sana bakıp gülümsüyor.'),
             choices: [{ label: L('Tutuklanmasına karar ver'), value: 'arrest' }, { label: L('Adli kontrolle serbest bırak'), value: 'release' }],
             // held in the courtroom; decided with the usual verdict buttons:
             // any prison term means custody, anything lighter release under supervision
