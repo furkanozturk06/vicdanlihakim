@@ -9,6 +9,7 @@
  */
 
 import { L } from './i18n.js';
+import { caseWho } from './story.js';
 
 const CHANCE = 0.45;
 
@@ -21,6 +22,10 @@ export function aftermathFor(c, verdict, result, day) {
         about: { day, name: c.name, crime: c.crime, detail: c.detail },
     });
     const name = c.name;
+    // what the case was, told in a few words ("yasak bölgede avlanan"), when the summary allows it;
+    // otherwise the summary's first sentence is told first
+    const who = caseWho(c.summary);
+    const told = (c.summary || '').split(/(?<=[.!?])\s/)[0];
 
     if (verdict === 'death') {
         if (!result.correct) return pick(L('Avukatlar yeni bir delil sundu: idam edilen {0} masum olabilir. Gazeteler adınızı manşete taşıdı.', name), -8, -5);
@@ -34,10 +39,14 @@ export function aftermathFor(c, verdict, result, day) {
             return pick(L('Beraat ettirdiğiniz sanıktan bir mektup var. {0} yazmış: "Bana inandınız. Hayatımı yeniden kuruyorum."', name), 3, 1);
         }
         if (c.sympathy && !verdict.startsWith('jail')) {
-            return pick(L('"{0}" davasının sanığı {1} ailesine kavuştu. Mahallede kararınız konuşuluyor.', c.detail, name), 1, 2);
+            return pick(who
+                ? L('{0} {1} ailesine kavuştu. Mahallede kararınız konuşuluyor.', who, name)
+                : L('{0} {1} şimdi ailesine kavuştu. Mahallede kararınız konuşuluyor.', told, name), 1, 2);
         }
         if (!c.sympathy && verdict.startsWith('jail')) {
-            return pick(L('"{0}" davasının mağdurları adliyeye bir teşekkür mektubu bıraktı: "Sesimizi duydunuz."', c.detail), 2, 1);
+            return pick(who
+                ? L('{0} {1} davasının mağdurları adliyeye bir teşekkür mektubu bıraktı: "Sesimizi duydunuz."', who, name)
+                : L('{0} Davanın mağdurları adliyeye bir teşekkür mektubu bıraktı: "Sesimizi duydunuz."', told), 2, 1);
         }
         return null;
     }
