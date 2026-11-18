@@ -866,7 +866,6 @@ export function showIntro({ title, text, button }) {
 
     return new Promise(resolve => {
         btn.onclick = () => {
-            audio.playClick();
             btn.onclick = null;
             modal.classList.add('hidden');
             resolve();
