@@ -409,6 +409,7 @@ export function showHearingChoice(choices) {
             const b = el('button', 'typewriter-btn', c.label);
             b.type = 'button';
             b.onclick = () => {
+                audio.playClick();
                 card.classList.add('hidden');
                 panel.classList.remove('behind-hearing');
                 resolve(c.value);
@@ -665,6 +666,7 @@ export function runTutorial(steps) {
         };
 
         next.onclick = () => {
+            audio.playClick();
             i++;
             if (i >= steps.length) finish();
             else show();
@@ -716,15 +718,15 @@ export function showSettings(settings, { onChange, onReset }) {
     };
 
     modal.querySelectorAll('.setting-toggle').forEach(btn => {
-        btn.onclick = () => { onChange(btn.dataset.setting, !settings[btn.dataset.setting]); render(); };
+        btn.onclick = () => { audio.playClick(); onChange(btn.dataset.setting, !settings[btn.dataset.setting]); render(); };
     });
     document.getElementById('setting-volume').oninput = (e) => onChange('volume', Number(e.target.value) / 100);
     document.getElementById('setting-ambience-volume').oninput = (e) => onChange('ambienceVolume', Number(e.target.value) / 100);
     document.querySelectorAll('#setting-textsize button').forEach(b => {
-        b.onclick = () => { onChange('textSize', b.dataset.size); render(); };
+        b.onclick = () => { audio.playClick(); onChange('textSize', b.dataset.size); render(); };
     });
-    document.getElementById('settings-reset').onclick = () => onReset();
-    document.getElementById('settings-close').onclick = () => modal.classList.add('hidden');
+    document.getElementById('settings-reset').onclick = () => { audio.playClick(); onReset(); };
+    document.getElementById('settings-close').onclick = () => { audio.playClick(); modal.classList.add('hidden'); };
 
     render();
     modal.classList.remove('hidden');
@@ -774,6 +776,7 @@ export function showStory({ icon, title, text, choices }) {
             b.type = 'button';
             b.disabled = Boolean(c.disabled);
             b.onclick = () => {
+                audio.playClick();
                 modal.classList.add('hidden');
                 resolve(c.value);
             };
@@ -799,7 +802,7 @@ export function showEvening({ day, home, moment, family, harmony, bills, balance
             const b = el('button', 'typewriter-btn', c.label);
             b.type = 'button';
             b.disabled = Boolean(c.disabled);
-            b.onclick = () => resolve(i);
+            b.onclick = () => { audio.playClick(); resolve(i); };
             return b;
         }));
         modal.classList.remove('hidden');
@@ -842,6 +845,7 @@ export function showEveningResult(text, harmony, balance, home, family, moment) 
         const b = el('button', 'typewriter-btn', L('Sabah oldu'));
         b.type = 'button';
         b.onclick = () => {
+            audio.playClick();
             document.getElementById('evening-modal').classList.add('hidden');
             resolve();
         };
@@ -862,6 +866,7 @@ export function showIntro({ title, text, button }) {
 
     return new Promise(resolve => {
         btn.onclick = () => {
+            audio.playClick();
             btn.onclick = null;
             modal.classList.add('hidden');
             resolve();
@@ -887,6 +892,7 @@ export function showOffer({ icon, title, text, accept, decline }, deferLabel = n
 
     return new Promise(resolve => {
         const done = (choice) => {
+            audio.playClick();
             elements.offerAccept.onclick = null;
             elements.offerDecline.onclick = null;
             deferBtn.onclick = null;
@@ -933,7 +939,7 @@ export function setCareer({ rank, lawful, next, achievements }) {
 export function openCareer() {
     const modal = document.getElementById('career-modal');
     modal.classList.remove('hidden');
-    document.getElementById('career-close').onclick = () => modal.classList.add('hidden');
+    document.getElementById('career-close').onclick = () => { audio.playClick(); modal.classList.add('hidden'); };
     modal.onclick = (e) => { if (e.target === modal) modal.classList.add('hidden'); };
 }
 
