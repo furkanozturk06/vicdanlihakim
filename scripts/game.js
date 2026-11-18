@@ -15,6 +15,7 @@ import { saveGame, loadGame, savedDay, savedMode, clearSave, loadSettings, saveS
 import * as ui from './ui.js';
 import { audio } from './audio.js';
 import { initAds, adBetweenDays } from './ads.js';
+import { storyLook } from './people.js';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { L, LANG, translatePage, formatMoney } from './i18n.js';
 import { ACT1, finaleStatement } from './trial.js';
@@ -643,7 +644,7 @@ function nextCase() {
         }));
     }
     if (state.day === 7 && state.dayCases === 0 && !state.selin) {
-        return buildCase(SELIN_CASE.crimeType, SELIN_CASE.statement, state.day, { name: SELIN_CASE.name, age: SELIN_CASE.age, gender: SELIN_CASE.gender, selinCase: true });
+        return buildCase(SELIN_CASE.crimeType, SELIN_CASE.statement, state.day, { name: SELIN_CASE.name, age: SELIN_CASE.age, gender: SELIN_CASE.gender, selinCase: true, ...lookOf(SELIN_CASE.name) });
     }
     const dueIndex = state.postponed.findIndex(p => p.day < state.day);
     if (dueIndex >= 0) {
@@ -657,9 +658,11 @@ function nextCase() {
     return generateCase(state.day, state.currentDirective, takeReturningOffender(), state.usedStatements, state.branch);
 }
 
-// Story people keep their face: Kerem B. at his custody hearing is the Kerem B. of
-// the final trial, Officer Murat S. on the stand is the Murat S. who was judged
+// Story people keep their face: each has a fixed look (people.js), the same in every
+// game and every time they come in. Anyone else who comes back keeps the face they had.
 function lookOf(name) {
+    const fixed = storyLook(name);
+    if (fixed) return { appearance: fixed };
     state.looks = state.looks || {};
     return state.looks[name] ? { appearance: state.looks[name] } : {};
 }
