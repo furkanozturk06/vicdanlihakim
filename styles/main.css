@@ -62,6 +62,11 @@ body {
     overflow: hidden;
 }
 
+/* dark behind everything, so a frame the phone has not drawn yet is never white */
+html {
+    background: #0d0907;
+}
+
 body {
     font-family: var(--font-elegant);
     background: var(--bg-darkest);
@@ -2349,18 +2354,22 @@ body {
         radial-gradient(circle, rgba(255, 230, 180, 0.2) 1px, transparent 1.5px);
     background-size: 120px 140px, 70px 90px;
     background-position: 0 0, 35px 50px;
-    animation: dust-rise 30s linear infinite;
+    /* the layer itself moves (cheap for the phone) instead of being redrawn every frame;
+       1260px is a whole number of both dust tiles, so the loop has no jump */
+    bottom: -1260px;
+    animation: dust-rise 68s linear infinite;
+    will-change: transform;
     opacity: 0.6;
     pointer-events: none;
 }
 
 @keyframes dust-rise {
     from {
-        background-position: 0 0, 35px 50px;
+        transform: translate3d(0, 0, 0);
     }
 
     to {
-        background-position: 40px -560px, 75px -400px;
+        transform: translate3d(0, -1260px, 0);
     }
 }
 

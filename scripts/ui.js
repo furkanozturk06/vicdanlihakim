@@ -390,10 +390,10 @@ export function showEvidence(caseData, questionsLeft) {
 }
 
 // The case file at a story hearing: what the hearing is about
-export function showHearingFile(title, text) {
+export function showHearingFile(title, text, who = null) {
     shownCase = null;
     document.querySelector('.case-file').scrollTop = 0;
-    elements.evidenceContent.replaceChildren(el('p', 'case-defendant', title), el('p', 'case-summary hearing-text', text));
+    elements.evidenceContent.replaceChildren(...[el('p', 'case-defendant', title), who && el('p', 'case-defendant', who), el('p', 'case-summary hearing-text', text)].filter(Boolean));
     elements.evidenceDesk.classList.remove('hidden');
 }
 

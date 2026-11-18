@@ -36,8 +36,13 @@ export const ACT1 = {
             choices: [{ label: L('Tutuklanmasına karar ver'), value: 'arrest' }, { label: L('Adli kontrolle serbest bırak'), value: 'release' }],
             // held in the courtroom; decided with the usual verdict buttons:
             // any prison term means custody, anything lighter release under supervision
-            speaker: { name: L('Kerem B.'), age: 24, gender: 'm', role: L('Sanık:'), emotion: 'proud', says: L('Kaçacak değilim ya, hakim bey. Babam her şeyi halleder.') },
+            speaker: { name: L('Kerem B.'), age: 24, gender: 'm', role: L('Sanık:'), crime: L('Ölümlü kaza ve kaçma'), emotion: 'proud', says: L('Kaçacak değilim ya, hakim bey. Babam her şeyi halleder.') },
             verdicts: key => (key.startsWith('jail') ? 'arrest' : 'release'),
+            // what the decision means, told once the gavel falls
+            outcome: {
+                arrest: { face: 'angry', exit: 'taken', title: L('Karar: Tutuklama'), text: L('Hapis kararı bu duruşmada tutuklama demek: Kerem B. dava bitene kadar cezaevinde kalacak. Gülümsemesi yüzünde dondu; görevliler kolundan tutup götürdü.\n\nAsıl cezası 15. gündeki son duruşmada verilecek.') },
+                release: { face: 'proud', exit: 'free', title: L('Karar: Adli Kontrol'), text: L('Kerem B. adli kontrolle serbest bırakıldı; dava bitene kadar her hafta karakola imza verecek. Salondan çıkarken telefonunu çıkardı bile.\n\nAsıl cezası 15. gündeki son duruşmada verilecek.') },
+            },
             onChoice: (st, v) => {
                 st.trial.arrested = v === 'arrest';
                 if (v === 'arrest') adjust(st, { conscience: 3 });

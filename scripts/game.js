@@ -693,8 +693,10 @@ async function courtHearing(beat) {
     await ui.showNPC(createNPCElement(person));
     audio.playDoorClose();
     await ui.closeDoor();
-    ui.showHearingFile(beat.title, beat.text);
-    await ui.showSpeechBubble(sp.says, sp.name, (text, i) => audio.speakLetter(text, i, sp.gender, sp.age), sp.role);
+    // a defendant: the bubble names the crime and the file names the defendant;
+    // anyone else (witness, lawyer, police) is named in the bubble
+    ui.showHearingFile(beat.title, beat.text, sp.crime ? L('Sanık: {0}, {1} yaşında', sp.name, sp.age) : null);
+    await ui.showSpeechBubble(sp.says, sp.crime || sp.name, (text, i) => audio.speakLetter(text, i, sp.gender, sp.age), sp.crime ? L('Suç:') : sp.role);
 
     let value;
     if (beat.verdicts) {
@@ -709,9 +711,15 @@ async function courtHearing(beat) {
     }
     audio.playGavel();
     await new Promise(resolve => setTimeout(resolve, 600));
+    const outcome = beat.outcome && beat.outcome[value];
+    if (outcome) {
+        // the defendant takes the decision, then is led away or walks out
+        await ui.npcReact(createNPCElement({ ...person, emotion: outcome.face }), { motion: outcome.face === 'angry' ? 'react-shake' : 'react-nod' });
+        await ui.showStory({ icon: '⚖️', title: outcome.title, text: outcome.text, choices: [{ label: L('Devam'), value: true }] });
+    }
     ui.hideSpeechBubble();
     ui.hideEvidence();
-    ui.hideNPC();
+    ui.hideNPC(outcome ? outcome.exit : undefined);
     await new Promise(resolve => setTimeout(resolve, 700));
     return value;
 }
