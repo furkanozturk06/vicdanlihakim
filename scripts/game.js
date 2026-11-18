@@ -250,10 +250,12 @@ function setupEventListeners() {
         btn.setAttribute('aria-pressed', String(btn.dataset.lang === LANG));
         btn.addEventListener('click', () => {
             if (btn.dataset.lang === LANG) return;
+            audio.resume();
             audio.playClick();
             settings.lang = btn.dataset.lang;
             saveSettings(settings);
-            location.reload();
+            // reload once the click has finished; reloading at once cuts the sound off mid-way
+            setTimeout(() => location.reload(), 150);
         });
     });
 
