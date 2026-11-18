@@ -378,13 +378,12 @@ function setupEventListeners() {
     document.querySelectorAll('.verdict-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const key = btn.dataset.level ? `${btn.dataset.sentence}-${btn.dataset.level}` : btn.dataset.sentence;
+            // no click sound on a verdict: the gavel speaks for it
             if (state.hearing) {
-                audio.playClick();
                 state.hearing(key);
                 return;
             }
             if (state.isProcessing || !state.currentCase) return;
-            audio.playClick();
             processVerdict(key);
         });
     });
@@ -937,6 +936,7 @@ async function processVerdict(sentenceKey, viaOffer = null) {
                 { label: L('Kararımda ısrar ediyorum'), value: 'keep' },
                 { label: L('Kararı değiştir: {0}', verdictLabel(objection.verdict)), value: 'change' },
             ],
+            silent: true, // the answer to an objection is part of the verdict: no click sound
         });
         if (answer === 'change') sentenceKey = objection.verdict;
         else if (sentenceKey === c.correctVerdict) award('objection');

@@ -751,7 +751,7 @@ export function setSoundIcon(on) {
 }
 
 // Story moment with one or more choices. Resolves to the chosen value.
-export function showStory({ icon, title, text, choices }) {
+export function showStory({ icon, title, text, choices, silent = false }) {
     const modal = document.getElementById('story-modal');
     // News (📰 / 🗞️) is shown as a newspaper page: masthead, date, headline, column
     const news = icon === '📰' || icon === '🗞️';
@@ -776,7 +776,7 @@ export function showStory({ icon, title, text, choices }) {
             b.type = 'button';
             b.disabled = Boolean(c.disabled);
             b.onclick = () => {
-                audio.playClick();
+                if (!silent) audio.playClick();
                 modal.classList.add('hidden');
                 resolve(c.value);
             };
