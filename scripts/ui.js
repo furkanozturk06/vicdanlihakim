@@ -101,6 +101,11 @@ export function showStartScreen() {
 }
 
 // Hide start screen with animation
+// True while the start screen fades out: a second tap on its buttons is ignored
+export function startScreenClosing() {
+    return elements.startScreen.style.opacity === '0';
+}
+
 export function hideStartScreen() {
     elements.startScreen.style.opacity = '0';
     elements.startScreen.style.transition = 'opacity 0.5s ease';
@@ -113,8 +118,8 @@ export function hideStartScreen() {
 // Update stats display
 let currentDay = 1; // for the date on news pages
 export function updateStats(gameState) {
-    currentDay = gameState.day;
-    elements.dayValue.textContent = gameState.day;
+    currentDay = gameState.eveningDay ?? gameState.day;
+    elements.dayValue.textContent = currentDay;
     elements.moneyValue.textContent = `₺${formatMoney(gameState.money)}`;
     elements.reputationBar.style.width = `${gameState.reputation}%`;
     elements.conscienceBar.style.width = `${gameState.conscience}%`;
@@ -131,7 +136,7 @@ export function updateStats(gameState) {
 
 // Update case number display
 export function updateCaseNumber(num) {
-    elements.caseNumValue.textContent = num.toString().padStart(3, '0');
+    elements.caseNumValue.textContent = num === null ? '—' : num.toString().padStart(3, '0');
 }
 
 // Show directive banner

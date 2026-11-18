@@ -227,6 +227,7 @@ function setupEventListeners() {
     const elements = ui.getElements();
 
     elements.startBtn.addEventListener('click', async () => {
+        if (ui.startScreenClosing()) return; // a double tap must not start the game twice
         audio.resume();
         audio.playClick();
         if (!(await confirmOverwrite())) return;
@@ -273,6 +274,7 @@ function setupEventListeners() {
     });
 
     document.getElementById('endless-btn').addEventListener('click', async () => {
+        if (ui.startScreenClosing()) return;
         audio.resume();
         if (!settings.endlessUnlocked) {
             ui.showEndlessHint();
@@ -284,6 +286,7 @@ function setupEventListeners() {
     });
 
     document.getElementById('continue-btn').addEventListener('click', () => {
+        if (ui.startScreenClosing()) return;
         audio.resume();
         audio.playClick();
         continueGame();
@@ -683,6 +686,7 @@ async function courtHearing(beat) {
         appearance: lookOf(sp.name).appearance || generateNPCAppearance(sp.age, sp.gender),
     };
     remembered(person);
+    ui.updateCaseNumber(null); // a hearing is not one of the day's cases
     ui.bailiffCall(sp.name);
     audio.playDoor();
     await ui.openDoor();
@@ -694,13 +698,12 @@ async function courtHearing(beat) {
 
     let value;
     if (beat.verdicts) {
-        ui.setVerdictAvailable('death', false);
         ui.setSentencingEnabled(true);
-        ui.setVerdictAvailable('death', false);
+        ui.setVerdictAvailable('death', false); // no death sentence at a custody hearing
         value = await new Promise(resolve => { state.hearing = key => resolve(beat.verdicts(key)); });
         state.hearing = null;
-        ui.setSentencingEnabled(false);
         ui.setVerdictAvailable('death', true);
+        ui.setSentencingEnabled(false); // all off again, the death button included
     } else {
         value = await ui.showHearingChoice(beat.choices);
     }
@@ -1178,6 +1181,17 @@ async function deliverAppeals() {
 
 // Evening at home after `day`: pay the bills, then one family scene
 async function runEvening(day) {
+    // the counter has already moved on to tomorrow; until morning the bar shows today
+    state.eveningDay = day;
+    try {
+        await eveningAtHome(day);
+    } finally {
+        delete state.eveningDay;
+        ui.updateStats(state);
+    }
+}
+
+async function eveningAtHome(day) {
     await conscienceAtHome();
 
     // Bills first: living costs, rent every fifth evening, medicine every seventh
