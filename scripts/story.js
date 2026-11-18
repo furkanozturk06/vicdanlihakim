@@ -495,9 +495,9 @@ export function buildNewspaper(dayLog, appeals = []) {
     const used = new Set(); // headline wordings already in this paper
 
     for (const a of appeals) {
-        items.push(a.name
+        items.push({ who: a.name, ...(a.name
             ? caseNews('appeal', 75, a, L('Yargıtay bozdu: {0} hakkındaki "{1}" davası kararı kanuna aykırı bulundu', a.name, a.detail), used)
-            : { p: 75, note: '', text: L('Yargıtay bozdu: "{0}" davasındaki karar kanuna aykırı bulundu', a.detail) });
+            : { p: 75, note: '', text: L('Yargıtay bozdu: "{0}" davasındaki karar kanuna aykırı bulundu', a.detail) }) });
     }
 
     // One story per case: a case can be news for several reasons (a returning
@@ -521,7 +521,7 @@ export function buildNewspaper(dayLog, appeals = []) {
         } else if (e.diff >= 2) {
             options.push({ p: 40, make: () => caseNews('harsh', 40, e, L('{1} hakkındaki "{0}" davasında beklenmedik sert karar', e.detail, e.name), used) });
         }
-        if (options.length) items.push(options.reduce((best, o) => (o.p > best.p ? o : best)).make());
+        if (options.length) items.push({ who: e.name, ...options.reduce((best, o) => (o.p > best.p ? o : best)).make() });
     }
 
     if (dayLog.length > 0 && dayLog.every(e => e.correct)) {
@@ -529,7 +529,11 @@ export function buildNewspaper(dayLog, appeals = []) {
     }
 
     items.sort((a, b) => b.p - a.p);
-    const news = items.map(i => ({ text: i.text, note: i.note || '' }));
+    // one story per person: someone back in court on the day the high court overturns
+    // their earlier verdict is in the paper once, with the bigger story
+    const seen = new Set();
+    const news = items.filter(i => !i.who || (!seen.has(i.who) && seen.add(i.who)))
+        .map(i => ({ text: i.text, note: i.note || '' }));
 
     const fillers = [...FILLER_NEWS].sort(() => Math.random() - 0.5);
     while (news.length < 3) {

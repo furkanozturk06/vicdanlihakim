@@ -145,7 +145,8 @@ const EARLY_ENDINGS = [
 ];
 
 function pickEnding() {
-    if (state.day > TOTAL_DAYS && state.branch && !state.scandal) {
+    // the story's endings; endless mode (branch 'all') past day 30 ends like an early career end
+    if (!isEndless() && state.day > TOTAL_DAYS && BRANCHES[state.branch] && !state.scandal) {
         const branch = BRANCHES[state.branch];
         return branch.favored(state) ? branch.endings.favored : branch.endings.honest;
     }
