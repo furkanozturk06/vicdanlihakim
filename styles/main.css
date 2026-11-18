@@ -4167,3 +4167,8 @@ html.text-xlarge #directive-text { font-size: 0.92rem; }
 * {
     -webkit-tap-highlight-color: transparent;
 }
+
+/* A story card without an icon (How to play) starts with its title */
+#story-icon:empty {
+    display: none;
+}

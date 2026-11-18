@@ -101,7 +101,6 @@ export const TUTORIAL = [
 
 // "Nasıl Oynanır" from the main menu
 export const HOW_TO_PLAY = {
-    icon: '📖',
     title: L('Nasıl Oynanır'),
     text: L('Her gün sanıklar karşına gelir. Dava dosyasını oku, gerekirse sanığı sorgula (günlük sorgu hakkın sınırlı) ve KANUN kitabındaki maddelere göre kararını ver.\n\nKanuna uygun karar bakiyene ve itibarına yarar. Fazla sert kararlar vicdanını, fazla hafif kararlar itibarını yer. Bakiyen ya da itibarın sıfırlanırsa görevden alınırsın. Vicdanın sıfırlanırsa ailen gider, geceleri uyuyamazsın.\n\nRüşvet ve tehditler gelecek; kabul etmek kolaydır ama bedeli vardır. Akşamları ailenle geçen anlar da hikâyeyi değiştirir.\n\nBazen savcı ya da avukat ayağa kalkıp itiraz eder: "Kanuna göre şu ceza verilmeli, sayın hakim!" Her itiraz doğru değildir; hemen kanma, kanun kitabına ve delillere bakarak kendin karar ver.\n\nHikâye 30 gün sürer. Bitirince Sonsuz Mod açılır.'),
     choices: [
