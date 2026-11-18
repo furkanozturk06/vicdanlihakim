@@ -787,7 +787,6 @@ export function showStory({ icon, title, text, choices }) {
 export function showEvening({ day, home, moment, family, harmony, bills, balance, text, choices }) {
     const modal = document.getElementById('evening-modal');
     document.getElementById('evening-day').textContent = L('{0}. Gün · Akşam', day);
-    audio.playHome(!home.spouseLeft && harmony >= 60);
     setFamily(home, family, moment);
     setHarmony(harmony);
     document.getElementById('evening-bills').textContent = bills;
@@ -804,6 +803,8 @@ export function showEvening({ day, home, moment, family, harmony, bills, balance
             return b;
         }));
         modal.classList.remove('hidden');
+        // the sound of the house comes with the picture, once the card is on screen
+        requestAnimationFrame(() => setTimeout(() => audio.playHome(!home.spouseLeft && harmony >= 60), 300));
     });
 }
 

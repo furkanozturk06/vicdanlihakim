@@ -4081,3 +4081,64 @@ html.text-xlarge #directive-text { font-size: 0.92rem; }
     visibility: hidden;
 }
 
+
+/* Short screens: the evening card fits without scrolling. The picture already says
+   "home", so the big title goes; spacing and the text get a little tighter. */
+@media (max-height: 760px) {
+    .evening {
+        padding: var(--spacing-sm) var(--spacing-md) var(--spacing-md);
+    }
+
+    .evening h2 {
+        display: none;
+    }
+
+    .evening-kicker {
+        margin-bottom: 4px;
+    }
+
+    .evening-home {
+        margin-bottom: 6px;
+    }
+
+    .evening-family {
+        font-size: 0.82rem;
+        margin-bottom: 4px;
+    }
+
+    .evening-family li {
+        padding: 1px 0;
+    }
+
+    .evening-harmony {
+        margin-bottom: 2px;
+    }
+
+    .evening-bills {
+        margin-bottom: 0;
+    }
+
+    .evening-balance {
+        margin: 0 0 6px;
+    }
+
+    .evening-text {
+        font-size: 0.95rem;
+        line-height: 1.4;
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .evening .story-choices .typewriter-btn {
+        padding-top: 8px;
+        padding-bottom: 8px;
+    }
+}
+
+/* Very short screens: a slightly smaller picture */
+@media (max-height: 660px) {
+    .evening-home {
+        width: 82%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}

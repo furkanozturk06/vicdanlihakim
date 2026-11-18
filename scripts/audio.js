@@ -65,7 +65,7 @@ class AudioManager {
     }
 
     // Plays part of a recorded sound; false when it is not loaded (use the fallback)
-    playSample(name, { offset = 0, duration, gain = 1, rate = 1 } = {}) {
+    playSample(name, { offset = 0, duration, gain = 1, rate = 1, fade = 0.08 } = {}) {
         const buffer = this.samples[name];
         if (!buffer) return false;
         if (!this.enabled || !this.audioContext) return true; // sound is off: nothing to play
@@ -78,7 +78,7 @@ class AudioManager {
         const length = (duration ?? buffer.duration - offset) / rate;
         const now = ctx.currentTime;
         level.gain.setValueAtTime(this.volume * gain, now);
-        level.gain.setValueAtTime(this.volume * gain, now + Math.max(0, length - 0.08));
+        level.gain.setValueAtTime(this.volume * gain, now + Math.max(0, length - fade));
         level.gain.linearRampToValueAtTime(0.0001, now + length);
         source.connect(level);
         level.connect(ctx.destination);
@@ -108,8 +108,9 @@ class AudioManager {
     // Coming home: a soft harp when the family is at peace, uneasy cellos when not
     playHome(peaceful) {
         if (!this.enabled) return;
+        // both last the same 2.2 seconds; the cellos fade out instead of stopping short
         if (peaceful) this.playSample('calm', { duration: 2.2, gain: 3.5 });
-        else this.playSample('uneasy', { duration: 3.2, gain: 0.55 });
+        else this.playSample('uneasy', { duration: 2.2, gain: 0.55, fade: 0.7 });
     }
 
     // Silence everything (e.g. while a full-screen ad is shown); resume() brings it back
