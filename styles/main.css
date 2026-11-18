@@ -4172,3 +4172,14 @@ html.text-xlarge #directive-text { font-size: 0.92rem; }
 #story-icon:empty {
     display: none;
 }
+
+/* Career: the Close button stays at the bottom of the window while the list scrolls */
+#career-close {
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
+    display: block;
+    width: 100%;
+    background-color: var(--bg-dark);
+    box-shadow: 0 10px 0 10px var(--bg-dark), 0 -14px 14px -4px var(--bg-dark);
+}
