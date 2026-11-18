@@ -4153,3 +4153,8 @@ html.text-xlarge #directive-text { font-size: 0.92rem; }
 .start-content {
     padding-top: var(--spacing-sm);
 }
+
+/* No blue flash on tapped buttons and cards (the phone browser's default tap highlight) */
+* {
+    -webkit-tap-highlight-color: transparent;
+}
