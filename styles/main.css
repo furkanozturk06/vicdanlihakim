@@ -4142,3 +4142,14 @@ html.text-xlarge #directive-text { font-size: 0.92rem; }
         margin-right: auto;
     }
 }
+
+/* Main menu: centred in the space above the footer, so it sits a little higher and its
+   last row never touches the footer; on short screens it starts at the top instead */
+#start-screen {
+    justify-content: safe center;
+    padding-bottom: 48px;
+}
+
+.start-content {
+    padding-top: var(--spacing-sm);
+}
