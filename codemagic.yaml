@@ -19,8 +19,7 @@ workflows:
         bundle_identifier: com.vicdanlihakim.oyun
       node: 22
       xcode: latest
-    triggering:
-      events: []   # started by hand from Codemagic, not on every push
+    # no "triggering": the build is started by hand in Codemagic, not on every push
     scripts:
       - name: Install packages
         script: npm ci
