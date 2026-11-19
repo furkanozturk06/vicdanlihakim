@@ -130,7 +130,7 @@ export function makePortrait(a, emotion) {
 
     const mouth = {
         remorseful: '<path d="M52 84 Q60 79 68 84" stroke="#5a2a20" stroke-width="2" fill="none" stroke-linecap="round"/>',
-        panicked: '<ellipse cx="60" cy="83" rx="4" ry="5" fill="#5a2a20"/>',
+        panicked: '<ellipse cx="60" cy="83.5" rx="4.4" ry="5.4" fill="#4a1c16" stroke="#7a3a30" stroke-width="0.8"/><ellipse cx="60" cy="86.6" rx="2.8" ry="1.6" fill="#b5554f"/>',
         defiant: '<path d="M52 82 L68 82" stroke="#5a2a20" stroke-width="2.2" stroke-linecap="round"/>',
         proud: '<path d="M52 81 Q61 87 70 79" stroke="#5a2a20" stroke-width="2" fill="none" stroke-linecap="round"/>',
         relieved: '<path d="M50 79 Q60 92 70 79 Z" fill="#5a2a20"/><path d="M53 80 Q60 83 67 80" stroke="#f4efe6" stroke-width="2" fill="none"/>',

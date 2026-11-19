@@ -3527,11 +3527,11 @@ html.text-xlarge #directive-text { font-size: 0.92rem; }
 .npc.react-shake { animation: react-shake 0.6s ease-in-out; }
 .npc.react-shock { animation: react-shock 0.9s ease-out; }
 
+/* relief: the shoulders drop once, no jumping */
 @keyframes react-hop {
     0%, 100% { transform: translateY(0); }
-    30% { transform: translateY(-14px); }
-    55% { transform: translateY(0); }
-    75% { transform: translateY(-5px); }
+    40% { transform: translateY(-3px); }
+    70% { transform: translateY(2px); }
 }
 
 @keyframes react-nod {
@@ -4182,4 +4182,21 @@ html.text-xlarge #directive-text { font-size: 0.92rem; }
     width: 100%;
     background-color: var(--bg-dark);
     box-shadow: 0 10px 0 10px var(--bg-dark), 0 -14px 14px -4px var(--bg-dark);
+}
+
+/* Last day of an act: why there is no postpone button */
+.pending-last {
+    margin-top: 4px;
+    font-size: 0.85em;
+    font-style: italic;
+}
+
+/* Endless mode just opened: the button shines until it is tapped */
+#endless-btn.glow {
+    animation: endless-glow 1.6s ease-in-out infinite;
+}
+
+@keyframes endless-glow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(201, 162, 39, 0); }
+    50% { box-shadow: 0 0 18px 4px rgba(201, 162, 39, 0.75); }
 }

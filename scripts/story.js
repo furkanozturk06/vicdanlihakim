@@ -222,9 +222,16 @@ export function finaleRumor(selin) {
 
 // ---------- Appeals ----------
 export function appealText(a) {
-    const fix = a.tooHarsh
-        ? L('Sanık tahliye edildi; haksız yere yattığı günler için devlet tazminat ödeyecek.')
-        : L('Dava yeniden görülecek; sanık şimdilik serbest.');
+    // what undoing a too-harsh verdict means depends on what the verdict was
+    const harshFix = () => {
+        const v = a.verdict || '';
+        if (v.startsWith('jail')) return L('Sanık tahliye edildi; haksız yere yattığı günler için devlet tazminat ödeyecek.');
+        if (v === 'house-arrest') return L('Sanığın ev hapsi kaldırıldı.');
+        if (v.startsWith('fine')) return L('Fazladan alınan para cezası sanığa geri ödenecek.');
+        if (v === 'death') return L('İdam kararı kaldırıldı; infaz durduruldu.');
+        return L('Sanığın cezası kanuna göre düzeltilecek.');
+    };
+    const fix = a.tooHarsh ? harshFix() : L('Dava yeniden görülecek; sanık şimdilik serbest.');
     // Appeals saved before the case details were kept only have the short label
     if (!a.name) return L('"{0}" davasında verdiğiniz "{1}" kararı bozuldu. Kanuna göre doğrusu: {2}. {3}', a.detail, a.verdictLabel, a.correctLabel, fix);
     return L('{0}. gün gördüğünüz dava: {1}, {2} yaşında. Suç: {3} ({4}).\n{5}\n\nVerdiğiniz "{6}" kararı bozuldu. Kanuna göre doğrusu: {7}. {8}',

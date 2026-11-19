@@ -82,6 +82,13 @@ export const AMENDMENTS = [
         title: 'Ek Madde 3',
         text: 'Verdiği zararı tamamen karşılamış sanıkların cezası bir derece hafifletilir.',
     },
+    {
+        day: 12,
+        tag: 'repeat',
+        shift: 1,
+        title: 'Ek Madde 4',
+        text: 'Daha önce mahkûm olmuş bir sanık yeniden yargılanırsa cezası bir derece ağırlaştırılır. Önceki davasında beraat etmişse ağırlaştırılmaz.',
+    },
 ];
 
 // Chapters of the law book; every crime is in exactly one (checked by npm run check)
@@ -94,7 +101,7 @@ export const LAW_CHAPTERS = [
     { title: 'Devlete ve Kamu Düzenine Karşı Suçlar', crimes: ['treason', 'terrorism', 'corruption', 'bidRigging', 'election', 'perjury', 'examLeak', 'organizedCrime', 'embezzlement', 'bribery'] },
     { title: 'Kaçakçılık ve Uyuşturucu', crimes: ['drugs', 'smuggling', 'armsTrafficking', 'migrantSmuggling'] },
     { title: 'Sağlık, Çevre ve Hayvanlar', crimes: ['fakeMedicine', 'foodFraud', 'environment', 'illegalBuilding', 'poaching', 'animalCruelty', 'forestArson'] },
-    { title: 'Şeref, Basın ve Özel Hayat', crimes: ['defamation', 'pressCrime', 'blackmail', 'privacy'] },
+    { title: 'Şeref, Basın ve Özel Hayat', crimes: ['defamation', 'falseReport', 'pressCrime', 'blackmail', 'privacy'] },
 ];
 
 export const CRIMES = {
@@ -1443,7 +1450,6 @@ export const CRIMES = {
 
     defamation: {
         name: 'Hakaret ve İftira',
-        branch: 'surgun',
         severity: 2,
         laws: {
             base: { verdict: 'fine-moderate', text: 'asılsız iddialarla birini karalama' },
@@ -1471,6 +1477,40 @@ export const CRIMES = {
                 summary: 'Eski ortağını hırsızlıkla suçlamak için çalıntı bir çantayı onun deposuna sakladı ve polise ihbar etti.',
                 evidence: ['Depo kamerasında çantayı bırakırken görülüyor.', 'Eski ortağı bu yüzden iki hafta tutuklu kaldı.'],
                 question: 'Neden yaptın?', answer: 'Ortaklıktan ayrılırken beni dolandırdı. İntikam istedim.',
+            },
+        ],
+    },
+
+    falseReport: {
+        name: 'Asılsız İhbar',
+        branch: 'surgun',
+        severity: 2,
+        laws: {
+            base: { verdict: 'jail-short', text: 'işlenmediğini bildiği bir suçu yetkililere ihbar etmek' },
+            confessed: { verdict: 'fine-moderate', text: 'İhbarın asılsız olduğunu soruşturma bitmeden kendisi açıkladıysa' },
+            trueReport: { verdict: 'release', text: 'İhbar edilen suç gerçekten işlenmişse (doğru ihbar suç değildir)' },
+        },
+        statements: [
+            {
+                text: 'Vakfa karşı gelenin başına bu gelir. Herkes haddini bilsin.', emotion: 'defiant', sympathy: false, law: 'base',
+                detail: 'Kaçak silah ihbarı',
+                summary: 'Hikmet Vakfı\'nın tarla ihalesine itiraz eden bir çiftçiyi "evinde kaçak silah saklıyor" diye jandarmaya ihbar etti. Gece yapılan aramada hiçbir şey çıkmadı.',
+                evidence: ['Aramada evde silah ya da mermi bulunmadı.', 'İhbar, vakfın kâhyasının telefonundan yapılmış.'],
+                question: 'Silahı kendi gözünle gördün mü?', answer: 'Görmedim. Söylenmesi gerekeni söyledim, o kadar.',
+            },
+            {
+                text: 'Yalan söyledim, biliyorum. Ama ertesi gün gelip kendim düzelttim.', emotion: 'remorseful', sympathy: true, law: 'confessed',
+                detail: 'Öğretmen ihbarı',
+                summary: 'Vakıf yurdunda aşçıyken, yöneticilerin baskısıyla yurt hakkında şikayet eden bir öğretmeni "öğrencilere uyuşturucu satıyor" diye ihbar etti. Ertesi gün savcılığa gidip ihbarın uydurma olduğunu kendisi anlattı.',
+                evidence: ['Öğretmen hakkındaki soruşturma, aşçının itirafıyla iki günde kapatıldı.', 'Aşçının ifadesine göre ihbar metnini yurt müdürü yazdırmış.'],
+                question: 'Neden geri döndün?', answer: 'O öğretmen benim oğluma okumayı öğretti. Gece uyuyamadım.',
+            },
+            {
+                text: 'Ormanı kesiyorlardı, ben de gördüğümü söyledim. Şimdi suçlu ben miyim?', emotion: 'defiant', sympathy: true, law: 'trueReport',
+                detail: 'Kaçak kesim ihbarı',
+                summary: 'Vakfın orman arazisinde kaçak ağaç kesildiğini orman müdürlüğüne bildirdi. Vakıf, ihbarın asılsız olduğunu söyleyerek ondan şikayetçi oldu.',
+                evidence: ['Orman müdürlüğünün raporu: vakıf arazisinde 300 ağaç izinsiz kesilmiş.', 'Kesilen ağaçların kütükleri ve kamyon izleri fotoğraflandı.'],
+                question: 'Kesimi ne zaman gördün?', answer: 'Üç gece üst üste. Kamyonların plakasını da yazdım.',
             },
         ],
     },

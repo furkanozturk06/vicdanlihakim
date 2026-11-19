@@ -1,7 +1,7 @@
 /**
  * Act 1 (TURKISH): the Ayla Öğretmen trial
  *
- * A drunk driver kills the teacher Ayla Demirtaş at a crossing and flees; the car
+ * A drunk driver kills the teacher Ayla Taşdemir at a crossing and flees; the car
  * belongs to the Minister of Justice and his son Kerem is the suspect. The news
  * breaks on day 2 and the trial runs through the rest of the first act: three
  * hearings (days 4, 9, 13), three cases tied to it (days 3, 6, 12) and pressure
@@ -27,7 +27,7 @@ export const ACT1 = {
     beats: {
         2: () => ({
             icon: '📰', title: L('Yaya Geçidinde Ölüm'),
-            text: L('Sabah gazetesinin manşeti: "Öğretmen Ayla Demirtaş yaya geçidinde can verdi; sürücü kaçtı." Araç, Adalet Bakanı adına kayıtlı. Şüpheli, bakanın oğlu Kerem B.\n\nAdliyeye vardığında dosya masandaydı. Kâtip yavaşça söyledi: "Dava size verildi, hakim bey. İlk duruşma iki gün sonra."'),
+            text: L('Sabah gazetesinin manşeti: "Öğretmen Ayla Taşdemir yaya geçidinde can verdi; sürücü kaçtı." Araç, Adalet Bakanı adına kayıtlı. Şüpheli, bakanın oğlu Kerem B.\n\nAdliyeye vardığında dosya masandaydı. Kâtip yavaşça söyledi: "Dava size verildi, hakim bey. İlk duruşma iki gün sonra."'),
             choices: [{ label: L('Dosyayı aç'), value: true }],
         }),
         4: () => ({
@@ -66,7 +66,7 @@ export const ACT1 = {
             ? {
                 icon: '⚖️', title: L('İkinci Duruşma: Tanık'),
                 text: L('Ayla Öğretmen\'in öğrencisi Defne (17) kürsüde: "Kerem\'i tanıyorum, aynı mahalledeyiz. Arabayı o kullanıyordu. Hocam yere düşünce bir an durdu, sonra gaza bastı."\n\nAvukat ayağa kalkıyor: "Reşit olmayan, öğretmenine duygusal olarak bağlı bir tanık. İfadesinin dosyadan çıkarılmasını talep ediyoruz."'),
-                choices: [{ label: L('İtirazı reddet, ifade dosyada kalsın'), value: 'kept' }, { label: L('İtirazı kabul et'), value: 'lost' }],
+                choices: [{ label: L('Avukatın itirazını reddet, ifade dosyada kalsın'), value: 'kept' }, { label: L('Avukatın itirazını kabul et, ifade dosyadan çıksın'), value: 'lost' }],
                 speaker: { name: L('Defne'), age: 17, gender: 'f', role: L('Tanık:'), emotion: 'defiant', says: L('Kerem\'i tanıyorum, aynı mahalledeyiz. Arabayı o kullanıyordu. Hocam yere düşünce bir an durdu, sonra gaza bastı.') },
                 onChoice: (st, v) => { st.trial.witness = v; adjust(st, v === 'kept' ? { conscience: 3 } : { conscience: -5 }); },
             }
@@ -108,7 +108,7 @@ export const ACT1 = {
             statement: {
                 text: L('Emir yukarıdan geldi. Silmezsem çocuklarımın okulunu bile değiştirecekler dediler.'), emotion: 'panicked', sympathy: true, law: 'coerced',
                 detail: L('Silinen kamera kaydı'),
-                summary: L('Trafik polisi. Ayla Demirtaş\'ın öldüğü kavşağın kamera kaydını, kazadan bir saat sonra sistemden sildi.'),
+                summary: L('Trafik polisi. Ayla Taşdemir\'in öldüğü kavşağın kamera kaydını, kazadan bir saat sonra sistemden sildi.'),
                 evidence: [L('Silme işlemi Murat S.\'nin şifresiyle yapılmış; hesabına para girişi yok.'), L('Amiri, silme emrinin "yukarıdan" geldiğini tutanağa geçirmiş.')],
                 question: L('Kaydın başka bir kopyası var mı?'), answer: L('Var... Silmeden önce kendi bilgisayarıma kopyaladım. Vicdanım el vermedi.'),
             },
@@ -119,7 +119,7 @@ export const ACT1 = {
             statement: {
                 text: L('Kadın birden yola atladı, sürücünün hiçbir suçu yoktu. Ne gördüysem onu söyledim.'), emotion: 'defiant', sympathy: false, law: 'base',
                 detail: L('Kazanın savunma tanığı'),
-                summary: L('Ayla Demirtaş\'ın aniden yola fırladığını söyleyen tek tanık. Olay saatinde başka bir ilçede olduğu baz kayıtlarıyla ortaya çıktı.'),
+                summary: L('Ayla Taşdemir\'in aniden yola fırladığını söyleyen tek tanık. Olay saatinde başka bir ilçede olduğu baz kayıtlarıyla ortaya çıktı.'),
                 evidence: [L('Telefonunun baz kaydı, kaza saatinde 40 km uzakta olduğunu gösteriyor.'), L('İfadeden iki gün sonra hesabına ₺50.000 yatırılmış; gönderen bir paravan şirket.')],
                 question: L('Bu ifade için sana kim para verdi?'), answer: L('Bakanlıktan biri... Adını bilmiyorum. "Sadece gördüğünü söyle" dediler; ne göreceğimi de onlar söyledi.'),
             },
@@ -154,7 +154,7 @@ export function finaleStatement(trial) {
         return {
             text: L('Babamın kim olduğunu biliyor musunuz? Bu dava burada kapanır.'), emotion: 'proud', sympathy: false, law: 'flee', tags: ['alcohol'],
             detail: L('Bakanın oğlu'),
-            summary: L('Gece alkollü araç kullanırken yaya geçidinde öğretmen Ayla Demirtaş\'a çarpıp kaçtı. Duruşmalarda: {0}', lines.join(' ')),
+            summary: L('Gece alkollü araç kullanırken yaya geçidinde öğretmen Ayla Taşdemir\'e çarpıp kaçtı. Duruşmalarda: {0}', lines.join(' ')),
             evidence: [
                 L('Kandaki alkol: 1,9 promil; araç olay yerinden 3 km ötede terk edilmiş bulundu.'),
                 L('Araç Adalet Bakanı adına kayıtlı.'),
@@ -165,7 +165,7 @@ export function finaleStatement(trial) {
     return {
         text: L('Söylemiştim. Arabayı ben kullanmadım; kimse de aksini kanıtlayamaz.'), emotion: 'proud', sympathy: false, law: 'innocent',
         detail: L('Bakanın oğlu'),
-        summary: L('Öğretmen Ayla Demirtaş yaya geçidinde öldü; araç Adalet Bakanı\'na ait. Duruşmalarda: {0} Sürücünün kim olduğu kanıtlanamadı.', lines.join(' ')),
+        summary: L('Öğretmen Ayla Taşdemir yaya geçidinde öldü; araç Adalet Bakanı\'na ait. Duruşmalarda: {0} Sürücünün kim olduğu kanıtlanamadı.', lines.join(' ')),
         evidence: [
             L('Araç Adalet Bakanı adına kayıtlı; o gece kimin kullandığını gösteren delil kalmadı.'),
             L('Kanuna göre suçu kanıtlanamayan sanık beraat eder.'),

@@ -169,7 +169,7 @@ export function eveningScene(state, day) {
             }
             return {
                 moment: 'teapot',
-                text: L('Annen bahçede çay demlemiş, yanına çağırdı: "Seni izliyorum evladım. Zor bir işin var. Kararların seni yemesin."'),
+                text: L('Annen bahçede çay demlemiş, yanına çağırdı: "Seni izliyorum evladım. Zor bir işin var. Kararların içini kemirmesin."'),
                 choices: [
                     choice(L('Annenle çay iç'), s => { adjust(s, { harmony: 5, conscience: 5 }); return L('Uzun zamandır ilk kez içinde bir sükunet hissettin.'); }),
                 ],
@@ -286,5 +286,5 @@ export function familyEpilogue(state) {
     if (f.spouseLeft) return L('Deniz ve Ece hâlâ evde değil. Akşamları boş masaya iki tabak koymayı unutamıyorsun.');
     if (f.harmony >= 70) return L('Evde seni sıcak bir sofra ve "Nasıldı bugün?" diye soran üç ses bekliyor.');
     if (f.harmony >= 40) return L('Evde hayat sürüyor; ama sofralar eskisinden daha sessiz.');
-    return L('Aynı evde yaşıyorsunuz, ama artık birbirinizle pek konuşmuyorsunuz.');
+    return L('Ailenle aynı evde yaşıyorsunuz, ama artık birbirinizle pek konuşmuyorsunuz.');
 }

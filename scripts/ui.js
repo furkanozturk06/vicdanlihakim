@@ -370,6 +370,8 @@ export function showEvidence(caseData, questionsLeft) {
             const btn = el('button', 'postpone-btn', L('Davayı ertele · rapor gelince yarın görülür'));
             btn.type = 'button';
             pending.appendChild(btn);
+        } else {
+            pending.appendChild(el('p', 'pending-last', L('Bugün son gün: rapor beklenemez, eldeki delillerle karar vermelisin.')));
         }
     }
 
@@ -685,13 +687,15 @@ export function setContinueOption(day, mode = 'story') {
         elements.startBtn.textContent = L('Yeni Oyun');
     } else {
         btn.classList.add('hidden');
-        elements.startBtn.textContent = L('Koltuğa Otur');
+        elements.startBtn.textContent = endlessOpen ? L('Hikâye Modu') : L('Koltuğa Otur');
     }
 }
 
 // Start screen: endless mode button and best record, once the story is finished
 // The button is always visible; until the story is finished it is locked and explains why
+let endlessOpen = false;
 export function setEndlessOption(unlocked, best) {
+    endlessOpen = Boolean(unlocked);
     const btn = document.getElementById('endless-btn');
     btn.classList.toggle('locked', !unlocked);
     btn.setAttribute('aria-disabled', String(!unlocked));
@@ -699,6 +703,13 @@ export function setEndlessOption(unlocked, best) {
     const record = document.getElementById('endless-record');
     record.classList.toggle('hidden', !unlocked || !best);
     record.textContent = best ? L('Sonsuz mod rekoru: {0} gün', best) : '';
+}
+
+// Just finished the story: the endless mode button shines on the start screen until tapped
+export function glowEndless() {
+    const btn = document.getElementById('endless-btn');
+    btn.classList.add('glow');
+    btn.addEventListener('click', () => btn.classList.remove('glow'), { once: true });
 }
 
 // Settings window. `onChange(key, value)` saves each change right away.
@@ -789,7 +800,7 @@ export function showStory({ icon, title, text, choices, silent = false }) {
 // Evening at home: family status, bills and a scene. Resolves to the chosen index.
 export function showEvening({ day, home, moment, family, harmony, bills, balance, text, choices }) {
     const modal = document.getElementById('evening-modal');
-    document.getElementById('evening-day').textContent = L('{0}. Gün · Akşam', day);
+    document.getElementById('evening-day').textContent = L('Ev · {0}. Gün · Akşam', day);
     setFamily(home, family, moment);
     setHarmony(harmony);
     document.getElementById('evening-bills').textContent = bills;
@@ -1069,6 +1080,8 @@ export function showEvent(type, title, description) {
 
 // Show game over screen
 export function showGameOver(ending) {
+    elements.restartBtn.dataset.next = ending.next || 'restart';
+    elements.restartBtn.textContent = ending.next === 'endless' ? L('Sonsuz Modu Dene') : L('Yeniden Başla');
     elements.endingTitle.textContent = ending.title;
     elements.endingDescription.textContent = ending.description;
     elements.finalStats.innerHTML = ending.stats;

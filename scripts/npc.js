@@ -152,9 +152,25 @@ export function generateCase(day, directive = null, offender = null, used = new 
         age: offender.age,
         appearance: offender.appearance,
         returning: true,
+        extraTags: offender.verdict === 'release' ? [] : ['repeat'],
     });
-    c.evidence[0] = L('Sanık {0}. gün mahkemenizden "{1}" kararıyla ayrılmıştı. {2}', offender.day, verdictLabel(offender.verdict), c.evidence[0]);
+    c.evidence[0] = offender.crime
+        ? L('Sanık {0}. gün "{1}" davasında mahkemenizden "{2}" kararıyla ayrılmıştı; şimdi yeni bir suçla karşınızda. {3}', offender.day, offender.crime, verdictLabel(offender.verdict), c.evidence[0])
+        : L('Sanık {0}. gün mahkemenizden "{1}" kararıyla ayrılmıştı. {2}', offender.day, verdictLabel(offender.verdict), c.evidence[0]);
     return c;
+}
+
+// A statement with tags the case adds (a returning defendant's 'repeat')
+const withTags = (statement, extra) => (extra && extra.length ? { ...statement, tags: [...(statement.tags || []), ...extra] } : statement);
+
+// The amendment a wrong verdict left out: the verdict is what the law gives without it
+export function missedAmendment(c, verdict, day) {
+    const st = c.statementRef;
+    if (!st || st.law === 'innocent' || verdict === c.correctVerdict) return null;
+    const tagged = withTags(st, c.extraTags);
+    const tags = tagged.tags || [];
+    return activeAmendments(day).find(a => tags.includes(a.tag)
+        && getCorrectVerdict(c.crimeType, { ...tagged, tags: tags.filter(t => t !== a.tag) }, day) === verdict) || null;
 }
 
 // Turn a statement into a playable case. `overrides` can fix name, age, appearance and flags.
@@ -182,7 +198,7 @@ export function buildCase(crimeType, statement, day, overrides = {}) {
         evidence: statement.evidence.map(e => withPronouns(e, gender)),
         question: statement.question,
         answer: statement.answer,
-        correctVerdict: getCorrectVerdict(crimeType, statement, day),
+        correctVerdict: getCorrectVerdict(crimeType, withTags(statement, overrides.extraTags), day),
         appearance: generateNPCAppearance(overrides.age ?? age, gender),
         returning: false,
         asked: false,
@@ -365,7 +381,7 @@ const DEFENDANT_REACTIONS = {
  * Feedback after a verdict: a title about the judge's decision, the defendant's reaction
  * to their own fate, and the courtroom's reaction when the verdict strays from the law.
  */
-export function verdictFeedback(caseData, result, verdict) {
+export function verdictFeedback(caseData, result, verdict, day) {
     let title = L('Adalet Yerini Buldu!');
     if (result.partial) title = L('Kanuna Yakın');
     else if (result.tooLenient) title = L('Fazla Hafif Karar');
@@ -387,6 +403,8 @@ export function verdictFeedback(caseData, result, verdict) {
 
     if (!result.correct || result.partial) {
         parts.push(L('Kanuna göre doğru karar: {0}.', verdictLabel(caseData.correctVerdict)));
+        const missed = day ? missedAmendment(caseData, verdict, day) : null;
+        if (missed) parts.push(L('{0} uygulanmadı: {1}', missed.title, missed.text));
     }
 
     return { title, message: parts.join(' ') };

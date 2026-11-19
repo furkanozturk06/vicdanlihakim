@@ -109,7 +109,7 @@ export const BRANCHES = {
             ],
         },
         intro: {
-            title: L('Karaçam'),
+            title: L('Karaçam Taşrası'),
             text: L('Kasabaya giden tek yol çamurlu. Adliye binası eski bir han. Kapıdaki tabelanın yanında daha büyük bir tabela var: "Hikmet Vakfı – Hacı Rıza Karaca\'nın himayesinde."\n\nKâtip fısıldıyor: "Burada her şey Hacı Rıza Bey\'den sorulur, hakim bey. Vakfın Ankara\'da da dostları vardır."\n\nKarşında on beş gün daha var. Bu kez seni deneyen bir bakanlık değil, bütün bir kasaba.'),
             button: L('Adliyeye Gir'),
         },
@@ -345,7 +345,7 @@ export const BRANCHES = {
                 return { icon: '📄', title: L('Elif\'in Mektubu'), text: L('Elif Demir\'den kısa bir not: "Kanunun öngördüğü cezayı verdiniz, fazlasını değil. Delillerim artık savcılıkta. Gerisi sizin vicdanınıza kalmış."'), choices: [{ label: L('Devam'), value: true }], apply: { conscience: 4 } };
             },
             25: () => hearing(L('İkinci Duruşma: Telefon Kayıtları'),
-                L('Savcılık, Selami Kuru\'nun telefonunun mahkeme kararıyla dinlendiği kayıtları sundu: Cahit Ural\'a şantaj talimatı açıkça duyuluyor.\n\nAvukat: "Dinleme kararının süresi kayıttan iki gün önce dolmuştu. Hukuka aykırı delil!" Dinleme kararını veren hakimin imzası ise tarihsiz.'),
+                L('Savcılık, Selami Kuru\'nun telefonunun mahkeme kararıyla dinlendiği kayıtları sundu: Cahit Ural\'a şantaj talimatı açıkça duyuluyor.\n\nAvukat itiraz ediyor: "Dinleme kararının süresi kayıttan iki gün önce dolmuştu. Hukuka aykırı delil!" Dinleme kararını veren hakimin imzası ise tarihsiz.'),
                 L('Kayıtları delil say'), L('Kayıtları dosyadan çıkar'), 'wiretap', {}, {},
                 { name: L('Selami\'nin avukatı'), age: 52, gender: 'm', role: L('Avukat:'), emotion: 'angry', says: L('Dinleme kararının süresi kayıttan iki gün önce dolmuştu. Hukuka aykırı delil!') }),
             27: () => ({

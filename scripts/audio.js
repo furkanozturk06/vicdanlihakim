@@ -517,3 +517,11 @@ class AudioManager {
 }
 
 export const audio = new AudioManager();
+
+// In the background (another app, the screen off) the game is silent; it comes back on return
+if (typeof document !== 'undefined') {
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) audio.pauseAll();
+        else audio.resume();
+    });
+}

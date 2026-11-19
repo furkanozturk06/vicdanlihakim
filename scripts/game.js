@@ -26,7 +26,7 @@ import { ACHIEVEMENTS, achievement, rankFor } from './career.js';
 const CONFIG = {
     casesPerDay: 5,
     questionsPerDay: 3,
-    baseReward: 3000,
+    baseReward: 4000,
     basePenalty: 1500,
     startingMoney: 50000,
     startingReputation: 75,
@@ -171,8 +171,14 @@ export function initGame() {
     document.getElementById('app-version').textContent = typeof __APP_VERSION__ === 'undefined' ? '' : `v${__APP_VERSION__}`;
     setupEventListeners();
     ui.showStartScreen();
-    ui.setContinueOption(savedDay(), savedMode());
     ui.setEndlessOption(settings.endlessUnlocked, settings.endlessBest);
+    ui.setContinueOption(savedDay(), savedMode());
+    try {
+        if (sessionStorage.getItem('hakim.glowEndless')) {
+            sessionStorage.removeItem('hakim.glowEndless');
+            ui.glowEndless();
+        }
+    } catch { /* storage blocked */ }
     showCareer();
     initAds(); // phone apps only; does not hold up the start screen
 }
@@ -333,6 +339,13 @@ function setupEventListeners() {
 
     elements.restartBtn.addEventListener('click', () => {
         audio.playClick();
+        if (elements.restartBtn.dataset.next === 'endless') {
+            // back to the start screen, where the endless mode button shines
+            try { sessionStorage.setItem('hakim.glowEndless', '1'); } catch { /* storage blocked */ }
+            audio.stopAmbient();
+            location.reload();
+            return;
+        }
         restartGame();
     });
 
@@ -637,7 +650,7 @@ function nextCase() {
         const due = state.postponed.findIndex(p => p.day < state.day);
         if (due >= 0) {
             const p = state.postponed.splice(due, 1)[0];
-            return buildCase(p.crimeType, CRIMES[p.crimeType].statements[p.index], state.day, { name: p.name, age: p.age, appearance: p.appearance, revealed: true });
+            return buildCase(p.crimeType, CRIMES[p.crimeType].statements[p.index], state.day, { name: p.name, age: p.age, appearance: p.appearance, revealed: true, extraTags: p.extraTags });
         }
         return generateCase(state.day, state.currentDirective, takeReturningOffender(), state.usedStatements, 'all');
     }
@@ -655,7 +668,7 @@ function nextCase() {
     if (dueIndex >= 0) {
         const p = state.postponed.splice(dueIndex, 1)[0];
         const statement = CRIMES[p.crimeType].statements[p.index];
-        return buildCase(p.crimeType, statement, state.day, { name: p.name, age: p.age, appearance: p.appearance, revealed: true });
+        return buildCase(p.crimeType, statement, state.day, { name: p.name, age: p.age, appearance: p.appearance, revealed: true, extraTags: p.extraTags });
     }
     if (state.day === ACT_LENGTH && state.dayCases === casesToday() - 1) {
         return remembered(buildCase(FINALE.crimeType, finaleStatement(state.trial), state.day, { name: FINALE.name, age: FINALE.age, gender: FINALE.gender, finale: true, ...lookOf(FINALE.name) }));
@@ -697,7 +710,9 @@ async function courtHearing(beat) {
     await ui.closeDoor();
     // a defendant: the bubble names the crime and the file names the defendant;
     // anyone else (witness, lawyer, police) is named in the bubble
-    ui.showHearingFile(beat.title, beat.text, sp.crime ? L('Sanık: {0}, {1} yaşında', sp.name, sp.age) : null);
+    // the speaker's words are in the bubble; the file tells the rest without repeating them
+    const fileText = beat.text.split(`: "${sp.says}"`).join('.').split(`"${sp.says}"`).join('').replace(/ +\n/g, '\n').trim();
+    ui.showHearingFile(beat.title, fileText, sp.crime ? L('Sanık: {0}, {1} yaşında', sp.name, sp.age) : null);
     await ui.showSpeechBubble(sp.says, sp.crime || sp.name, (text, i) => audio.speakLetter(text, i, sp.gender, sp.age), sp.crime ? L('Suç:') : sp.role);
 
     let value;
@@ -910,6 +925,7 @@ async function postponeCase() {
         name: c.name,
         age: c.age,
         appearance: c.appearance,
+        extraTags: c.extraTags,
     });
     state.dayCases++;
     state.totalCases--; // it is counted again when it returns with the report
@@ -1032,6 +1048,7 @@ async function processVerdict(sentenceKey, viaOffer = null) {
             crime: c.crime,
             summary: c.summary,
             detail: c.detail,
+            verdict: sentenceKey,
             verdictLabel: verdictLabel(sentenceKey),
             correctLabel: verdictLabel(c.correctVerdict),
             tooHarsh: Boolean(result.tooHarsh),
@@ -1040,7 +1057,7 @@ async function processVerdict(sentenceKey, viaOffer = null) {
 
     // Unsympathetic defendants let off lighter than the law demands may come back
     if (!c.sympathy && c.age >= 18 && result.diff < 0 && !c.returning && !c.finale) {
-        state.offenders.push({ name: c.name, age: c.age, appearance: c.appearance, day: state.day, verdict: sentenceKey });
+        state.offenders.push({ name: c.name, age: c.age, appearance: c.appearance, day: state.day, verdict: sentenceKey, crime: c.crime });
     }
 
     state.dayLog.push({
@@ -1055,7 +1072,7 @@ async function processVerdict(sentenceKey, viaOffer = null) {
         returning: c.returning,
     });
 
-    let { title, message } = verdictFeedback(c, result, sentenceKey);
+    let { title, message } = verdictFeedback(c, result, sentenceKey, state.day);
     const lawNote = !result.correct || result.partial ? ' ' + L('Kanuna göre doğru karar: {0}.', verdictLabel(c.correctVerdict)) : '';
     if (viaOffer === 'bribe') message = L('Zarf cebinizde. Sanık gülümseyerek salondan çıktı.') + lawNote;
     if (viaOffer === 'threat') message = L('Sesiniz titredi. Sanık arkasına bakmadan çıktı.') + lawNote;
@@ -1366,7 +1383,8 @@ function endGame() {
         : familyEpilogue(state);
     const epilogue = [familyLine, selinLine].filter(Boolean).map(t => `<p class="ending-epilogue">${t}</p>`).join('');
 
-    ui.showGameOver({ title: ending.title, description: ending.description, stats: modeNote + (isEndless() ? '' : epilogue) + statsHtml });
+    const storyDone = !isEndless() && state.day > TOTAL_DAYS && BRANCHES[state.branch] && !state.endedEarly;
+    ui.showGameOver({ title: ending.title, description: ending.description, stats: modeNote + (isEndless() ? '' : epilogue) + statsHtml, next: storyDone ? 'endless' : 'restart' });
     ui.setEndlessOption(settings.endlessUnlocked, settings.endlessBest);
     awardEnding(ending, daysServed);
 }
