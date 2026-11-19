@@ -3024,6 +3024,7 @@ export default {
     "Avukatın itirazını reddet, ifade dosyada kalsın": "Overrule the lawyer's objection; the testimony stays",
     "Avukatın itirazını kabul et, ifade dosyadan çıksın": "Sustain the lawyer's objection; the testimony is struck",
     "Bugün son gün: rapor beklenemez, eldeki delillerle karar vermelisin.": "Today is the last day: the report can't be waited for. Decide on the evidence you have.",
+    "Bugün son gün: rapor beklenemez. Eldeki delillerle karar vermelisin; aşağıdaki sorgu hakkını da kullanabilirsin.": "Today is the last day: the report can't be waited for. Decide on the evidence you have; you can also use the interrogation below.",
     "Sonsuz Modu Dene": "Try Endless Mode",
     "Hikâye Modu": "Story Mode",
     "{0} uygulanmadı: {1}": "{0} was not applied: {1}",

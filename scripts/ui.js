@@ -371,7 +371,10 @@ export function showEvidence(caseData, questionsLeft) {
             btn.type = 'button';
             pending.appendChild(btn);
         } else {
-            pending.appendChild(el('p', 'pending-last', L('Bugün son gün: rapor beklenemez, eldeki delillerle karar vermelisin.')));
+            // the interrogation below is still there to help, while a question is left
+            pending.appendChild(el('p', 'pending-last', !caseData.asked && questionsLeft > 0
+                ? L('Bugün son gün: rapor beklenemez. Eldeki delillerle karar vermelisin; aşağıdaki sorgu hakkını da kullanabilirsin.')
+                : L('Bugün son gün: rapor beklenemez, eldeki delillerle karar vermelisin.')));
         }
     }
 
