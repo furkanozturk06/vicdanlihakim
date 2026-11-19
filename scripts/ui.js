@@ -373,8 +373,8 @@ export function showEvidence(caseData, questionsLeft) {
         } else {
             // the interrogation below is still there to help, while a question is left
             pending.appendChild(el('p', 'pending-last', !caseData.asked && questionsLeft > 0
-                ? L('Bugün son gün: rapor beklenemez. Eldeki delillerle karar vermelisin; aşağıdaki sorgu hakkını da kullanabilirsin.')
-                : L('Bugün son gün: rapor beklenemez, eldeki delillerle karar vermelisin.')));
+                ? L('Bugün son gün; rapor beklenmeyecek. Sorgu hakkını kullan ya da eldeki delillerle karar ver.')
+                : L('Bugün son gün; rapor beklenmeyecek. Eldeki delillerle karar ver.')));
         }
     }
 
