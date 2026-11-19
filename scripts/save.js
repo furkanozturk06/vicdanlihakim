@@ -52,7 +52,7 @@ function statementByKey(key) {
 // Career fields carried between days; daily fields are reset by startNewDay
 const CAREER_FIELDS = [
     'day', 'totalCases', 'money', 'reputation', 'conscience',
-    'correctTotal', 'deathSentences', 'bribesTaken', 'bribesExposed', 'threatsObeyed',
+    'correctTotal', 'deathSentences', 'unjustDeaths', 'bribesTaken', 'bribesExposed', 'threatsObeyed',
     'pendingRevenge', 'offenders', 'finale',
     'appeals', 'postponed', 'family', 'flags', 'selin', 'trial',
     'branch', 'specials', 'bonusQuestions', 'scandal', 'mode', 'economy', 'aftermath',

@@ -61,6 +61,7 @@ function createInitialState() {
         // Career
         correctTotal: 0,
         deathSentences: 0,
+        unjustDeaths: 0,   // death sentences where the law did not ask for death
         bribesTaken: 0,
         bribesExposed: 0,
         threatsObeyed: 0,
@@ -144,11 +145,19 @@ const EARLY_ENDINGS = [
     },
 ];
 
+// Finished the story sending people to death that the law did not sentence to death
+const BUTCHER_DEATHS = 3;
+const BUTCHER = {
+    title: L('Cellat Hakim'),
+    description: L('İmzanı taşıyan idam kararlarını Yargıtay tek tek inceledi; kanunun ölüm istemediği davalarda bile ipi sen çekmiştin. Cübben elinden alındı, hakkında soruşturma açıldı. Gazeteler sana yeni bir ad taktı: Cellat Hakim. Adliyenin koridorlarında artık kimse gözlerinin içine bakmıyor.\n\nHikâye modu sona erdi.'),
+};
+
 function pickEnding() {
-    // the story's endings; endless mode (branch 'all') past day 30 ends like an early career end
     if (!isEndless() && state.day > TOTAL_DAYS && BRANCHES[state.branch] && !state.scandal) {
         const branch = BRANCHES[state.branch];
-        return branch.favored(state) ? branch.endings.favored : branch.endings.honest;
+        if (branch.favored(state)) return branch.endings.favored;
+        if ((state.unjustDeaths || 0) >= BUTCHER_DEATHS) return BUTCHER;
+        return branch.endings.honest;
     }
     return EARLY_ENDINGS.find(e => e.condition(state));
 }
@@ -996,6 +1005,7 @@ async function processVerdict(sentenceKey, viaOffer = null) {
         state.deathSentences++;
         conscienceChange -= 10;
         if (!result.correct) {
+            state.unjustDeaths = (state.unjustDeaths || 0) + 1;
             conscienceChange -= 20;
             reputationChange -= 10;
         }
@@ -1407,7 +1417,8 @@ function awardEnding(ending, daysServed) {
     }
     if (!(state.day > TOTAL_DAYS && state.branch && !state.scandal)) return;
     const seen = career() && settings.endingsSeen;
-    const id = ending === BRANCHES.surgun.endings.honest ? 'town'
+    const id = ending === BUTCHER ? 'butcher'
+        : ending === BRANCHES.surgun.endings.honest ? 'town'
         : ending === BRANCHES.borc.endings.favored ? 'executed' : 'retired';
     if (!seen.includes(id)) seen.push(id);
     saveSettings(settings);

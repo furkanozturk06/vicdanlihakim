@@ -39,6 +39,7 @@ export const ACHIEVEMENTS = [
     { id: 'town', icon: '🏛️', title: L('Kasabanın Hakimi'), text: L('"Kasabanın Hakimi" sonunu gör.') },
     { id: 'retired', icon: '🪑', title: L('Emekli'), text: L('"Emekli" sonunu gör.') },
     { id: 'executed', icon: '🪢', title: L('İdam'), text: L('"İdam" sonunu gör.') },
+    { id: 'butcher', icon: '🪓', title: L('Cellat Hakim'), text: L('"Cellat Hakim" sonunu gör.') },
     { id: 'allEndings', icon: '📚', title: L('Bütün Yollar'), text: L('Hikâyenin üç sonunu da gör.') },
     { id: 'endless30', icon: '⏳', title: L('Yılmaz Hakim'), text: L('Sonsuz modda 30 gün dayan.') },
 ];
