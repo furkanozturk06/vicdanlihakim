@@ -37,16 +37,17 @@ Bir öğretmen yaya geçidinde hayatını kaybeder; araç Adalet Bakanı'na aitt
 - Evde seni bekleyen bir aile: kira, faturalar, annenin ilaçları ve "Bugün nasıldı?" diye soran bir çocuk
 - Vicdanın sıfırlanırsa eşin evi terk eder, geceleri uyuyamazsın
 
-**İki farklı ikinci perde, üç son**
-Bakanın oğluna verdiğin karar hikâyenin geri kalanını değiştirir: tarikat bağlantılı bir ağanın kasabasına sürgün mü, yoksa milletvekillerinin vatana ihanetle yargılandığı yüksek mahkemeye terfi mi?
+**İki farklı ikinci perde, dört son**
+Bakanın oğluna verdiğin karar hikâyenin geri kalanını değiştirir: güçlü bir vakıf liderinin yönettiği kasabaya sürgün mü, yoksa milletvekillerinin vatana ihanetle yargılandığı yüksek mahkemeye terfi mi? Sonunda kasabanın hakimi olarak alkışlanabilir, sessizce emekli olabilir, kendi kürsünde yargılanabilir ya da tarihe "Cellat Hakim" olarak geçebilirsin.
 
 **Özellikler**
-- 55 suç türü, 270'ten fazla dava
-- 30 günlük hikâye modu ve bitirince açılan Sonsuz Mod
+- 56 suç türü, 270'ten fazla dava
+- 30 günlük hikâye modu ve bitirince açılan, kendi kaydı olan Sonsuz Mod
 - Bölümlere ayrılmış, sayfaları çevrilen bir ceza kanunu kitabı
-- Hakim unvanları ve 14 başarım
+- Hakim unvanları ve 15 başarım
 - Türkçe ve İngilizce
-- İnternet bağlantısı gerekmez; kişisel veri toplamaz
+- İnternet bağlantısı olmadan da oynanır
+- Ücretsizdir; günlerin arasında reklam gösterir
 
 Bu oyun kurgudur. Bütün kişi, yer ve kurumlar hayal ürünüdür. Suç, şiddet, cinsel suçlar (ayrıntıya girmeden) ve idam gibi yetişkin temaları işler.
 
@@ -86,16 +87,17 @@ A teacher dies at a pedestrian crossing; the car belongs to the Minister of Just
 - A family waiting at home: rent, bills, your mother's medicine and a child asking "How was your day?"
 - Let your conscience hit zero and your spouse leaves; you can't sleep at night
 
-**Two second acts, three endings**
-Your verdict on the minister's son changes the rest of the story: exile to a town run by a powerful sect leader, or a promotion to the high court where members of parliament stand trial for treason.
+**Two second acts, four endings**
+Your verdict on the minister's son changes the rest of the story: exile to a town run by a powerful foundation leader, or a promotion to the high court where members of parliament stand trial for treason. In the end you may be cheered as the town's judge, retire quietly, stand trial in your own courtroom, or go down in history as "the Hanging Judge".
 
 **Features**
-- 55 crimes, more than 270 cases
-- A 30-day story mode, and an Endless Mode that unlocks when you finish it
+- 56 crimes, more than 270 cases
+- A 30-day story mode, and an Endless Mode with its own save that unlocks when you finish it
 - A penal code you can leaf through, chapter by chapter
-- Judge titles and 14 achievements
+- Judge titles and 15 achievements
 - English and Turkish
-- Works offline; collects no personal data
+- Playable offline
+- Free to play; shows ads between days
 
 This game is fiction. All persons, places and organizations are imaginary. It deals with mature themes such as crime, violence, sexual offenses (never graphic) and the death penalty.
 
@@ -107,7 +109,8 @@ This game is fiction. All persons, places and organizations are imaginary. It de
 ## Diğer bilgiler / Other details
 
 - **Kategori / Category:** Simülasyon / Simulation (ikincil: Rol yapma, Hikâye)
-- **Yaş sınırı / Age rating:** Suç, şiddet, cinsel suç temaları (ayrıntısız) ve idam nedeniyle büyük olasılıkla **PEGI 16 / App Store 17+**. Anketi doldururken: gerçekçi şiddet tasviri yok, cinsel içerik yok, kumar yok, kullanıcı etkileşimi yok, reklam yok (reklam eklenince güncellenmeli).
+- **Yaş sınırı / Age rating:** Suç, şiddet, cinsel suç temaları (ayrıntısız) ve idam nedeniyle büyük olasılıkla **PEGI 16 / App Store 17+**. Anketi doldururken: gerçekçi şiddet tasviri yok, cinsel içerik yok, kumar yok, kullanıcı etkileşimi yok, **reklam var** (Google AdMob, her günün sonunda tam ekran).
+- **Veri güvenliği formu / Data safety (Google Play):** Reklam kimliği ve cihaz bilgileri Google AdMob tarafından reklam ve analiz amacıyla toplanır; veriler aktarım sırasında şifrelenir; geliştirici kendisi veri toplamaz. App Store'da "Data Used to Track You: Identifiers (Advertising)".
 - **Gizlilik politikası / Privacy policy:** https://furkanozturk06.github.io/vicdanlihakim/gizlilik.html
 - **İletişim / Contact:** vicdanlihakim@gmail.com
 - **Ekran görüntüleri / Screenshots:** `store/screenshots/tr/` ve `store/screenshots/en/` (1080 × 1920)
