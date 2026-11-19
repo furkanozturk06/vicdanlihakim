@@ -3096,4 +3096,5 @@ export default {
     "Sesin boş evde yankılandı. Yine de doğru olanı yaptığını biliyordun.": "Your voice echoed in the empty house. Still, you knew you had done the right thing.",
     "Akşam bakanlıktan bir kurye geldi. Zarfın içinde terfi yazısı: \"Yüksek Mahkeme Ceza Dairesi üyeliğine seçildiniz.\" Yanında el yazısıyla bir not: \"Bakan Bey teşekkürlerini iletir. Unutmayız.\" Haberi verecek kimse yoktu evde.": "In the evening a courier came from the ministry. Inside the envelope, a promotion: \"You have been elected a member of the High Court Criminal Chamber.\" With it, a handwritten note: \"The Minister sends his thanks. We won't forget.\" There was no one at home to tell.",
     "Şampanyayı tek başına açtın. \"Unutmayız\" sözü kadehten daha ağır geldi.": "You opened the champagne alone. \"We won't forget\" weighed more than the glass.",
+    "Selin Aydın cezasını tamamlayıp çıktığında sizinle konuşmak istedi. Çok geçti.": "When Selin Aydın served her sentence and came out, she wanted to talk to you. It was too late.",
 };

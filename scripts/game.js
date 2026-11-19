@@ -1377,14 +1377,17 @@ function endGame() {
         L('Son Vicdan: %{0}', state.conscience),
     ].map(line => `<p>${line}</p>`).join('');
 
+    // The execution ending: the judge is not there for anything that happens years later
+    const executed = state.branch === 'borc' && ending === BRANCHES.borc.endings.favored;
     const selinLine = {
         death: L('Selin Aydın\'ın adı yıllar sonra bir sokağa verildi. Sizin adınız ise hiçbir yere.'),
-        correct: L('Selin Aydın cezasını tamamlayıp çıktığında ilk röportajını size ayırdı.'),
+        correct: executed
+            ? L('Selin Aydın cezasını tamamlayıp çıktığında sizinle konuşmak istedi. Çok geçti.')
+            : L('Selin Aydın cezasını tamamlayıp çıktığında ilk röportajını size ayırdı.'),
         release: L('Selin Aydın hâlâ yazıyor; köşesinde ara sıra sizden söz ediyor.'),
         harsh: L('Selin Aydın\'ın davası Yargıtay\'da bozuldu. Kararınız hukuk fakültelerinde "baskı altında yargı" örneği olarak okutuluyor.'),
     }[state.selin];
-    // The execution ending gets its own family line; a warm family table would contradict it
-    const executed = state.branch === 'borc' && ending === BRANCHES.borc.endings.favored;
+    // a warm family table would contradict the execution ending too
     const familyLine = executed
         ? L('Son duruşmada Deniz, Ece ve annen en arka sırada oturdu. Ece başını hiç kaldırmadı.')
         : familyEpilogue(state);
