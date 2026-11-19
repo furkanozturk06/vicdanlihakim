@@ -2465,11 +2465,13 @@ body {
     background: linear-gradient(90deg, var(--gold-accent), transparent);
 }
 
-/* a small gavel between the two lines (the scales are already at the top) */
+/* a small gavel between the two lines (the scales are already at the top). Its head and block
+   are in the middle, the thin handle reaching out to the right (the eye goes by the heavy parts) */
 .menu-ornament svg {
     width: 1.3rem;
     height: 1.3rem;
     fill: currentColor;
+    overflow: visible;
 }
 
 .game-tagline {
