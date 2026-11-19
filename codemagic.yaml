@@ -1,30 +1,42 @@
-﻿workflows:
-  ios-release:
-    name: iOS TestFlight
+﻿# iOS build on Codemagic (a Mac in the cloud): builds the game, signs it with the
+# Apple Developer account and uploads it to App Store Connect / TestFlight.
+#
+# Before the first build, in Codemagic:
+#   Team settings > Integrations > Developer Portal: add the App Store Connect API key
+#   and name it "app-store-connect" (the name used below).
+# In Apple's developer site the bundle ID com.vicdanlihakim.oyun must exist, and in
+# App Store Connect an app with that bundle ID.
+workflows:
+  ios-testflight:
+    name: iOS – TestFlight
+    max_build_duration: 60
     instance_type: mac_mini_m2
     integrations:
-      # Codemagic > Teams > Integrations'ta eklediğin App Store Connect API anahtarının adı
-      app_store_connect: CODEMAGIC_ASC_KEY
+      app_store_connect: app-store-connect
     environment:
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.vicdanlihakim.oyun
       node: 22
       xcode: latest
+    triggering:
+      events: []   # started by hand from Codemagic, not on every push
     scripts:
-      - name: Install dependencies
+      - name: Install packages
         script: npm ci
-      - name: Build web app
+      - name: Build the game
         script: npm run build
-      - name: Sync Capacitor
+      - name: Copy the game into the iOS project
         script: npx cap sync ios
-      - name: Set build number
-        script: agvtool new-version -all $BUILD_NUMBER
-        working_directory: ios/App
-      - name: Apply signing profiles
-        script: xcode-project use-profiles
-      - name: Build IPA
-        script: xcode-project build-ipa --project "ios/App/App.xcodeproj" --scheme "App"
+      - name: Use the signing profiles
+        script: xcode-project use-profiles --project ios/App/App.xcodeproj
+      - name: Build the signed app
+        # every Codemagic build gets a new build number; the version (1.0) comes from the project
+        script: |
+          xcode-project build-ipa \
+            --project ios/App/App.xcodeproj \
+            --scheme App \
+            --archive-xcargs "CURRENT_PROJECT_VERSION=$BUILD_NUMBER"
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
