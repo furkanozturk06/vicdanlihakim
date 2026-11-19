@@ -79,6 +79,9 @@ export async function playIntro(audio) {
     await swing(gavel, 48, 64, 220, easeOut); // lifted a little higher...
     if (finished) return;
     await swing(gavel, 64, 0, 340, easeIn);   // ...and down onto the block
+    // the frame where the gavel meets the block reaches the screen first; the sound comes
+    // with the next one (played at once, it was heard before the gavel was seen to land)
+    await painted();
     if (finished) return;
     // the strike: sound, flash and a small shake together, then a little bounce
     audio.playGavel();
