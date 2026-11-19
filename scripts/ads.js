@@ -36,6 +36,12 @@ export async function initAds() {
             consent = await AdMob.showConsentForm();
         }
         enabled = consent.canRequestAds !== false;
+        // iOS: Apple's tracking permission, asked once, after the consent screen (Google's
+        // recommended order); without it the ads are simply not personalised
+        if (enabled && Capacitor.getPlatform() === 'ios') {
+            const { status } = await AdMob.trackingAuthorizationStatus();
+            if (status === 'notDetermined') await AdMob.requestTrackingAuthorization();
+        }
         if (enabled) await load();
     } catch (e) {
         console.warn('Ads unavailable:', e);
