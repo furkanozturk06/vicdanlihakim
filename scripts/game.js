@@ -190,8 +190,17 @@ export function initGame() {
         }
     } catch { /* storage blocked */ }
     showCareer();
-    playIntro(audio); // the gavel comes down, then the start screen
-    initAds(); // phone apps only; does not hold up the start screen
+    // The gavel comes down, then the start screen. The heavier work (the other sounds,
+    // the ads) waits until after it, so the opening does not stutter; at most 4 seconds.
+    let started = false;
+    const afterOpening = () => {
+        if (started) return;
+        started = true;
+        audio.loadRest();
+        initAds(); // phone apps only; does not hold up the start screen
+    };
+    playIntro(audio).then(afterOpening, afterOpening);
+    setTimeout(afterOpening, 4000);
 }
 
 // ---------- Career: titles and achievements (career.js) ----------

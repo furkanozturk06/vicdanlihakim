@@ -16,13 +16,16 @@ const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 // resolves once the screen has really been drawn (a frame shown, then the next one)
 const painted = () => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
-// Turns the gavel from `from` to `to` degrees in `ms`, speeding up like a real swing
-function swing(gavel, from, to, ms) {
+const easeIn = t => t * t * t;            // speeds up: the strike
+const easeOut = t => 1 - (1 - t) * (1 - t); // slows down: lifting before the strike
+
+// Turns the gavel from `from` to `to` degrees in `ms`
+function swing(gavel, from, to, ms, ease) {
     return new Promise(resolve => {
         const t0 = performance.now();
         const step = (now) => {
             const t = Math.min(1, (now - t0) / ms);
-            gavel.style.transform = `rotate(${from + (to - from) * t * t}deg)`;
+            gavel.style.transform = `rotate(${from + (to - from) * ease(t)}deg)`;
             if (t < 1) requestAnimationFrame(step);
             else resolve();
         };
@@ -66,7 +69,7 @@ export async function playIntro(audio) {
     await Promise.all([painted(), Promise.race([audio.whenLoaded('gavel'), sleep(SOUND_WAIT)])]);
     if (finished) return;
     el.classList.add('ready'); // the gavel appears (until now the screen was just dark)
-    await sleep(250); // the raised gavel, a moment
+    await sleep(400); // the raised gavel, a moment
     if (finished) return;
     audio.resume();
 
@@ -74,13 +77,15 @@ export async function playIntro(audio) {
     // the block and the sound are always the same moment (an animation left to the browser
     // ends on its own clock, and the sound followed it late on a busy phone).
     const gavel = el.querySelector('.ig-swing');
-    await swing(gavel, 48, 0, 300);
+    await swing(gavel, 48, 64, 220, easeOut); // lifted a little higher...
+    if (finished) return;
+    await swing(gavel, 64, 0, 340, easeIn);   // ...and down onto the block
     if (finished) return;
     // the strike: sound, flash and a small shake together, then a little bounce
     audio.playGavel();
     el.classList.add('hit');
     gavel.animate([{ transform: DOWN }, { transform: 'rotate(7deg)' }, { transform: DOWN }],
         { duration: 170, easing: 'ease-out', fill: 'forwards' });
-    await sleep(600);
+    await sleep(750);
     finish();
 }

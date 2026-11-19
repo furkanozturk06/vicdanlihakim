@@ -43,13 +43,21 @@ class AudioManager {
             this.enabled = false;
             return;
         }
-        this.loadSamples();
+        // only the gavel at first (the opening); the rest once the opening is over, so the
+        // phone is not busy decoding minutes of courtroom murmur while the gavel comes down
+        this.loadSamples(['gavel']);
+    }
+
+    // The other recorded sounds, after the opening
+    loadRest() {
+        if (!this.audioContext) return;
+        this.loadSamples(SAMPLE_FILES.filter(name => !this.loading[name]));
     }
 
     // Recorded sounds in /audio (see AUDIO_CREDITS.md). Until they are
     // loaded, or if one fails, the synthesized sounds below are used instead.
-    async loadSamples() {
-        await Promise.all(SAMPLE_FILES.map((name) => {
+    async loadSamples(names) {
+        await Promise.all(names.map((name) => {
             this.loading[name] = (async () => {
                 try {
                     const response = await fetch(new URL(`audio/${name}.mp3`, document.baseURI));

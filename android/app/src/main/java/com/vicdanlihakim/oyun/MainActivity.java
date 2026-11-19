@@ -12,7 +12,18 @@ public class MainActivity extends BridgeActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        // Full screen before the first frame is drawn, so the bars never flash in between.
+        // The game is always laid out on the whole screen; when the bars show for a moment
+        // they come over the game instead of shrinking it (no jump between sizes).
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        hideSystemBars();
         super.onCreate(savedInstanceState);
+        hideSystemBars();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
         hideSystemBars();
     }
 
