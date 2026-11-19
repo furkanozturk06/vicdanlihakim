@@ -1301,7 +1301,10 @@ async function conscienceAtHome() {
     if (change === 'leave') {
         await ui.showStory({
             icon: '🧳', title: L('Deniz Gidiyor'),
-            text: L('Eve döndüğünde bavullar kapının önündeydi. Deniz gözlerinin içine baktı: "Haberleri izliyorum, zarfları görüyorum. Seni artık tanımıyorum." Ece\'nin elinden tutup annesinin evine gitti.'),
+            // the envelopes only if there were any; a conscience can be lost without them
+            text: state.bribesTaken > 0
+                ? L('Eve döndüğünde bavullar kapının önündeydi. Deniz gözlerinin içine baktı: "Haberleri izliyorum, zarfları görüyorum. Seni artık tanımıyorum." Ece\'nin elinden tutup annesinin evine gitti.')
+                : L('Eve döndüğünde bavullar kapının önündeydi. Deniz gözlerinin içine baktı: "Haberleri izliyorum, verdiğin kararları okuyorum. Seni artık tanımıyorum." Ece\'nin elinden tutup annesinin evine gitti.'),
             choices: [{ label: L('Arkalarından bak'), value: true }],
         });
     } else if (change === 'return') {

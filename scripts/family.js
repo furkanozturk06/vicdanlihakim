@@ -269,7 +269,9 @@ export function eveningScene(state, day) {
             const lines = [];
             if (f.spouseLeft) lines.push(L('Ev sessiz; Ece\'nin odası boş.'));
             else lines.push(L('Ece yatmadan önce kapında durdu: "Yarın son günün, değil mi? Ne olacak?"'));
+            // the ministry calls in whichever favour the judge accepted
             if (state.flags.owesMinistry) lines.push(L('Gece telefon çaldı. Bakanlıktan aynı ses: "Deniz\'in işini kurtarmıştık. Yarın siz de bizi kurtarırsınız, değil mi?"'));
+            else if (state.flags.owesSurgery) lines.push(L('Gece telefon çaldı. Bakanlıktan aynı ses: "Annenizin ameliyatı iyi geçti, değil mi hakim bey? Yarın siz de bizi hatırlarsınız."'));
             if (state.flags.kayaAlly) lines.push(L('Müfettiş Kaya\'nın sözleri aklında: "Ben kanunun yanındayım."'));
             return {
                 text: lines.join(' '),

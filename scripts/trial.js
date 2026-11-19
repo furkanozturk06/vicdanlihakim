@@ -82,7 +82,7 @@ export const ACT1 = {
             text: L('Annen için aylardır sıra beklediğiniz kalp ameliyatı birden "uygun görülmüş". Hastaneden arayan memur ekledi: "Bakanlığın özel talimatıyla, hakim bey. Bakan Bey geçmiş olsun dedi."\n\nİyiliğin bedeli söylenmedi. Söylenmesine gerek yoktu.'),
             choices: [{ label: L('Kabul et; annen ameliyat olsun'), value: 'accept' }, { label: L('Reddet; sıranı bekle'), value: 'refuse' }],
             onChoice: (st, v) => {
-                if (v === 'accept') { st.flags.owesMinistry = true; adjust(st, { health: 2, harmony: 6, conscience: -8 }); } else adjust(st, { conscience: 5, harmony: -6 });
+                if (v === 'accept') { st.flags.owesSurgery = true; adjust(st, { health: 2, harmony: 6, conscience: -8 }); } else adjust(st, { conscience: 5, harmony: -6 });
             },
         }),
         13: (s) => (s.trial.footageCopy && s.specials.murat && s.specials.murat.verdict === 'death'
