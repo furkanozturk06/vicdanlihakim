@@ -4238,7 +4238,6 @@ html.text-xlarge #directive-text { font-size: 0.92rem; }
     position: relative;
     width: min(56vw, 240px);
     aspect-ratio: 1;
-    margin-bottom: 8vh;
     opacity: 0;
     transition: opacity 0.15s ease;
 }
@@ -4254,11 +4253,12 @@ html.text-xlarge #directive-text { font-size: 0.92rem; }
     height: 100%;
 }
 
-/* turns on the end of its handle (173, 118 in the 200-wide drawing); raised at first */
+/* turns on the end of its handle (173, 118 in the drawing, whose view starts at 10.25, 28 so
+   that the gavel lying on its block is in the middle of the screen); raised at first */
 #intro-gavel .ig-swing {
     position: absolute;
     inset: 0;
-    transform-origin: 86.5% 59%;
+    transform-origin: 81.375% 45%;
     transform: rotate(48deg);
     will-change: transform;
 }
@@ -4266,8 +4266,8 @@ html.text-xlarge #directive-text { font-size: 0.92rem; }
 /* the glow on the block at the strike */
 #intro-gavel .ig-flash {
     position: absolute;
-    left: 7%;
-    top: 58%;
+    left: 1.875%;
+    top: 44%;
     width: 70%;
     height: 34%;
     border-radius: 50%;
