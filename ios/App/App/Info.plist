@@ -51,6 +51,8 @@
 	<array>
 		<string>armv7</string>
 	</array>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>NSUserTrackingUsageDescription</key>
 	<string>Bu izin yalnızca oyunda size daha uygun reklamlar gösterilmesi için kullanılır. İzin vermeseniz de oyunu aynı şekilde oynayabilirsiniz.</string>
 	<key>GADApplicationIdentifier</key>

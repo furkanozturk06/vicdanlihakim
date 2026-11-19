@@ -14,7 +14,7 @@ import { ACT_LENGTH, TOTAL_DAYS, ACT2_CASES_PER_DAY, BRANCHES, branchFor } from 
 import { saveGame, loadGame, savedDay, clearSave, loadSettings, saveSettings } from './save.js';
 import * as ui from './ui.js';
 import { audio } from './audio.js';
-import { initAds, adBetweenDays } from './ads.js';
+import { initAds, adBetweenDays, adPrivacyOptionsAvailable, showAdPrivacyOptions } from './ads.js';
 import { storyLook } from './people.js';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { L, LANG, translatePage, formatMoney } from './i18n.js';
@@ -427,6 +427,7 @@ function applySettings() {
 
 function openSettings() {
     ui.showSettings(settings, {
+        onAdPrivacy: adPrivacyOptionsAvailable() ? () => showAdPrivacyOptions() : null,
         onChange(key, value) {
             settings[key] = value;
             saveSettings(settings);

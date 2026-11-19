@@ -17,6 +17,7 @@ const EVERY_DAYS = 1; // after every day
 
 let enabled = false; // the plugin started and ads may be requested
 let loaded = false;  // an ad is ready to show
+let privacyOptions = false; // the player's region requires a way to change the ad consent later
 
 async function load() {
     try {
@@ -36,6 +37,7 @@ export async function initAds() {
             consent = await AdMob.showConsentForm();
         }
         enabled = consent.canRequestAds !== false;
+        privacyOptions = consent.privacyOptionsRequirementStatus === 'REQUIRED';
         // iOS: Apple's tracking permission, asked once, after the consent screen (Google's
         // recommended order); without it the ads are simply not personalised
         if (enabled && Capacitor.getPlatform() === 'ios') {
@@ -46,6 +48,20 @@ export async function initAds() {
     } catch (e) {
         console.warn('Ads unavailable:', e);
         enabled = false;
+    }
+}
+
+// Settings: where the consent can be changed later (only where the law requires it, e.g. the EU)
+export const adPrivacyOptionsAvailable = () => privacyOptions;
+
+export async function showAdPrivacyOptions() {
+    try {
+        await AdMob.showPrivacyOptionsForm();
+        const consent = await AdMob.requestConsentInfo();
+        enabled = consent.canRequestAds !== false;
+        if (enabled && !loaded) await load();
+    } catch (e) {
+        console.warn('Privacy options unavailable:', e);
     }
 }
 

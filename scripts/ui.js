@@ -718,7 +718,7 @@ export function glowEndless() {
 }
 
 // Settings window. `onChange(key, value)` saves each change right away.
-export function showSettings(settings, { onChange, onReset }) {
+export function showSettings(settings, { onChange, onReset, onAdPrivacy = null }) {
     const modal = document.getElementById('settings-modal');
     const render = () => {
         modal.querySelectorAll('.setting-toggle').forEach(btn => {
@@ -742,6 +742,10 @@ export function showSettings(settings, { onChange, onReset }) {
         b.onclick = () => { audio.playClick(); onChange('textSize', b.dataset.size); render(); };
     });
     document.getElementById('settings-reset').onclick = () => { audio.playClick(); onReset(); };
+    // the ad consent, where the law asks for a way to change it (phone apps in the EU and similar)
+    const adPrivacy = document.getElementById('settings-ad-privacy');
+    adPrivacy.classList.toggle('hidden', !onAdPrivacy);
+    adPrivacy.onclick = () => { audio.playClick(); onAdPrivacy?.(); };
     document.getElementById('settings-close').onclick = () => { audio.playClick(); modal.classList.add('hidden'); };
 
     render();
