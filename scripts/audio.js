@@ -48,10 +48,14 @@ class AudioManager {
         this.loadSamples(['gavel']);
     }
 
-    // The other recorded sounds, after the opening
-    loadRest() {
+    // The other recorded sounds, after the opening: one after another (not all at once, which
+    // makes the menu stutter on a phone), the short ones first and the long murmur last
+    async loadRest() {
         if (!this.audioContext) return;
-        this.loadSamples(SAMPLE_FILES.filter(name => !this.loading[name]));
+        const rest = SAMPLE_FILES.filter(name => !this.loading[name]);
+        const last = AMBIENT_LAYERS.map(layer => layer.name);
+        const order = [...rest.filter(name => !last.includes(name)), ...rest.filter(name => last.includes(name))];
+        for (const name of order) await this.loadSamples([name]);
     }
 
     // Recorded sounds in /audio (see AUDIO_CREDITS.md). Until they are

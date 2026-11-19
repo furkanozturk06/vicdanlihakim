@@ -41,7 +41,6 @@ export function skipNextIntro() {
 // `audio` is the game's audio manager
 export async function playIntro(audio) {
     const el = document.getElementById('intro-gavel');
-    const start = document.getElementById('start-screen');
     if (!el) return;
 
     let skip = false;
@@ -51,16 +50,16 @@ export async function playIntro(audio) {
     } catch { /* storage blocked */ }
 
     let finished = false;
+    // The menu is already drawn behind the dark cover (drawing it for the first time is the
+    // costly part); at the end the cover only fades away, which a phone does smoothly.
     const finish = () => {
         if (finished) return;
         finished = true;
-        start.classList.remove('intro-playing'); // the menu comes in as it always does
         el.classList.add('done');
         setTimeout(() => el.remove(), 400);
     };
     if (skip) {
         el.remove();
-        start.classList.remove('intro-playing');
         return;
     }
     el.addEventListener('pointerdown', finish);
