@@ -11,7 +11,7 @@ import {
 } from './story.js';
 import { createFamily, familyStatus, eveningScene, familyEpilogue, householdBills, DAILY_COOLING, conscienceFamilyChange, needsFamily, aloneEvening } from './family.js';
 import { ACT_LENGTH, TOTAL_DAYS, ACT2_CASES_PER_DAY, BRANCHES, branchFor } from './acts.js';
-import { saveGame, loadGame, savedDay, savedMode, clearSave, loadSettings, saveSettings } from './save.js';
+import { saveGame, loadGame, savedDay, clearSave, loadSettings, saveSettings } from './save.js';
 import * as ui from './ui.js';
 import { audio } from './audio.js';
 import { initAds, adBetweenDays } from './ads.js';
@@ -180,8 +180,8 @@ export function initGame() {
     document.getElementById('app-version').textContent = typeof __APP_VERSION__ === 'undefined' ? '' : `v${__APP_VERSION__}`;
     setupEventListeners();
     ui.showStartScreen();
-    ui.setEndlessOption(settings.endlessUnlocked, settings.endlessBest);
-    ui.setContinueOption(savedDay(), savedMode());
+    ui.setEndlessOption(settings.endlessUnlocked, settings.endlessBest, savedDay('endless'));
+    ui.setContinueOption(savedDay('story'));
     try {
         if (sessionStorage.getItem('hakim.glowEndless')) {
             sessionStorage.removeItem('hakim.glowEndless');
@@ -299,15 +299,15 @@ function setupEventListeners() {
             return;
         }
         audio.playClick();
-        if (!(await confirmOverwrite())) return;
-        startEndless();
+        if (savedDay('endless')) continueGame('endless');
+        else startEndless();
     });
 
     document.getElementById('continue-btn').addEventListener('click', () => {
         if (ui.startScreenClosing()) return;
         audio.resume();
         audio.playClick();
-        continueGame();
+        continueGame('story');
     });
 
     document.getElementById('pending-offer').addEventListener('click', () => reopenPendingOffer());
@@ -320,7 +320,7 @@ function setupEventListeners() {
 
     document.getElementById('menu-btn').addEventListener('click', () => {
         audio.playClick();
-        const day = savedDay();
+        const day = savedDay(state.mode);
         document.getElementById('pause-note').textContent = day
             ? L('Oyun her günün sonunda kaydedilir. Şimdi çıkarsan bugünkü davalar kaybolur; "Devam Et" ile {0}. günün başından sürersin.', day)
             : L('Henüz kayıt yok; oyun ilk günün sonunda kaydedilir. Şimdi çıkarsan bu oyun kaybolur.');
@@ -442,7 +442,8 @@ function openSettings() {
                 choices: [{ label: L('Evet, hepsini sıfırla'), value: true }, { label: L('Vazgeç'), value: false }],
             });
             if (!ok) return;
-            clearSave();
+            clearSave('story');
+            clearSave('endless');
             Object.assign(settings, { endlessUnlocked: false, endlessBest: 0, tutorialDone: false, career: null, achievements: {}, endingsSeen: [] });
             saveSettings(settings);
             location.reload();
@@ -458,9 +459,9 @@ function vibrate() {
 
 // Starting a new game replaces the saved one: ask first
 async function confirmOverwrite() {
-    const day = savedDay();
+    const day = savedDay('story');
     if (!day) return true;
-    const mode = savedMode() === 'endless' ? L('Sonsuz Mod') : L('Hikâye');
+    const mode = L('Hikâye');
     return ui.showStory({
         icon: '⚠️',
         title: L('Kayıtlı Oyun Silinecek'),
@@ -470,7 +471,7 @@ async function confirmOverwrite() {
 }
 
 async function startGame() {
-    clearSave();
+    clearSave('story');
     state = createInitialState();
     ui.clearCourtroom();
     ui.hideStartScreen();
@@ -481,7 +482,7 @@ async function startGame() {
 
 // Endless mode: random cases until the career ends
 async function startEndless() {
-    clearSave();
+    clearSave('endless');
     state = createInitialState();
     state.mode = 'endless';
     state.branch = 'all';
@@ -494,10 +495,11 @@ async function startEndless() {
 }
 
 // Pick up at the start of the day after the last completed one
-function continueGame() {
-    const loaded = loadGame(createInitialState());
+function continueGame(mode = 'story') {
+    const loaded = loadGame(createInitialState(), mode);
     if (!loaded) {
-        startGame();
+        if (mode === 'endless') startEndless();
+        else startGame();
         return;
     }
     state = loaded;
@@ -514,7 +516,7 @@ async function restartGame() {
         startEndless();
         return;
     }
-    clearSave();
+    clearSave('story');
     state = createInitialState();
     ui.clearCourtroom();
     document.getElementById('game-over-screen').classList.add('hidden');
@@ -1360,7 +1362,7 @@ function endDay() {
 
 function endGame() {
     state.gameOver = true;
-    clearSave();
+    clearSave(state.mode); // only this mode's save: the other one stays
     audio.stopAmbient();
 
     const ending = pickEnding();

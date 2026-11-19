@@ -682,10 +682,10 @@ export function runTutorial(steps) {
 }
 
 // Start screen: offer "continue" when a save exists
-export function setContinueOption(day, mode = 'story') {
+export function setContinueOption(day) {
     const btn = document.getElementById('continue-btn');
     if (day) {
-        btn.textContent = mode === 'endless' ? L('Devam Et (Sonsuz · {0}. Gün)', day) : L('Devam Et ({0}. Gün)', day);
+        btn.textContent = L('Devam Et ({0}. Gün)', day);
         btn.classList.remove('hidden');
         elements.startBtn.textContent = L('Yeni Oyun');
     } else {
@@ -697,9 +697,11 @@ export function setContinueOption(day, mode = 'story') {
 // Start screen: endless mode button and best record, once the story is finished
 // The button is always visible; until the story is finished it is locked and explains why
 let endlessOpen = false;
-export function setEndlessOption(unlocked, best) {
+export function setEndlessOption(unlocked, best, day = null) {
     endlessOpen = Boolean(unlocked);
     const btn = document.getElementById('endless-btn');
+    // a game of endless mode under way: the button continues it
+    btn.textContent = unlocked && day ? L('Sonsuz Mod · {0}. Gün', day) : L('Sonsuz Mod');
     btn.classList.toggle('locked', !unlocked);
     btn.setAttribute('aria-disabled', String(!unlocked));
     btn.title = unlocked ? '' : L('30 gün boyunca koltukta kaldıktan sonra Sonsuz Mod\'u açabilirsin.');

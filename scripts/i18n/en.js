@@ -573,7 +573,6 @@ export default {
     "Olağan ceza{0}: {1}": "Standard sentence{0}: {1}",
     "Başla": "Start",
     "İleri": "Next",
-    "Devam Et (Sonsuz · {0}. Gün)": "Continue (Endless · Day {0})",
     "Devam Et ({0}. Gün)": "Continue (Day {0})",
     "Yeni Oyun": "New Game",
     "Koltuğa Otur": "Take the Seat",
@@ -3102,4 +3101,5 @@ export default {
     "İmzanı taşıyan idam kararlarını Yargıtay tek tek inceledi; kanunun ölüm istemediği davalarda bile ipi sen çekmiştin. Cübben elinden alındı, hakkında soruşturma açıldı. Gazeteler sana yeni bir ad taktı: Cellat Hakim. Adliyenin koridorlarında artık kimse gözlerinin içine bakmıyor.\n\nHikâye modu sona erdi.": "The high court went through the death sentences that bear your signature one by one; even where the law did not ask for death, you were the one who pulled the rope. Your robe was taken from you and an investigation was opened. The papers gave you a new name: the Hanging Judge. In the corridors of the courthouse, no one looks you in the eye anymore.\n\nStory mode is over.",
     "Gece telefon çaldı. Bakanlıktan aynı ses: \"Annenizin ameliyatı iyi geçti, değil mi hakim bey? Yarın siz de bizi hatırlarsınız.\"": "The phone rang at night. The same voice from the ministry: \"Your mother's surgery went well, didn't it, Judge? Tomorrow you'll remember us too.\"",
     "Eve döndüğünde bavullar kapının önündeydi. Deniz gözlerinin içine baktı: \"Haberleri izliyorum, verdiğin kararları okuyorum. Seni artık tanımıyorum.\" Ece'nin elinden tutup annesinin evine gitti.": "When you came home the suitcases were by the door. Deniz looked you in the eye: \"I watch the news, I read about your verdicts. I don't know you anymore.\" Then took Ece by the hand and went to Deniz's mother's house.",
+    "Sonsuz Mod · {0}. Gün": "Endless Mode · Day {0}",
 };

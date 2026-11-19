@@ -7,8 +7,10 @@
 
 import { CRIMES } from './cases.js';
 
-const SAVE_KEY = 'hakim.save.v1';
+// The story and endless mode keep separate saves: starting one never touches the other
+const SAVE_KEYS = { story: 'hakim.save.v1', endless: 'hakim.endless.v1' };
 const SETTINGS_KEY = 'hakim.settings.v1';
+const keyFor = (mode) => SAVE_KEYS[mode === 'endless' ? 'endless' : 'story'];
 
 function read(key) {
     try {
@@ -58,16 +60,26 @@ const CAREER_FIELDS = [
     'branch', 'specials', 'bonusQuestions', 'scandal', 'mode', 'economy', 'aftermath',
 ];
 
+// Before endless mode had a save of its own, it used the story's: move such a save over
+function moveOldEndlessSave() {
+    const old = read(SAVE_KEYS.story);
+    if (old && old.mode === 'endless') {
+        if (!read(SAVE_KEYS.endless)) write(SAVE_KEYS.endless, old);
+        remove(SAVE_KEYS.story);
+    }
+}
+moveOldEndlessSave();
+
 export function saveGame(state) {
     const data = {};
     for (const f of CAREER_FIELDS) data[f] = state[f];
     data.usedStatements = [...state.usedStatements].map(statementKey).filter(Boolean);
-    write(SAVE_KEY, data);
+    write(keyFor(state.mode), data);
 }
 
 // Returns the saved career fields merged into `fresh`, or null when there is no usable save
-export function loadGame(fresh) {
-    const data = read(SAVE_KEY);
+export function loadGame(fresh, mode = 'story') {
+    const data = read(keyFor(mode));
     if (!data || typeof data.day !== 'number') return null;
     const state = { ...fresh };
     for (const f of CAREER_FIELDS) if (data[f] !== undefined) state[f] = data[f];
@@ -77,18 +89,14 @@ export function loadGame(fresh) {
     return state;
 }
 
-export function savedDay() {
-    const data = read(SAVE_KEY);
+// The day a save of `mode` ('story' or 'endless') continues from, or null
+export function savedDay(mode = 'story') {
+    const data = read(keyFor(mode));
     return data && typeof data.day === 'number' ? data.day : null;
 }
 
-export function savedMode() {
-    const data = read(SAVE_KEY);
-    return (data && data.mode) || 'story';
-}
-
-export function clearSave() {
-    remove(SAVE_KEY);
+export function clearSave(mode = 'story') {
+    remove(keyFor(mode));
 }
 
 export function loadSettings() {
