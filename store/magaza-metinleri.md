@@ -113,5 +113,5 @@ This game is fiction. All persons, places and organizations are imaginary. It de
 - **Veri güvenliği formu / Data safety (Google Play):** Reklam kimliği ve cihaz bilgileri Google AdMob tarafından reklam ve analiz amacıyla toplanır; veriler aktarım sırasında şifrelenir; geliştirici kendisi veri toplamaz. App Store'da "Data Used to Track You: Identifiers (Advertising)".
 - **Gizlilik politikası / Privacy policy:** https://furkanozturk06.github.io/vicdanlihakim/gizlilik.html
 - **İletişim / Contact:** vicdanlihakim@gmail.com
-- **Ekran görüntüleri / Screenshots:** `store/screenshots/tr/` ve `store/screenshots/en/` (1080 × 1920)
+- **Ekran görüntüleri / Screenshots:** Google Play telefon `store/screenshots/tr/`, `en/` (1080 × 1920) · App Store iPhone 6,9" `iphone-tr/`, `iphone-en/` (1290 × 2796) · App Store iPad 13" `ipad-tr/`, `ipad-en/` (2048 × 2732)
 - **Öne çıkan görsel / Feature graphic (Google Play):** `store/feature-graphic-tr.png`, `store/feature-graphic-en.png` (1024 × 500)
