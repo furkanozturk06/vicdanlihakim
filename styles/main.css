@@ -2465,9 +2465,11 @@ body {
     background: linear-gradient(90deg, var(--gold-accent), transparent);
 }
 
-.menu-ornament i {
-    font-style: normal;
-    font-size: 1rem;
+/* a small gavel between the two lines (the scales are already at the top) */
+.menu-ornament svg {
+    width: 1.3rem;
+    height: 1.3rem;
+    fill: currentColor;
 }
 
 .game-tagline {
