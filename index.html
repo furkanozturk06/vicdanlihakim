@@ -353,30 +353,30 @@
 
         <!-- Start Screen -->
         <div id="intro-gavel" aria-hidden="true">
-            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <radialGradient id="ig-glow" cx="50%" cy="50%" r="50%">
-                        <stop offset="0" stop-color="#ffe7a3" stop-opacity="0.9"/>
-                        <stop offset="1" stop-color="#ffe7a3" stop-opacity="0"/>
-                    </radialGradient>
-                    <linearGradient id="ig-gold" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0" stop-color="#e9c561"/>
-                        <stop offset="1" stop-color="#b8902a"/>
-                    </linearGradient>
-                </defs>
-                <ellipse class="ig-flash" cx="84" cy="150" rx="70" ry="34" fill="url(#ig-glow)"/>
+            <div class="ig-stage">
+                <div class="ig-flash"></div>
                 <!-- the block -->
-                <rect x="42" y="150" width="84" height="16" rx="4" fill="#8a6a1c"/>
-                <rect x="48" y="146" width="72" height="8" rx="3" fill="url(#ig-gold)"/>
+                <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="ig-gold" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0" stop-color="#e9c561"/>
+                            <stop offset="1" stop-color="#b8902a"/>
+                        </linearGradient>
+                    </defs>
+                    <rect x="42" y="150" width="84" height="16" rx="4" fill="#8a6a1c"/>
+                    <rect x="48" y="146" width="72" height="8" rx="3" fill="url(#ig-gold)"/>
+                </svg>
                 <!-- the gavel, turning on the end of its handle -->
-                <g class="ig-swing">
-                    <rect x="98" y="114.5" width="76" height="7" rx="3.5" fill="#a07f24"/>
-                    <circle cx="173" cy="118" r="5" fill="#c9a227"/>
-                    <rect x="64" y="90" width="36" height="56" rx="9" fill="url(#ig-gold)"/>
-                    <rect x="64" y="98" width="36" height="5" fill="#9c7a1e"/>
-                    <rect x="64" y="133" width="36" height="5" fill="#9c7a1e"/>
-                </g>
-            </svg>
+                <div class="ig-swing">
+                    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="98" y="114.5" width="76" height="7" rx="3.5" fill="#a07f24"/>
+                        <circle cx="173" cy="118" r="5" fill="#c9a227"/>
+                        <rect x="64" y="90" width="36" height="56" rx="9" fill="url(#ig-gold)"/>
+                        <rect x="64" y="98" width="36" height="5" fill="#9c7a1e"/>
+                        <rect x="64" y="133" width="36" height="5" fill="#9c7a1e"/>
+                    </svg>
+                </div>
+            </div>
         </div>
         <div id="start-screen">
             <div class="menu-light"></div>

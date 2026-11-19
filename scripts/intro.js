@@ -1,37 +1,32 @@
 /**
  * The opening: when the game is opened, a gavel comes down on its block in the dark
  * courtroom, with the gavel's sound, and the start screen comes in after it.
- * About a second; a tap skips it. It plays when the game is opened, not when the game
+ * About two seconds; a tap skips it. It plays when the game is opened, not when the game
  * reloads itself (a language change, back to the main menu).
  *
- * The sound and the flash follow the gavel's own movement (not a timer): on a slow
- * phone the animation may start late, and the sound must still come with the strike.
+ * While the game is opening the phone is busy, and the page's own code can stall for most
+ * of a second. So the whole movement is handed to the phone at once as animations (which
+ * it runs by itself, stalled or not), and the sound is set on the sound card's clock for
+ * the moment of the strike: picture and sound keep their time even when the page does not.
  */
 
 const SKIP_KEY = 'hakim.noIntro';
 const SOUND_WAIT = 700; // ms to wait at most for the gavel sound to be loaded
-const DOWN = 'rotate(0deg)';
+
+// the movement, in ms from its start
+const LIFT = 220;               // lifted a little higher...
+const STRIKE = LIFT + 340;      // ...and down onto the block
+const BOUNCE = STRIKE + 170;    // a small bounce back
+const GAVEL_OUT = STRIKE + 550; // the gavel fades...
+const COVER_OUT = GAVEL_OUT + 250; // ...then the dark cover, showing the start screen
+const END = COVER_OUT + 350;
+// the screen shows a frame a little after it is drawn; the sound waits that long too
+const SCREEN_LAG = 0.025;
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 // resolves once the screen has really been drawn (a frame shown, then the next one)
 const painted = () => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-
-const easeIn = t => t * t * t;            // speeds up: the strike
-const easeOut = t => 1 - (1 - t) * (1 - t); // slows down: lifting before the strike
-
-// Turns the gavel from `from` to `to` degrees in `ms`
-function swing(gavel, from, to, ms, ease) {
-    return new Promise(resolve => {
-        const t0 = performance.now();
-        const step = (now) => {
-            const t = Math.min(1, (now - t0) / ms);
-            gavel.style.transform = `rotate(${from + (to - from) * ease(t)}deg)`;
-            if (t < 1) requestAnimationFrame(step);
-            else resolve();
-        };
-        requestAnimationFrame(step);
-    });
-}
+const at = (ms) => ms / BOUNCE; // a moment of the swing, as a part of it
 
 // Before the game reloads itself: the next page load opens without the gavel
 export function skipNextIntro() {
@@ -48,20 +43,20 @@ export async function playIntro(audio) {
         skip = sessionStorage.getItem(SKIP_KEY) === '1';
         sessionStorage.removeItem(SKIP_KEY);
     } catch { /* storage blocked */ }
-
-    let finished = false;
-    // The menu is already drawn behind the dark cover (drawing it for the first time is the
-    // costly part); at the end the cover only fades away, which a phone does smoothly.
-    const finish = () => {
-        if (finished) return;
-        finished = true;
-        el.classList.add('done');
-        setTimeout(() => el.remove(), 400);
-    };
     if (skip) {
         el.remove();
         return;
     }
+
+    let finished = false;
+    // A tap: the cover fades away at once (the menu is already drawn behind it)
+    const finish = () => {
+        if (finished) return;
+        finished = true;
+        for (const a of el.getAnimations({ subtree: true })) a.cancel();
+        el.classList.add('done');
+        setTimeout(() => el.remove(), 400);
+    };
     el.addEventListener('pointerdown', finish);
 
     // only once the opening is on screen, and with the gavel sound ready
@@ -72,22 +67,36 @@ export async function playIntro(audio) {
     if (finished) return;
     audio.resume();
 
-    // The swing is drawn frame by frame by this code, so the frame where the gavel meets
-    // the block and the sound are always the same moment (an animation left to the browser
-    // ends on its own clock, and the sound followed it late on a busy phone).
-    const gavel = el.querySelector('.ig-swing');
-    await swing(gavel, 48, 64, 220, easeOut); // lifted a little higher...
+    const stage = el.querySelector('.ig-stage');
+    const swing = el.querySelector('.ig-swing').animate([
+        { transform: 'rotate(48deg)', easing: 'ease-out' },
+        { transform: 'rotate(64deg)', offset: at(LIFT), easing: 'cubic-bezier(0.4, 0, 0.9, 0.3)' },
+        { transform: 'rotate(0deg)', offset: at(STRIKE), easing: 'ease-out' },
+        { transform: 'rotate(7deg)', offset: at(STRIKE + 70), easing: 'ease-in' },
+        { transform: 'rotate(0deg)' },
+    ], { duration: BOUNCE, fill: 'forwards' });
+    // the strike: a flash on the block and a small shake
+    el.querySelector('.ig-flash').animate([{ opacity: 0.95 }, { opacity: 0 }],
+        { duration: 500, delay: STRIKE, easing: 'ease-out' });
+    stage.animate([
+        { transform: 'translate(0, 0)' },
+        { transform: 'translate(-4px, 3px)', offset: 0.2 },
+        { transform: 'translate(3px, -2px)', offset: 0.45 },
+        { transform: 'translate(-2px, 1px)', offset: 0.7 },
+        { transform: 'translate(0, 0)' },
+    ], { duration: 280, delay: STRIKE, easing: 'ease-out' });
+    // then the gavel goes, and after it the cover
+    stage.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 250, delay: GAVEL_OUT, fill: 'forwards' });
+    el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 350, delay: COVER_OUT, fill: 'forwards' });
+
+    // the sound, set for the moment the gavel meets the block
+    await swing.ready;
     if (finished) return;
-    await swing(gavel, 64, 0, 340, easeIn);   // ...and down onto the block
-    // the frame where the gavel meets the block reaches the screen first; the sound comes
-    // with the next one (played at once, it was heard before the gavel was seen to land)
-    await painted();
+    const started = document.timeline.currentTime - swing.startTime;
+    audio.playGavel(Math.max(0, STRIKE - started) / 1000 + SCREEN_LAG);
+
+    await sleep(Math.max(0, END - started));
     if (finished) return;
-    // the strike: sound, flash and a small shake together, then a little bounce
-    audio.playGavel();
-    el.classList.add('hit');
-    gavel.animate([{ transform: DOWN }, { transform: 'rotate(7deg)' }, { transform: DOWN }],
-        { duration: 170, easing: 'ease-out', fill: 'forwards' });
-    await sleep(750);
-    finish();
+    finished = true;
+    el.remove();
 }

@@ -86,7 +86,7 @@ class AudioManager {
     }
 
     // Plays part of a recorded sound; false when it is not loaded (use the fallback)
-    playSample(name, { offset = 0, duration, gain = 1, rate = 1, fade = 0.08 } = {}) {
+    playSample(name, { offset = 0, duration, gain = 1, rate = 1, fade = 0.08, delay = 0 } = {}) {
         const buffer = this.samples[name];
         if (!buffer) return false;
         if (!this.enabled || !this.audioContext) return true; // sound is off: nothing to play
@@ -97,7 +97,7 @@ class AudioManager {
         source.playbackRate.value = rate;
         // length in real time: a slower rate makes the same part of the file last longer
         const length = (duration ?? buffer.duration - offset) / rate;
-        const now = ctx.currentTime;
+        const now = ctx.currentTime + delay;
         level.gain.setValueAtTime(this.volume * gain, now);
         level.gain.setValueAtTime(this.volume * gain, now + Math.max(0, length - fade));
         level.gain.linearRampToValueAtTime(0.0001, now + length);
@@ -169,9 +169,15 @@ class AudioManager {
     }
 
     // Gavel strike sound
-    playGavel() {
+    // `delay` in seconds: the opening sets the strike's sound ahead of time, on the sound
+    // card's clock, so it lands with the gavel even if the phone is busy at that moment
+    playGavel(delay = 0) {
         if (!this.enabled || !this.audioContext) return;
-        if (this.playSample('gavel', { duration: 0.9, gain: 0.9 })) return; // first of the two strikes
+        if (this.playSample('gavel', { duration: 0.9, gain: 0.9, delay })) return; // first of the two strikes
+        if (delay > 0) {
+            setTimeout(() => this.playGavel(), delay * 1000);
+            return;
+        }
 
         // Create noise for impact
         const bufferSize = this.audioContext.sampleRate * 0.1;
