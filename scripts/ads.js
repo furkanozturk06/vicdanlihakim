@@ -1,5 +1,5 @@
 /**
- * Ads: a full-screen ad between days, after every second day.
+ * Ads: a full-screen ad between days, after every day.
  * Only in the phone apps (Android/iOS); the web version never shows ads.
  * Users in regions that require it (e.g. the EU) are asked for consent first.
  */
@@ -13,7 +13,7 @@ const INTERSTITIAL_ID = {
     ios: 'ca-app-pub-3940256099942544/4411468910',
 };
 const TESTING = true;
-const EVERY_DAYS = 2;
+const EVERY_DAYS = 1; // after every day
 
 let enabled = false; // the plugin started and ads may be requested
 let loaded = false;  // an ad is ready to show
