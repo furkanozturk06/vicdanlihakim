@@ -4,6 +4,7 @@
  */
 
 import { L, LANG } from './i18n.js';
+import { storyLook } from './people.js';
 
 // Daily directives from the ministry
 export const DIRECTIVES = [
@@ -259,9 +260,13 @@ export function randomGender() {
 
 export function randomName(gender = randomGender()) {
     const list = FIRST_NAMES[gender] || FIRST_NAMES.m;
-    const first = list[Math.floor(Math.random() * list.length)];
-    const initial = SURNAME_INITIALS[Math.floor(Math.random() * SURNAME_INITIALS.length)];
-    return `${first} ${initial}.`;
+    for (;;) {
+        const first = list[Math.floor(Math.random() * list.length)];
+        const initial = SURNAME_INITIALS[Math.floor(Math.random() * SURNAME_INITIALS.length)];
+        const name = `${first} ${initial}.`;
+        // "Murat S." is the policeman of the story: an everyday defendant gets another name
+        if (!storyLook(name)) return name;
+    }
 }
 
 // Offers made to the judge during a case
@@ -499,11 +504,13 @@ function caseNews(kind, p, e, fallback, used) {
 
 export function buildNewspaper(dayLog, appeals = []) {
     const items = [];
+    // what to call a case in a headline: its label, or the crime when the label is the person
+    const label = x => (x.detail && x.name && x.crime && x.detail.includes(x.name) ? x.crime : x.detail);
     const used = new Set(); // headline wordings already in this paper
 
     for (const a of appeals) {
         items.push({ who: a.name, ...(a.name
-            ? caseNews('appeal', 75, a, L('Yargıtay bozdu: {0} hakkındaki "{1}" davası kararı kanuna aykırı bulundu', a.name, a.detail), used)
+            ? caseNews('appeal', 75, a, L('Yargıtay bozdu: {0} hakkındaki "{1}" davası kararı kanuna aykırı bulundu', a.name, label(a)), used)
             : { p: 75, note: '', text: L('Yargıtay bozdu: "{0}" davasındaki karar kanuna aykırı bulundu', a.detail) }) });
     }
 
@@ -512,23 +519,27 @@ export function buildNewspaper(dayLog, appeals = []) {
     for (const e of dayLog) {
         const options = [];
         if (e.exposed) {
-            options.push({ p: 100, make: () => caseNews('scandal', 100, e, L('SKANDAL: Hakimin {1} hakkındaki "{0}" davasında rüşvet aldığı ortaya çıktı!', e.detail, e.name), used) });
+            options.push({ p: 100, make: () => caseNews('scandal', 100, e, L('SKANDAL: Hakimin {1} hakkındaki "{0}" davasında rüşvet aldığı ortaya çıktı!', label(e), e.name), used) });
         }
         if (e.returning) {
-            options.push({ p: 80, make: () => ({ p: 80, note: e.summary, text: L('Daha önce serbest bırakılan {0} yeniden hakim karşısında', e.name) }) });
+            options.push({ p: 80, make: () => ({ p: 80, note: e.summary, text: L('Daha önce mahkemenizden ucuz kurtulan {0} yeniden hakim karşısında', e.name) }) });
         }
         if (e.verdict === 'death') {
             options.push(e.diff === 0
-                ? { p: 70, make: () => caseNews('deathFair', 70, e, L('{1} hakkındaki "{0}" davasında idam kararı: Adalet yerini buldu', e.detail, e.name), used) }
-                : { p: 90, make: () => caseNews('deathWrong', 90, e, L('Masum kana mı girildi? {1} hakkındaki "{0}" davasında verilen idam kararı tartışılıyor', e.detail, e.name), used) });
+                ? { p: 70, make: () => caseNews('deathFair', 70, e, L('{1} hakkındaki "{0}" davasında idam kararı: Adalet yerini buldu', label(e), e.name), used) }
+                : { p: 90, make: () => caseNews('deathWrong', 90, e, L('Masum kana mı girildi? {1} hakkındaki "{0}" davasında verilen idam kararı tartışılıyor', label(e), e.name), used) });
         } else if (e.diff <= -2) {
-            options.push({ p: 60, make: () => caseNews('light', 60, e, L('{1} hakkındaki "{0}" davasında şaşırtan hafif ceza: Halk güvende mi?', e.detail, e.name), used) });
+            options.push({ p: 60, make: () => caseNews('light', 60, e, L('{1} hakkındaki "{0}" davasında şaşırtan hafif ceza: Halk güvende mi?', label(e), e.name), used) });
         } else if (e.diff >= 2 && e.sympathy) {
-            options.push({ p: 60, make: () => caseNews('heavyOutcry', 60, e, L('{1} hakkındaki "{0}" davasında verilen ağır ceza tepki çekti', e.detail, e.name), used) });
+            options.push({ p: 60, make: () => caseNews('heavyOutcry', 60, e, L('{1} hakkındaki "{0}" davasında verilen ağır ceza tepki çekti', label(e), e.name), used) });
         } else if (e.diff >= 2) {
-            options.push({ p: 40, make: () => caseNews('harsh', 40, e, L('{1} hakkındaki "{0}" davasında beklenmedik sert karar', e.detail, e.name), used) });
+            options.push({ p: 40, make: () => caseNews('harsh', 40, e, L('{1} hakkındaki "{0}" davasında beklenmedik sert karar', label(e), e.name), used) });
         }
-        if (options.length) items.push({ who: e.name, ...options.reduce((best, o) => (o.p > best.p ? o : best)).make() });
+        if (options.length) {
+            const item = { who: e.name, ...options.reduce((best, o) => (o.p > best.p ? o : best)).make() };
+            if (e.story) item.p += 50; // the story's own trial is the day's headline
+            items.push(item);
+        }
     }
 
     if (dayLog.length > 0 && dayLog.every(e => e.correct)) {

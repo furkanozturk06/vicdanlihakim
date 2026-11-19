@@ -108,6 +108,15 @@ export const BRANCHES = {
                 choice(L('Bakanlığı arayıp tayini geri aldırmayı dene'), s => { adjust(s, { conscience: -3 }); return L('Telefondaki ses güldü: "Karaçam\'ın havası iyi gelir size, Hakim Bey." Telefon kapandı.'); }),
             ],
         },
+        // the same evening when Deniz and Ece are not home
+        transitionAlone: {
+            text: L('Akşam bakanlıktan tebligat geldi: "Karaçam Asliye Ceza Mahkemesine atandınız. Göreve başlama: üç gün içinde." Kâğıdı boş mutfakta iki kez okudun. Deniz\'e haber vermek istedin; telefonu elinde tuttun, aramadın.'),
+            choices: [
+                choice(L('"Kanunu uyguladık, bedelini ödeyeceğiz."'), s => { adjust(s, { conscience: 5 }); return L('Sesin boş evde yankılandı. Yine de doğru olanı yaptığını biliyordun.'); }),
+                choice(L('Bakanlığı arayıp tayini geri aldırmayı dene'), s => { adjust(s, { conscience: -3 }); return L('Telefondaki ses güldü: "Karaçam\'ın havası iyi gelir size, Hakim Bey." Telefon kapandı.'); }),
+            ],
+            alone: true,
+        },
         intro: {
             title: L('Karaçam Taşrası'),
             text: L('Kasabaya giden tek yol çamurlu. Adliye binası eski bir han. Kapıdaki tabelanın yanında daha büyük bir tabela var: "Hikmet Vakfı – Hacı Rıza Karaca\'nın himayesinde."\n\nKâtip fısıldıyor: "Burada her şey Hacı Rıza Bey\'den sorulur, hakim bey. Vakfın Ankara\'da da dostları vardır."\n\nKarşında on beş gün daha var. Bu kez seni deneyen bir bakanlık değil, bütün bir kasaba.'),
@@ -296,6 +305,15 @@ export const BRANCHES = {
                 choice(L('Notu yırt'), s => { adjust(s, { conscience: 4 }); return L('Kâğıt parçaları halıya döküldü. Borçlar yırtılarak ödenmez ama.'); }),
             ],
         },
+        // the same evening when Deniz and Ece are not home
+        transitionAlone: {
+            text: L('Akşam bakanlıktan bir kurye geldi. Zarfın içinde terfi yazısı: "Yüksek Mahkeme Ceza Dairesi üyeliğine seçildiniz." Yanında el yazısıyla bir not: "Bakan Bey teşekkürlerini iletir. Unutmayız." Haberi verecek kimse yoktu evde.'),
+            choices: [
+                choice(L('Şampanyayı aç'), s => { adjust(s, { harmony: 8, conscience: -3 }); return L('Şampanyayı tek başına açtın. "Unutmayız" sözü kadehten daha ağır geldi.'); }),
+                choice(L('Notu yırt'), s => { adjust(s, { conscience: 4 }); return L('Kâğıt parçaları halıya döküldü. Borçlar yırtılarak ödenmez ama.'); }),
+            ],
+            alone: true,
+        },
         intro: {
             title: L('Yüksek Mahkeme'),
             text: L('Yeni odan mermer. Pencereden başkentin bütün bakanlıkları görünüyor. Masanın üstünde bir çiçek ve kartı: "Hayırlı olsun. — Parti Genel Merkezi."\n\nDaire Başkanı Nazım Erdem elini sıktı: "Burada her dosyanın bir sahibi vardır hakim bey. Bazıları dosyayı, bazıları da hakimi sahiplenir."\n\nÖnünde on beş gün daha var. Bu kez yargılayacakların, seni terfi ettirenlerin ta kendileri olabilir.'),
@@ -329,7 +347,7 @@ export const BRANCHES = {
             }),
             22: (s) => (s.flags.elif === 'take'
                 ? hearing(L('Birinci Duruşma: Elif\'in Dosyası'),
-                    L('Selami Kuru hakkındaki iddianame Daire\'ye geldi. Savcı Elif Demir\'in sana verdiği dosya masanda: banka dekontları, e-postalar, ihale belgeleri.\n\nSelami\'nin avukatı: "Bu bir savcının kişisel arşivi, sayın hakim. Usulsüz toplanmış belgeler delil olamaz."'),
+                    L('Selami Kuru hakkındaki iddianame Daire\'ye geldi. Savcı Elif Demir\'in sana verdiği dosya masanda: banka dekontları, e-postalar, ihale belgeleri.\n\nSelami\'nin avukatı itiraz ediyor: "Bu bir savcının kişisel arşivi, sayın hakim. Usulsüz toplanmış belgeler delil olamaz."'),
                     L('Dosyayı delil olarak kabul et'), L('Dosyayı reddet'), 'elifFile', {}, {},
                     { name: L('Selami\'nin avukatı'), age: 52, gender: 'm', role: L('Avukat:'), emotion: 'defiant', says: L('Bu bir savcının kişisel arşivi, sayın hakim. Usulsüz toplanmış belgeler delil olamaz.') })
                 : {
@@ -341,6 +359,8 @@ export const BRANCHES = {
             24: (s) => {
                 const e = s.specials.elif;
                 if (e && e.verdict === 'death') return { icon: '🕯️', title: L('Sessizlik'), text: L('Savcı Elif Demir\'in idamı haberlerde birkaç saniye geçti. Adliyede kimse onun adını anmıyor. Nazım Bey o gün odasından hiç çıkmadı.'), choices: [{ label: L('Devam'), value: true }], apply: { conscience: -12 } };
+                if (e && e.verdict === 'release') return { icon: '🕊️', title: L('Elif Serbest'), text: L('Elif Demir beraat edip adliyeden çıktı. Kapıdaki gazetecilere tek cümle söyledi: "Belgeler gerçekti." Genel Merkez\'den kimse aramadı; bu sessizlik telefonlardan daha ürkütücü.'), choices: [{ label: L('Devam'), value: true }], apply: { conscience: 2 } };
+                if (e && e.diff < 0) return { icon: '📄', title: L('Elif\'in Mektubu'), text: L('Elif Demir kanunun öngördüğünden hafif bir cezayla kurtuldu. Kısa bir not bıraktı: "Bana acıdınız, biliyorum. Delillerim savcılıkta; gerisi sizin vicdanınıza kalmış."'), choices: [{ label: L('Devam'), value: true }], apply: { conscience: 2 } };
                 if (e && e.favored) return { icon: '🔒', title: L('Ağır Ceza'), text: L('Elif Demir cezaevine götürülürken kameralara döndü: "Delillerim mahkemede. Birileri onları okuyacak." Savcılar arasında sessiz bir öfke dolaşıyor.'), choices: [{ label: L('Devam'), value: true }], apply: { conscience: -6 } };
                 return { icon: '📄', title: L('Elif\'in Mektubu'), text: L('Elif Demir\'den kısa bir not: "Kanunun öngördüğü cezayı verdiniz, fazlasını değil. Delillerim artık savcılıkta. Gerisi sizin vicdanınıza kalmış."'), choices: [{ label: L('Devam'), value: true }], apply: { conscience: 4 } };
             },

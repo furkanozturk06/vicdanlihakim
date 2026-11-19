@@ -85,7 +85,15 @@ export const ACT1 = {
                 if (v === 'accept') { st.flags.owesMinistry = true; adjust(st, { health: 2, harmony: 6, conscience: -8 }); } else adjust(st, { conscience: 5, harmony: -6 });
             },
         }),
-        13: (s) => (s.trial.footageCopy
+        13: (s) => (s.trial.footageCopy && s.specials.murat && s.specials.murat.verdict === 'death'
+            ? {
+                // he told about the copy before he was executed; the recording speaks for him
+                icon: '⚖️', title: L('Üçüncü Duruşma: Kamera Kaydı'),
+                text: L('İdam edilen polis Murat S.\'nin bilgisayarından çıkan kopya kayıt oynatıldı. Görüntü net: arabayı Kerem B. kullanıyor, çarpmadan sonra duruyor, sonra hızla uzaklaşıyor. Salonda biri ağlamaya başladı.\n\nAvukat: "Bu kayıt kurallara aykırı biçimde kopyalanmıştır. Hukuka aykırı delil kullanılamaz!"'),
+                choices: [{ label: L('Kaydı delil olarak kabul et'), value: 'accepted' }, { label: L('Kaydı dosyadan çıkar'), value: 'rejected' }],
+                onChoice: (st, v) => { st.trial.footage = v; adjust(st, v === 'accepted' ? { conscience: 3 } : { conscience: -6 }); },
+            }
+            : s.trial.footageCopy
             ? {
                 icon: '⚖️', title: L('Üçüncü Duruşma: Kamera Kaydı'),
                 text: L('Polis Murat S.\'nin sakladığı kopya kayıt oynatıldı. Görüntü net: arabayı Kerem B. kullanıyor, çarpmadan sonra duruyor, sonra hızla uzaklaşıyor. Salonda biri ağlamaya başladı.\n\nAvukat: "Bu kayıt kurallara aykırı biçimde kopyalanmıştır. Hukuka aykırı delil kullanılamaz!"'),

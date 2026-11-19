@@ -9,7 +9,7 @@ import {
     OFFERS, buildNewspaper, FINALE, FINAL_DIRECTIVE, INTRO, TUTORIAL, ENDLESS_INTRO, HOW_TO_PLAY, inspectorReport,
     SELIN_NOTE, SELIN_DIRECTIVE, SELIN_CASE, selinAftermath, kayaVisit, finaleRumor, appealText,
 } from './story.js';
-import { createFamily, familyStatus, eveningScene, familyEpilogue, householdBills, DAILY_COOLING, conscienceFamilyChange } from './family.js';
+import { createFamily, familyStatus, eveningScene, familyEpilogue, householdBills, DAILY_COOLING, conscienceFamilyChange, needsFamily, aloneEvening } from './family.js';
 import { ACT_LENGTH, TOTAL_DAYS, ACT2_CASES_PER_DAY, BRANCHES, branchFor } from './acts.js';
 import { saveGame, loadGame, savedDay, savedMode, clearSave, loadSettings, saveSettings } from './save.js';
 import * as ui from './ui.js';
@@ -1056,13 +1056,16 @@ async function processVerdict(sentenceKey, viaOffer = null) {
     }
 
     // Unsympathetic defendants let off lighter than the law demands may come back
-    if (!c.sympathy && c.age >= 18 && result.diff < 0 && !c.returning && !c.finale) {
+    // (the people of the story have their own story: they never come back as an everyday defendant)
+    if (!c.sympathy && c.age >= 18 && result.diff < 0 && !c.returning && !c.finale && !c.specialKey && !c.selinCase) {
         state.offenders.push({ name: c.name, age: c.age, appearance: c.appearance, day: state.day, verdict: sentenceKey, crime: c.crime });
     }
 
     state.dayLog.push({
         detail: c.detail,
+        crime: c.crime,
         name: c.name,
+        story: Boolean(c.specialKey || c.finale || c.selinCase), // a case of the story: the day's big news
         summary: c.summary, // what happened, told under the headline
         verdict: sentenceKey,
         correct: result.correct,
@@ -1247,15 +1250,19 @@ async function eveningAtHome(day) {
     ui.updateStats(state);
 
     let scene;
+    const away = state.family.spouseLeft; // Deniz has taken Ece and left
     if (day === ACT_LENGTH) {
         state.branch = branchFor(state.finale);
-        scene = BRANCHES[state.branch].transition;
+        const branch = BRANCHES[state.branch];
+        scene = away ? branch.transitionAlone : branch.transition;
     } else if (day > ACT_LENGTH) {
         const branch = BRANCHES[state.branch];
         scene = (branch.evenings[day] || branch.quietEvening)(state);
     } else {
         scene = eveningScene(state, day);
     }
+    // no evening with people who are not home
+    if (away && needsFamily(scene)) scene = aloneEvening(state, day);
     const pick = await ui.showEvening({
         day,
         home: state.family,

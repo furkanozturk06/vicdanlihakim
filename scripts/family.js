@@ -274,9 +274,32 @@ export function eveningScene(state, day) {
             return {
                 text: lines.join(' '),
                 choices: [choice(L('Uyumaya çalış'), () => L('Sabaha kadar yarınki davayı düşündün.'))],
+                alone: true, // written for an empty house as well
             };
         }
     }
+}
+
+// Deniz and Ece are away: an evening scene about them would show people who are not
+// home. Such a scene (its text, its buttons or what they lead to) is swapped for one
+// of these. Scenes about the mother alone stay as they are.
+export function needsFamily(scene) {
+    if (scene.alone) return false;
+    const parts = [scene.text, ...scene.choices.flatMap(c => [c.label, String(c.apply)])];
+    return parts.some(p => /Deniz|Ece/.test(p));
+}
+
+export function aloneEvening(state, day) {
+    const motherHome = state.family.motherHealth > 0;
+    const pool = [
+        [L('Masaya alışkanlıkla dört tabak koydun. Sonra ikisini sessizce geri kaldırdın.'), L('Yemeği ayakta yedin.')],
+        [L('Ece\'nin odasının kapısı aralık kalmış. İçeri girmeye cesaret edemedin.'), L('Koridorun ışığını söndürüp kapıyı kapattın.')],
+        [L('Telefonu açıp Deniz\'in adına uzun uzun baktın. Aramadın.'), L('Ekran karardı; sen hâlâ ona bakıyordun.')],
+        [L('Ece\'den kısa bir mesaj geldi: "Okulda bugün seni sordular." Başka bir şey yazmamış.'), L('Cevap yazdın, sildin, yeniden yazdın.')],
+        ...(motherHome ? [[L('Annen iki fincan çay getirdi, birini sana uzattı: "Evin sesi kesildi oğlum."'), L('Çayınızı konuşmadan içtiniz.')]] : []),
+    ];
+    const [text, result] = pool[day % pool.length];
+    return { text, choices: [choice(L('Dinlen'), () => result)], alone: true };
 }
 
 // One paragraph about the family for the ending screen
