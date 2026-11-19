@@ -22,6 +22,10 @@
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="android:background">@drawable/splash</item>
         <item name="android:windowFullscreen">true</item>
+        <!-- no title bar: the game's window is set up (full screen) while this theme is still
+             on, and newer Androids (a tablet on 16) then kept a bar with the game's name on top -->
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
         <!-- Android shows this waiting window before the game runs and does not let it hide
              the navigation buttons: they are drawn dark on the dark bar, so they hardly show -->
         <item name="android:navigationBarColor">#0d0907</item>
