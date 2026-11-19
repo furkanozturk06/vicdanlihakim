@@ -15,6 +15,7 @@
 //   ?policy=borcHonest     takes the minister's deal on day 15, honest afterwards
 //   ?policy=borcCorrupt    takes the deal and the party's offers in act 2
 //   ?policy=sloppy         30% of verdicts two steps too harsh
+//   ?policy=butcher        always the law, but every defendant of the story is sentenced to death
 //   &endless=1             play endless mode (unlocked for the test)
 
 // Fast clock: every timer runs immediately, in the order it was due
@@ -138,6 +139,7 @@ for (let step = 0; step < 90000; step++) {
         if (!c.asked && st.questionsLeft > 0) { document.querySelector('.interrogate-btn')?.click(); await wait(3000); }
         let k = c.correctVerdict;
         if (policy === 'sloppy' && Math.random() < 0.3) k = LADDER[Math.min(7, LADDER.indexOf(k) + 2)];
+        if (policy === 'butcher' && c.specialKey) k = 'death';
         out.cases.push(`${c.crime} / ${c.detail}`);
         button(k).click();
     }
