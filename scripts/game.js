@@ -180,7 +180,7 @@ export function initGame() {
     document.getElementById('app-version').textContent = typeof __APP_VERSION__ === 'undefined' ? '' : `v${__APP_VERSION__}`;
     setupEventListeners();
     ui.showStartScreen();
-    ui.setEndlessOption(settings.endlessUnlocked, settings.endlessBest, savedDay('endless'));
+    ui.setEndlessOption(settings.endlessUnlocked, savedDay('endless'));
     ui.setContinueOption(savedDay('story'));
     try {
         if (sessionStorage.getItem('hakim.glowEndless')) {
@@ -270,8 +270,12 @@ function setupEventListeners() {
             audio.playClick();
             settings.lang = btn.dataset.lang;
             saveSettings(settings);
-            // reload once the click has finished; reloading at once cuts the sound off mid-way
-            setTimeout(() => location.reload(), 150);
+            // The texts are prepared in one language when the game opens, so the page reloads.
+            // To make that a calm change instead of a jump: the chosen button lights up at once,
+            // the menu fades out, and after the reload it comes back in as it always does.
+            document.querySelectorAll('.lang-switch button').forEach(b => b.classList.toggle('active', b === btn));
+            document.getElementById('start-screen').classList.add('lang-leaving');
+            setTimeout(() => location.reload(), 260);
         });
     });
 
@@ -1411,7 +1415,7 @@ function endGame() {
 
     const storyDone = !isEndless() && state.day > TOTAL_DAYS && BRANCHES[state.branch] && !state.endedEarly;
     ui.showGameOver({ title: ending.title, description: ending.description, stats: modeNote + (isEndless() ? '' : epilogue) + statsHtml, next: storyDone ? 'endless' : 'restart' });
-    ui.setEndlessOption(settings.endlessUnlocked, settings.endlessBest);
+    ui.setEndlessOption(settings.endlessUnlocked, savedDay('endless'));
     awardEnding(ending, daysServed);
 }
 

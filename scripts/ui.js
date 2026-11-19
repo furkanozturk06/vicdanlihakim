@@ -697,7 +697,7 @@ export function setContinueOption(day) {
 // Start screen: endless mode button and best record, once the story is finished
 // The button is always visible; until the story is finished it is locked and explains why
 let endlessOpen = false;
-export function setEndlessOption(unlocked, best, day = null) {
+export function setEndlessOption(unlocked, day = null) {
     endlessOpen = Boolean(unlocked);
     const btn = document.getElementById('endless-btn');
     // a game of endless mode under way: the button continues it
@@ -705,9 +705,6 @@ export function setEndlessOption(unlocked, best, day = null) {
     btn.classList.toggle('locked', !unlocked);
     btn.setAttribute('aria-disabled', String(!unlocked));
     btn.title = unlocked ? '' : L('30 gün boyunca koltukta kaldıktan sonra Sonsuz Mod\'u açabilirsin.');
-    const record = document.getElementById('endless-record');
-    record.classList.toggle('hidden', !unlocked || !best);
-    record.textContent = best ? L('Sonsuz mod rekoru: {0} gün', best) : '';
 }
 
 // Just finished the story: the endless mode button shines on the start screen until tapped

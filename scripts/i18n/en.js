@@ -577,7 +577,6 @@ export default {
     "Yeni Oyun": "New Game",
     "Koltuğa Otur": "Take the Seat",
     "30 gün boyunca koltukta kaldıktan sonra Sonsuz Mod'u açabilirsin.": "Serve 30 days on the bench to unlock Endless Mode.",
-    "Sonsuz mod rekoru: {0} gün": "Endless Mode record: {0} days",
     "Açık": "On",
     "Kapalı": "Off",
     "Sesi kapat": "Mute",
