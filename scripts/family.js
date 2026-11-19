@@ -52,9 +52,12 @@ export function adjust(state, { harmony = 0, conscience = 0, money = 0, health =
 }
 
 // Deniz takes Ece and leaves when the judge's conscience hits 0, and comes back
-// once it is 30 or more again. Leaving for other reasons (a family scene) is not
-// undone here. Changes state.family; returns 'leave', 'return' or null.
+// once it is 30 or more again. When Deniz left at the day-13 scene ("a while at my
+// mother's"), they come back after at least three days once the conscience is 50 or
+// more. Changes state.family; returns 'leave', 'return' or null.
 export const CONSCIENCE_RETURN = 30;
+export const SCENE_RETURN = 50;
+export const SCENE_RETURN_DAYS = 3;
 
 export function conscienceFamilyChange(state) {
     const f = state.family;
@@ -64,9 +67,12 @@ export function conscienceFamilyChange(state) {
         f.harmony = clamp(f.harmony - 20, 0, 100);
         return 'leave';
     }
-    if (f.spouseLeft && f.leftOverConscience && state.conscience >= CONSCIENCE_RETURN) {
+    const backFromScene = f.spouseLeft && !f.leftOverConscience
+        && state.day - (f.leftOnDay || 0) >= SCENE_RETURN_DAYS && state.conscience >= SCENE_RETURN;
+    if ((f.spouseLeft && f.leftOverConscience && state.conscience >= CONSCIENCE_RETURN) || backFromScene) {
         f.spouseLeft = false;
         f.leftOverConscience = false;
+        delete f.leftOnDay;
         f.harmony = clamp(f.harmony + 15, 0, 100);
         return 'return';
     }
@@ -191,7 +197,7 @@ export function eveningScene(state, day) {
                     moment: 'suitcase',
                     text: L('Deniz bavulunu hazırlamış: "Seni tanıyamıyorum artık. Bir süre annemde kalacağım. Ece de benimle geliyor."'),
                     choices: [
-                        choice(L('Kapıya kadar geçir'), s => { s.family.spouseLeft = true; adjust(s, { harmony: -25, conscience: -5 }); return L('Kapı kapandı. Ev, mahkeme salonundan daha sessiz.'); }, 0, null),
+                        choice(L('Kapıya kadar geçir'), s => { s.family.spouseLeft = true; s.family.leftOnDay = s.day; adjust(s, { harmony: -25, conscience: -5 }); return L('Kapı kapandı. Ev, mahkeme salonundan daha sessiz.'); }, 0, null),
                     ],
                 };
             }
