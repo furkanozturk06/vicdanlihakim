@@ -4225,6 +4225,12 @@ html.text-xlarge #directive-text { font-size: 0.92rem; }
     pointer-events: none;
 }
 
+/* The start screen is not drawn while the gavel comes down: drawing it for the first time
+   takes the phone about a second a frame, and the gavel's swing was lost in it */
+#start-screen.behind-intro {
+    visibility: hidden;
+}
+
 /* the gavel's picture: hidden while the game is still loading, so it is never seen standing still */
 #intro-gavel .ig-stage {
     position: relative;
@@ -4267,3 +4273,4 @@ html.text-xlarge #directive-text { font-size: 0.92rem; }
     opacity: 0;
     will-change: opacity;
 }
+

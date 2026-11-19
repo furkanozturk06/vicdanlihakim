@@ -192,7 +192,7 @@ export function initGame() {
     showCareer();
     // The gavel comes down, then the start screen. The heavier work (the other sounds,
     // the ads) waits until the menu has come in (1.3 s after the gavel), so neither the
-    // opening nor the menu stutters; at the latest 5 seconds after the game opens.
+    // opening nor the menu stutters; at the latest 9 seconds after the game opens.
     let started = false;
     const afterOpening = () => {
         if (started) return;
@@ -202,7 +202,7 @@ export function initGame() {
     };
     const afterMenu = () => setTimeout(afterOpening, 1300);
     playIntro(audio).then(afterMenu, afterMenu);
-    setTimeout(afterOpening, 5000);
+    setTimeout(afterOpening, 9000);
 }
 
 // ---------- Career: titles and achievements (career.js) ----------

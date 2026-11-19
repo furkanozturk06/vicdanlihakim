@@ -1,32 +1,43 @@
 /**
  * The opening: when the game is opened, a gavel comes down on its block in the dark
  * courtroom, with the gavel's sound, and the start screen comes in after it.
- * About two seconds; a tap skips it. It plays when the game is opened, not when the game
- * reloads itself (a language change, back to the main menu).
+ * A tap skips it. It plays when the game is opened, not when the game reloads itself
+ * (a language change, back to the main menu).
  *
- * While the game is opening the phone is busy, and the page's own code can stall for most
- * of a second. So the whole movement is handed to the phone at once as animations (which
- * it runs by itself, stalled or not), and the sound is set on the sound card's clock for
- * the moment of the strike: picture and sound keep their time even when the page does not.
+ * Just after the game is opened the phone draws slowly, at times a frame a second. So:
+ * - the start screen is not drawn while the gavel comes down (drawing it for the first time
+ *   is the costly part); it is drawn behind the dark cover once the gavel lies still,
+ * - the gavel waits until the phone draws smoothly before it moves,
+ * - the swing is handed to the phone whole, as an animation it runs by itself, and the sound
+ *   is set on the sound card's clock for the moment of the strike.
  */
 
 const SKIP_KEY = 'hakim.noIntro';
 const SOUND_WAIT = 700; // ms to wait at most for the gavel sound to be loaded
 
-// the movement, in ms from its start
-const LIFT = 220;               // lifted a little higher...
-const STRIKE = LIFT + 340;      // ...and down onto the block
-const BOUNCE = STRIKE + 170;    // a small bounce back
-const GAVEL_OUT = STRIKE + 550; // the gavel fades...
-const COVER_OUT = GAVEL_OUT + 250; // ...then the dark cover, showing the start screen
-const END = COVER_OUT + 350;
+// the swing, in ms from its start
+const LIFT = 220;            // lifted a little higher...
+const STRIKE = LIFT + 340;   // ...and down onto the block
+const BOUNCE = STRIKE + 170; // a small bounce back
 // the screen shows a frame a little after it is drawn; the sound waits that long too
 const SCREEN_LAG = 0.025;
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-// resolves once the screen has really been drawn (a frame shown, then the next one)
-const painted = () => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+const nextFrame = () => new Promise(resolve => requestAnimationFrame(resolve));
 const at = (ms) => ms / BOUNCE; // a moment of the swing, as a part of it
+
+// Resolves once the phone draws a few frames in a row each within `frameMs` (or after
+// `maxMs` at most)
+async function smooth(maxMs, frameMs = 34) {
+    const start = performance.now();
+    let last = await nextFrame();
+    let good = 0;
+    while (good < 5 && last - start < maxMs) {
+        const now = await nextFrame();
+        good = now - last < frameMs ? good + 1 : 0;
+        last = now;
+    }
+}
 
 // Before the game reloads itself: the next page load opens without the gavel
 export function skipNextIntro() {
@@ -36,7 +47,12 @@ export function skipNextIntro() {
 // `audio` is the game's audio manager
 export async function playIntro(audio) {
     const el = document.getElementById('intro-gavel');
-    if (!el) return;
+    const menu = document.getElementById('start-screen');
+    const showMenu = () => menu.classList.remove('behind-intro');
+    if (!el) {
+        showMenu();
+        return;
+    }
 
     let skip = false;
     try {
@@ -44,25 +60,27 @@ export async function playIntro(audio) {
         sessionStorage.removeItem(SKIP_KEY);
     } catch { /* storage blocked */ }
     if (skip) {
+        showMenu();
         el.remove();
         return;
     }
 
     let finished = false;
-    // A tap: the cover fades away at once (the menu is already drawn behind it)
+    // A tap: the start screen at once, the cover fading away over it
     const finish = () => {
         if (finished) return;
         finished = true;
+        showMenu();
         for (const a of el.getAnimations({ subtree: true })) a.cancel();
         el.classList.add('done');
         setTimeout(() => el.remove(), 400);
     };
     el.addEventListener('pointerdown', finish);
 
-    // only once the opening is on screen, and with the gavel sound ready
-    await Promise.all([painted(), Promise.race([audio.whenLoaded('gavel'), sleep(SOUND_WAIT)])]);
+    // the dark cover is up; the gavel appears once the phone draws smoothly, sound ready
+    await Promise.all([smooth(3000), Promise.race([audio.whenLoaded('gavel'), sleep(SOUND_WAIT)])]);
     if (finished) return;
-    el.classList.add('ready'); // the gavel appears (until now the screen was just dark)
+    el.classList.add('ready');
     await sleep(400); // the raised gavel, a moment
     if (finished) return;
     audio.resume();
@@ -85,18 +103,23 @@ export async function playIntro(audio) {
         { transform: 'translate(-2px, 1px)', offset: 0.7 },
         { transform: 'translate(0, 0)' },
     ], { duration: 280, delay: STRIKE, easing: 'ease-out' });
-    // then the gavel goes, and after it the cover
-    stage.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 250, delay: GAVEL_OUT, fill: 'forwards' });
-    el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 350, delay: COVER_OUT, fill: 'forwards' });
 
     // the sound, set for the moment the gavel meets the block
     await swing.ready;
     if (finished) return;
-    const started = document.timeline.currentTime - swing.startTime;
-    audio.playGavel(Math.max(0, STRIKE - started) / 1000 + SCREEN_LAG);
+    audio.playGavel(Math.max(0, STRIKE - (document.timeline.currentTime - swing.startTime)) / 1000 + SCREEN_LAG);
 
-    await sleep(Math.max(0, END - started));
+    // once the flash is over, the start screen is drawn behind the cover (the gavel lies
+    // still meanwhile, so a slow frame does not show), then the gavel and the cover go
+    await swing.finished;
+    await sleep(350);
     if (finished) return;
+    showMenu();
+    await smooth(2000, 70); // the menu's first seconds are drawn at about 30 frames a second
+    if (finished) return;
+    await stage.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 250, fill: 'forwards' }).finished;
+    if (finished) return;
+    await el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 350, fill: 'forwards' }).finished;
     finished = true;
     el.remove();
 }
