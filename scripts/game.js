@@ -15,6 +15,7 @@ import { saveGame, loadGame, savedDay, clearSave, loadSettings, saveSettings } f
 import * as ui from './ui.js';
 import { audio } from './audio.js';
 import { initAds, adBetweenDays, adPrivacyOptionsAvailable, showAdPrivacyOptions } from './ads.js';
+import { playIntro, skipNextIntro } from './intro.js';
 import { storyLook } from './people.js';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { L, LANG, translatePage, formatMoney } from './i18n.js';
@@ -189,6 +190,7 @@ export function initGame() {
         }
     } catch { /* storage blocked */ }
     showCareer();
+    playIntro(audio); // the gavel comes down, then the start screen
     initAds(); // phone apps only; does not hold up the start screen
 }
 
@@ -275,6 +277,7 @@ function setupEventListeners() {
             // the menu fades out, and after the reload it comes back in as it always does.
             document.querySelectorAll('.lang-switch button').forEach(b => b.classList.toggle('active', b === btn));
             document.getElementById('start-screen').classList.add('lang-leaving');
+            skipNextIntro();
             setTimeout(() => location.reload(), 260);
         });
     });
@@ -338,6 +341,7 @@ function setupEventListeners() {
         // A fresh page load stops every running animation, timer and pending choice,
         // and the start screen offers "Devam Et" from the last save
         audio.stopAmbient();
+        skipNextIntro();
         location.reload();
     });
 
@@ -356,6 +360,7 @@ function setupEventListeners() {
             // back to the start screen, where the endless mode button shines
             try { sessionStorage.setItem('hakim.glowEndless', '1'); } catch { /* storage blocked */ }
             audio.stopAmbient();
+            skipNextIntro();
             location.reload();
             return;
         }
@@ -451,6 +456,7 @@ function openSettings() {
             clearSave('endless');
             Object.assign(settings, { endlessUnlocked: false, endlessBest: 0, tutorialDone: false, career: null, achievements: {}, endingsSeen: [] });
             saveSettings(settings);
+            skipNextIntro();
             location.reload();
         },
     });

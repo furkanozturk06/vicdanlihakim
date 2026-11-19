@@ -32,6 +32,7 @@ class AudioManager {
         this.ambienceOn = true;
         this.ambienceVolume = 0.5;
         this.ambienceWanted = false; // the courtroom is open, so the murmur should play
+        this.loading = {};           // name -> promise of that sample being loaded
     }
 
     init() {
@@ -48,20 +49,28 @@ class AudioManager {
     // Recorded sounds in /audio (see AUDIO_CREDITS.md). Until they are
     // loaded, or if one fails, the synthesized sounds below are used instead.
     async loadSamples() {
-        await Promise.all(SAMPLE_FILES.map(async (name) => {
-            try {
-                const response = await fetch(new URL(`audio/${name}.mp3`, document.baseURI));
-                if (!response.ok) return;
-                this.samples[name] = await this.audioContext.decodeAudioData(await response.arrayBuffer());
-            } catch {
-                // keep the synthesized fallback
-            }
+        await Promise.all(SAMPLE_FILES.map((name) => {
+            this.loading[name] = (async () => {
+                try {
+                    const response = await fetch(new URL(`audio/${name}.mp3`, document.baseURI));
+                    if (!response.ok) return;
+                    this.samples[name] = await this.audioContext.decodeAudioData(await response.arrayBuffer());
+                } catch {
+                    // keep the synthesized fallback
+                }
+            })();
+            return this.loading[name];
         }));
         // The recorded murmur replaces the drone if the courtroom is already open
         if (this.ambientOscillator) {
             this.stopAmbientSound();
             this.startAmbient();
         }
+    }
+
+    // Resolves once a recorded sound has loaded (or failed to): the opening waits for the gavel
+    whenLoaded(name) {
+        return this.loading[name] || Promise.resolve();
     }
 
     // Plays part of a recorded sound; false when it is not loaded (use the fallback)

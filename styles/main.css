@@ -4207,3 +4207,69 @@ html.text-xlarge #directive-text { font-size: 0.92rem; }
 #start-screen.lang-leaving .menu-footer {
     opacity: 0;
 }
+
+/* The opening: a gavel comes down on its block, then the start screen */
+#intro-gavel {
+    position: fixed;
+    inset: 0;
+    z-index: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse at 50% 45%, #2b1e15 0%, #0d0907 70%);
+    transition: opacity 0.35s ease;
+}
+
+#intro-gavel.done {
+    opacity: 0;
+    pointer-events: none;
+}
+
+#intro-gavel svg {
+    width: min(56vw, 240px);
+    height: auto;
+    margin-bottom: 8vh;
+    /* hidden while the game is still loading, so the gavel is never seen standing still */
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+#intro-gavel.ready svg {
+    opacity: 1;
+}
+
+#intro-gavel .ig-swing {
+    transform-box: view-box;
+    transform-origin: 173px 118px;
+    transform: rotate(48deg);
+}
+
+#intro-gavel .ig-flash {
+    opacity: 0;
+}
+
+#intro-gavel.hit .ig-flash {
+    animation: ig-flash 0.5s ease-out;
+}
+
+@keyframes ig-flash {
+    0% { opacity: 0.95; }
+    100% { opacity: 0; }
+}
+
+#intro-gavel.hit svg {
+    animation: ig-shake 0.28s ease-out;
+}
+
+@keyframes ig-shake {
+    0%, 100% { transform: translate(0, 0); }
+    20% { transform: translate(-4px, 3px); }
+    45% { transform: translate(3px, -2px); }
+    70% { transform: translate(-2px, 1px); }
+}
+
+/* While the gavel comes down, the menu waits to come in */
+#start-screen.intro-playing .start-content > *,
+#start-screen.intro-playing .start-content::before {
+    animation-play-state: paused;
+}
