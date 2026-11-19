@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Adalet ve Vicdan</string>
-    <string name="title_activity_main">Adalet ve Vicdan</string>
+    <string name="app_name">Hakim Koltuğu</string>
+    <string name="title_activity_main">Hakim Koltuğu</string>
 </resources>

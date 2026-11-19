@@ -1,5 +1,5 @@
 /* ========================================
-   Justice & Conscience: The Judge's Chair
+   Hakim Koltuğu / The Judge's Seat
    Atmospheric Courtroom Styles
 ======================================== */
 
@@ -1101,14 +1101,6 @@ body {
     }
 }
 
-.game-subtitle {
-    font-family: var(--font-typewriter);
-    font-size: 1.2rem;
-    color: var(--paper-dark);
-    margin-bottom: var(--spacing-xl);
-    letter-spacing: 3px;
-}
-
 .game-tagline {
     font-family: var(--font-elegant);
     font-style: italic;
@@ -1219,10 +1211,6 @@ body {
 
     .game-title {
         font-size: 1.8rem;
-    }
-
-    .game-subtitle {
-        font-size: 1rem;
     }
 
     .bubble-header {
@@ -2022,7 +2010,6 @@ body {
 .modal-content h2,
 .letter h2,
 .rulebook-content h2,
-.game-subtitle,
 #event-title {
     font-family: var(--font-display);
 }
@@ -2486,13 +2473,6 @@ body {
 .menu-ornament i {
     font-style: normal;
     font-size: 1rem;
-}
-
-.game-subtitle {
-    font-size: 1rem;
-    letter-spacing: 6px;
-    color: var(--paper-aged);
-    margin-bottom: var(--spacing-md);
 }
 
 .game-tagline {

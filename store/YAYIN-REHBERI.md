@@ -47,7 +47,7 @@ Play Console'da **Play Uygulama İmzalama** açık kalsın (varsayılan): Google
 ## 3. Google Play Console
 
 1. Geliştirici hesabı (tek seferlik kayıt ücreti) ve kimlik doğrulaması.
-2. **Uygulama oluştur:** ad `Adalet ve Vicdan: Hakim Oyunu`, varsayılan dil Türkçe, oyun, ücretsiz.
+2. **Uygulama oluştur:** ad `Hakim Koltuğu`, varsayılan dil Türkçe, oyun, ücretsiz.
 3. **Mağaza girişi:** metinler `store/magaza-metinleri.md` dosyasında (Türkçe ve İngilizce).
    - Telefon ekran görüntüleri: `store/screenshots/tr/` ve `store/screenshots/en/` (1080×1920)
    - Öne çıkan görsel: `store/feature-graphic-tr.png`, `store/feature-graphic-en.png`
@@ -67,7 +67,7 @@ Play Console'da **Play Uygulama İmzalama** açık kalsın (varsayılan): Google
 ## 4. App Store (Mac olmadan, Codemagic ile)
 
 1. **developer.apple.com › Certificates, Identifiers & Profiles › Identifiers:** `com.vicdanlihakim.oyun` paket kimliğini ekle.
-2. **App Store Connect › Uygulamalar › +:** yeni uygulama, bu paket kimliğiyle. Ad: `Adalet ve Vicdan: Hakim Oyunu`.
+2. **App Store Connect › Uygulamalar › +:** yeni uygulama, bu paket kimliğiyle. Ad: `Hakim Koltuğu`.
 3. **App Store Connect › Kullanıcılar ve Erişim › Entegrasyonlar › App Store Connect API:** "App Manager" yetkisiyle anahtar oluştur. Issuer ID, Key ID ve `.p8` dosyasını al (dosya bir kez indirilebilir).
 4. **codemagic.io:** GitHub hesabınla giriş yap, `vicdanlihakim` deposunu ekle. **Team settings › Integrations › Developer Portal** bölümüne anahtarı ekle; adını tam olarak `app-store-connect` koy.
 5. Codemagic'te **iOS – TestFlight** iş akışını başlat. 15–20 dakikada uygulama TestFlight'a düşer; iPhone'una TestFlight'ı kurup dene. Hata olursa derleme kaydını bana gönder.

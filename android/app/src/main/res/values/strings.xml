@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Justice &amp; Conscience</string>
-    <string name="title_activity_main">Justice &amp; Conscience</string>
+    <string name="app_name">The Judge\'s Seat</string>
+    <string name="title_activity_main">The Judge\'s Seat</string>
     <string name="package_name">com.vicdanlihakim.oyun</string>
     <string name="custom_url_scheme">com.vicdanlihakim.oyun</string>
     <string name="admob_app_id" translatable="false">ca-app-pub-3940256099942544~3347511713</string>

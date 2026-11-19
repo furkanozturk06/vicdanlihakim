@@ -7,9 +7,8 @@ Google Play ve App Store sayfaları için hazır metinler. Karakter sınırları
 ## Türkçe
 
 **Uygulama adı** (Google Play en fazla 30, App Store en fazla 30 karakter)
-- Önerilen: `Adalet ve Vicdan: Hakim Oyunu` (29)
-- Alternatif: `Adalet ve Vicdan` (16)
-- Not: `Adalet ve Vicdan: Hakim Koltuğu` 31 karakter, sınırı bir harf aşıyor.
+- `Hakim Koltuğu` (13)
+- Mağazada aynı ad başka bir uygulamada kullanılıyorsa: `Hakim Koltuğu: Mahkeme Oyunu` (28)
 
 **App Store alt başlığı** (30)
 `Kanun mu, vicdan mı?` (20)
@@ -59,8 +58,8 @@ Bu oyun kurgudur. Bütün kişi, yer ve kurumlar hayal ürünüdür. Suç, şidd
 ## English
 
 **App name** (30)
-- Suggested: `Justice & Conscience: Judge` (27)
-- Alternative: `Justice & Conscience` (20)
+- `The Judge's Seat` (16)
+- If that name is taken in the store: `The Judge's Seat: Court Game` (28)
 
 **App Store subtitle** (30)
 `Law or conscience?` (18)

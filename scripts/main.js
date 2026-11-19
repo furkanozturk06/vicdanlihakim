@@ -1,6 +1,6 @@
 /**
  * Main Entry Point
- * Justice & Conscience: The Judge's Chair
+ * Hakim Koltuğu / The Judge's Seat
  */
 
 import '@fontsource/special-elite';
