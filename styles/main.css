@@ -1459,6 +1459,21 @@ body {
     margin: 0 auto;
 }
 
+/* the offer of extra money for watching an ad: quieter than the next-day button */
+.newspaper .reward-btn {
+    display: block;
+    margin: 0 auto var(--spacing-sm);
+    padding: 8px 14px;
+    font-size: 0.8rem;
+    background: transparent;
+    border-style: dashed;
+}
+
+.newspaper .reward-btn:disabled {
+    opacity: 0.75;
+    cursor: default;
+}
+
 .paper-byline {
     font-family: var(--font-typewriter);
     font-size: 0.65rem;

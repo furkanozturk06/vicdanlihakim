@@ -345,7 +345,8 @@ const el = (tag, className, text) => {
 // A new case opens its file at the top; redrawing the same case (after a question)
 // keeps the reader where they were
 let shownCase = null;
-export function showEvidence(caseData, questionsLeft) {
+// `adQuestion`: no question is left, but one more can be had by watching an ad
+export function showEvidence(caseData, questionsLeft, adQuestion = false) {
     if (caseData !== shownCase) {
         shownCase = caseData;
         document.querySelector('.case-file').scrollTop = 0;
@@ -384,9 +385,10 @@ export function showEvidence(caseData, questionsLeft) {
     } else {
         const btn = el('button', 'interrogate-btn');
         btn.type = 'button';
-        btn.disabled = questionsLeft <= 0;
+        btn.disabled = questionsLeft <= 0 && !adQuestion;
         btn.appendChild(el('span', 'interrogate-q', `🔎 "${caseData.question}"`));
-        btn.appendChild(el('span', 'interrogate-left', questionsLeft > 0 ? L('Sorgula · kalan hak: {0}', questionsLeft) : L('Bugünkü sorgu hakkın bitti')));
+        btn.appendChild(el('span', 'interrogate-left', questionsLeft > 0 ? L('Sorgula · kalan hak: {0}', questionsLeft)
+            : adQuestion ? L('📺 Reklam izle · bir sorgu hakkı daha') : L('Bugünkü sorgu hakkın bitti')));
         interrogation.appendChild(btn);
     }
 
@@ -1038,10 +1040,37 @@ export function showDailySummary(dayStats, paper) {
 
     elements.casesJudged.textContent = dayStats.casesJudged;
     elements.correctVerdicts.textContent = dayStats.correctVerdicts;
-    elements.dayEarnings.textContent = `₺${dayStats.earnings >= 0 ? '+' : ''}${formatMoney(dayStats.earnings)}`;
-    elements.dayEarnings.style.color = dayStats.earnings >= 0 ? '#4a9c6d' : '#8b2020';
+    setDayEarnings(dayStats.earnings);
 
     elements.summaryModal.classList.remove('hidden');
+}
+
+// The day's earnings in the newspaper (also after the extra money of an ad)
+export function setDayEarnings(earnings) {
+    elements.dayEarnings.textContent = `₺${earnings >= 0 ? '+' : ''}${formatMoney(earnings)}`;
+    elements.dayEarnings.style.color = earnings >= 0 ? '#4a9c6d' : '#8b2020';
+}
+
+// The newspaper's offer: watch an ad for extra money. `onWatch` shows the ad and resolves
+// true when it was watched to the end; then the offer turns into a note of the reward.
+export function showMoneyOffer(amount, onWatch) {
+    const btn = document.getElementById('reward-money-btn');
+    if (!onWatch) {
+        btn.classList.add('hidden');
+        return;
+    }
+    btn.disabled = false;
+    btn.textContent = L('📺 Reklam izle · +₺{0}', formatMoney(amount));
+    btn.classList.remove('hidden');
+    btn.onclick = async () => {
+        audio.playClick();
+        btn.disabled = true;
+        if (await onWatch()) {
+            btn.textContent = L('₺{0} kasana eklendi', formatMoney(amount));
+        } else {
+            btn.classList.add('hidden');
+        }
+    };
 }
 
 // Hide daily summary modal

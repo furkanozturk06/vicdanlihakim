@@ -14,7 +14,7 @@ import { ACT_LENGTH, TOTAL_DAYS, ACT2_CASES_PER_DAY, BRANCHES, branchFor } from 
 import { saveGame, loadGame, savedDay, clearSave, loadSettings, saveSettings } from './save.js';
 import * as ui from './ui.js';
 import { audio } from './audio.js';
-import { initAds, adBetweenDays, adPrivacyOptionsAvailable, showAdPrivacyOptions } from './ads.js';
+import { initAds, adBetweenDays, adPrivacyOptionsAvailable, showAdPrivacyOptions, rewardedAdReady, showRewardedAd } from './ads.js';
 import { playIntro, skipNextIntro } from './intro.js';
 import { storyLook } from './people.js';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
@@ -83,6 +83,8 @@ function createInitialState() {
         branch: null,      // act 2: 'surgun' | 'borc'
         specials: {},      // outcomes of act-2 story cases, by key
         bonusQuestions: 0, // extra interrogations earned the evening before
+        adQuestionDay: 0,  // the day an extra question was had for watching an ad (one a day)
+        secondChanceUsed: false, // endless mode: the career was saved once by watching an ad
         scandal: false,    // two exposed bribes end the career
         mode: 'story',     // 'story' (30 days) | 'endless'
 
@@ -646,7 +648,7 @@ async function presentNextCase() {
     audio.playDoorClose();
     await ui.closeDoor();
 
-    ui.showEvidence(state.currentCase, state.questionsLeft);
+    ui.showEvidence(state.currentCase, state.questionsLeft, canWatchForQuestion());
     await ui.showSpeechBubble(state.currentCase.statement, state.currentCase.crime, (text, i) => audio.speakLetter(text, i, state.currentCase.gender, state.currentCase.age));
 
     if (!settings.tutorialDone) {
@@ -928,16 +930,39 @@ function pickOffer(c) {
     };
 }
 
+// The ads the player chooses to watch for a reward (phone apps only); the sound pauses meanwhile
+const AD_SOUND = { pause: () => audio.pauseAll(), resume: () => audio.resume() };
+const AD_MONEY = 3000;          // the newspaper's offer at the end of the day
+const SECOND_CHANCE_MONEY = 5000; // endless mode: back from bankruptcy with this much
+const SECOND_CHANCE_REPUTATION = 20; // ...or from dismissal with this reputation
+let watchingAd = false;
+
+// No question left today: one more for watching an ad, once a day
+const canWatchForQuestion = () => state.questionsLeft <= 0 && state.adQuestionDay !== state.day && rewardedAdReady();
+
 // Ask the defendant the case question: reveals the hidden evidence
 async function interrogate() {
     const c = state.currentCase;
-    if (!c || c.asked || state.isProcessing || state.questionsLeft <= 0) return;
+    if (!c || c.asked || state.isProcessing || watchingAd) return;
+    if (state.questionsLeft <= 0) {
+        if (!canWatchForQuestion()) return;
+        audio.playClick();
+        watchingAd = true;
+        const earned = await showRewardedAd(AD_SOUND);
+        watchingAd = false;
+        if (!earned || state.currentCase !== c) {
+            if (state.currentCase === c) ui.showEvidence(c, state.questionsLeft, canWatchForQuestion());
+            return;
+        }
+        state.adQuestionDay = state.day;
+        state.questionsLeft++;
+    }
 
     audio.playClick();
     c.asked = true;
     state.questionsLeft--;
     countQuestion();
-    ui.showEvidence(c, state.questionsLeft);
+    ui.showEvidence(c, state.questionsLeft, canWatchForQuestion());
     await ui.typeIntoBubble(c.answer, (text, i) => audio.speakLetter(text, i, c.gender, c.age));
 }
 
@@ -1143,13 +1168,39 @@ async function processVerdict(sentenceKey, viaOffer = null) {
 
     await checkForEvents();
 
-    if (state.money <= 0 || state.reputation <= 0) {
+    if ((state.money <= 0 || state.reputation <= 0) && !(await secondChance())) {
         state.endedEarly = true;
         endGame();
         return;
     }
 
     await finishCase();
+}
+
+// Endless mode, once a career: bankrupt or dismissed, the judge may watch an ad and stay
+// on the bench, just barely (a bribery scandal is not forgiven this way)
+async function secondChance() {
+    if (!isEndless() || state.secondChanceUsed || state.scandal || !rewardedAdReady()) return false;
+    const broke = state.money <= 0;
+    const dismissed = state.reputation <= 0;
+    const text = broke && dismissed
+        ? L('Kasanız tamtakır, halkın ve bakanlığın güveni tükendi; görevden alma yazısı masada. Bir reklam izlersen son bir fırsat tanınır: kasana ₺{0} girer, itibarın {1} olur. Bu şans her kariyerde bir kez.', formatMoney(SECOND_CHANCE_MONEY), SECOND_CHANCE_REPUTATION)
+        : broke
+            ? L('Kasanız tamtakır; bakanlık görevden alma yazısını hazırladı. Bir reklam izlersen son anda bir destek bulunur: kasana ₺{0} girer ve kürsüde kalırsın. Bu şans her kariyerde bir kez.', formatMoney(SECOND_CHANCE_MONEY))
+            : L('Halkın ve bakanlığın güveni tükendi; görevden alma yazısı masada. Bir reklam izlersen bakanlık sana son bir fırsat tanır: itibarın {0} olur ve kürsüde kalırsın. Bu şans her kariyerde bir kez.', SECOND_CHANCE_REPUTATION);
+    const watch = await ui.showStory({
+        icon: '📺',
+        title: L('Son Bir Şans'),
+        text,
+        choices: [{ label: L('📺 Reklam izle, devam et'), value: true }, { label: L('Kariyeri bitir'), value: false }],
+    });
+    if (!watch || !(await showRewardedAd(AD_SOUND))) return false;
+    state.secondChanceUsed = true;
+    if (broke) state.money = SECOND_CHANCE_MONEY;
+    if (dismissed) state.reputation = SECOND_CHANCE_REPUTATION;
+    ui.updateStats(state); // kept in the save made when the day ends
+    await ui.showEvent('praise', L('Kürsüde Kaldın'), L('Son anda kurtuldun. Bir daha bu kadar yaklaşma.'));
+    return true;
 }
 
 // Clear the courtroom and call the next defendant
@@ -1377,6 +1428,15 @@ function endDay() {
         correctVerdicts: state.dayCorrect,
         earnings: state.dayEarnings,
     }, buildNewspaper(state.dayLog, state.appealsToday));
+    // an ad for extra money; in debt it may lift the judge out of it, or only part of the way
+    ui.showMoneyOffer(AD_MONEY, rewardedAdReady() ? async () => {
+        if (!(await showRewardedAd(AD_SOUND))) return false;
+        state.money += AD_MONEY;
+        state.dayEarnings += AD_MONEY;
+        ui.setDayEarnings(state.dayEarnings);
+        ui.updateStats(state);
+        return true;
+    } : null);
 
     // Saved after the evening scene, when the next day is about to start
     state.day++;

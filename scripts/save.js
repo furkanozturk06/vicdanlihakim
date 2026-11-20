@@ -58,6 +58,7 @@ const CAREER_FIELDS = [
     'pendingRevenge', 'offenders', 'finale',
     'appeals', 'postponed', 'family', 'flags', 'selin', 'trial',
     'branch', 'specials', 'bonusQuestions', 'scandal', 'mode', 'economy', 'aftermath',
+    'secondChanceUsed',
 ];
 
 // Before endless mode had a save of its own, it used the story's: move such a save over

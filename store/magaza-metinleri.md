@@ -46,7 +46,7 @@ Bakanın oğluna verdiğin karar hikâyenin geri kalanını değiştirir: güçl
 - Hakim unvanları ve 15 başarım
 - Türkçe ve İngilizce
 - İnternet bağlantısı olmadan da oynanır
-- Ücretsizdir; günlerin arasında reklam gösterir
+- Ücretsizdir; günlerin arasında reklam gösterir, isteyen oyuncu reklam izleyerek küçük ödüller alır
 
 Bu oyun kurgudur. Bütün kişi, yer ve kurumlar hayal ürünüdür. Suç, şiddet, cinsel suçlar (ayrıntıya girmeden) ve idam gibi yetişkin temaları işler.
 
@@ -96,7 +96,7 @@ Your verdict on the minister's son changes the rest of the story: exile to a tow
 - Judge titles and 15 achievements
 - English and Turkish
 - Playable offline
-- Free to play; shows ads between days
+- Free to play; shows ads between days, and players may choose to watch an ad for a small reward
 
 This game is fiction. All persons, places and organizations are imaginary. It deals with mature themes such as crime, violence, sexual offenses (never graphic) and the death penalty.
 
@@ -108,7 +108,7 @@ This game is fiction. All persons, places and organizations are imaginary. It de
 ## Diğer bilgiler / Other details
 
 - **Kategori / Category:** Simülasyon / Simulation (ikincil: Rol yapma, Hikâye)
-- **Yaş sınırı / Age rating:** Suç, şiddet, cinsel suç temaları (ayrıntısız) ve idam nedeniyle büyük olasılıkla **PEGI 16 / App Store 17+**. Anketi doldururken: gerçekçi şiddet tasviri yok, cinsel içerik yok, kumar yok, kullanıcı etkileşimi yok, **reklam var** (Google AdMob, her günün sonunda tam ekran).
+- **Yaş sınırı / Age rating:** Suç, şiddet, cinsel suç temaları (ayrıntısız) ve idam nedeniyle büyük olasılıkla **PEGI 16 / App Store 17+**. Anketi doldururken: gerçekçi şiddet tasviri yok, cinsel içerik yok, kumar yok, kullanıcı etkileşimi yok, **reklam var** (Google AdMob: her günün sonunda tam ekran, ayrıca oyuncunun isteğe bağlı izlediği ödüllü reklamlar).
 - **Veri güvenliği formu / Data safety (Google Play):** Reklam kimliği ve cihaz bilgileri Google AdMob tarafından reklam ve analiz amacıyla toplanır; veriler aktarım sırasında şifrelenir; geliştirici kendisi veri toplamaz. App Store'da "Data Used to Track You: Identifiers (Advertising)".
 - **Gizlilik politikası / Privacy policy:** https://furkanozturk06.github.io/vicdanlihakim/gizlilik.html
 - **İletişim / Contact:** vicdanlihakim@gmail.com

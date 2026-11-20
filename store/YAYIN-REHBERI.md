@@ -10,14 +10,15 @@ Oyunu Google Play ve App Store'a çıkarmak için kalan adımlar. Kod tarafında
 
 1. https://admob.google.com adresinde hesap aç (oyunun Google hesabıyla).
 2. **Uygulamalar › Uygulama ekle** ile iki uygulama ekle: biri Android, biri iOS. Mağazada henüz yoksa "listelenmedi" seçeneğiyle eklenebilir.
-3. Her uygulamada **Reklam birimi ekle › Geçiş reklamı (Interstitial)** oluştur.
+3. Her uygulamada iki reklam birimi oluştur: **Reklam birimi ekle › Geçiş reklamı (Interstitial)** ve **Reklam birimi ekle › Ödüllü reklam (Rewarded)**. Ödüllü reklamın ödül ayarı önemli değil (oyun ödülü kendisi veriyor), varsayılan kalabilir.
 4. **Gizlilik ve mesajlaşma › Avrupa düzenlemeleri** bölümünde izin mesajı oluşturup yayınla (iki uygulama için de). Oyun bu mesajı Avrupa'daki oyunculara kendisi gösteriyor; mesaj yayınlanmazsa izin ekranı çıkmaz.
 5. İsteğe bağlı: aynı yerde **IDFA açıklama mesajı** (iOS) oluşturursan, Apple'ın takip izni sorulmadan önce kısa bir açıklama gösterilir.
 
 **Bana vereceklerin** (bunlar gizli değildir):
 - Android uygulama kimliği: `ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY`
 - Android geçiş reklamı birimi: `ca-app-pub-XXXXXXXXXXXXXXXX/ZZZZZZZZZZ`
-- iOS uygulama kimliği ve iOS geçiş reklamı birimi (aynı biçimde)
+- Android ödüllü reklam birimi (aynı biçimde)
+- iOS uygulama kimliği, iOS geçiş reklamı birimi ve iOS ödüllü reklam birimi (aynı biçimde)
 
 Bunları koda yerleştirip deneme modunu kapatırım. O zamana kadar oyun Google'ın deneme reklamlarını gösterir.
 
