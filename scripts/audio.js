@@ -12,7 +12,7 @@ const VOICE_LEVEL = 0.35;
 
 // Recorded sounds in public/audio (licences in AUDIO_CREDITS.md)
 const SAMPLE_FILES = ['gavel', 'page', 'book', 'door', 'chime', 'sting', 'gasp', 'hall', 'court', 'newspaper', 'slide', 'calm', 'uneasy', 'notice'];
-const AMBIENT_LEVEL = 1;
+const AMBIENT_LEVEL = 1.25; // the murmur, a little louder than the recordings as they are
 // The courtroom murmur is two recordings looped together: a seated crowd waiting in
 // a large hall (3 minutes; the door closing at its end is left out of the loop) and,
 // much quieter underneath, the movement of a courtroom. Their lengths differ, so the
